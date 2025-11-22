@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export const BootSplash = ({ onComplete }: { onComplete: () => void }) => {
     useEffect(() => {
-        const timer = setTimeout(onComplete, 1500);
+        const timer = setTimeout(onComplete, 600);
         return () => clearTimeout(timer);
     }, [onComplete]);
 
@@ -18,7 +18,7 @@ export const BootSplash = ({ onComplete }: { onComplete: () => void }) => {
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: "100%" }}
-                        transition={{ duration: 1.2 }}
+                        transition={{ duration: 0.6 }}
                         className="h-full bg-red-400"
                     />
                 </div>

@@ -90,7 +90,7 @@ const AppContent = () => {
     if (isBooting) return <BootSplash onComplete={() => setIsBooting(false)} />;
 
     return (
-        <div className="h-screen w-full bg-neutral-950 flex justify-center overflow-hidden">
+        <div className={`h-screen w-full bg-neutral-950 flex justify-center overflow-hidden ${theme.isDark ? 'dark' : ''}`}>
             <div
                 className="w-full max-w-[1200px] h-full shadow-2xl overflow-hidden relative flex flex-col transition-colors duration-700"
                 style={{
@@ -121,8 +121,12 @@ const AppContent = () => {
                     style={{backgroundColor: theme.colors.primary}}
                 >
                     <ThemeBackground theme={theme} />
-                    <StatusBar time={currentTime} showProfileWidget={!!displayedProject} onProfileClick={goHome} theme={theme} />
-
+                    <StatusBar
+                        time={currentTime}
+                        theme={theme}
+                        onOpenProfile={() => setIsAboutOpen(true)}
+                        showProfile={!!displayedProject}
+                    />
                     <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
                         {displayedProject ? (
                             <div key={displayedProject.id} className={`w-full h-full absolute inset-0 animate-slide-${slideDir}`}>
@@ -148,14 +152,14 @@ const AppContent = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-center p-3 px-6 bg-[var(--panel)] gap-4 z-20 shadow-sm border-b border-gray-100/10">
                         <div className="flex gap-2 p-1 overflow-x-auto no-scrollbar w-full sm:w-auto items-center justify-center sm:justify-start">
                             {(['ALL', 'WORK', 'PERSONAL', 'UNI'] as Category[]).map(cat => (
-                                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-[var(--accent)] text-white shadow-md transform scale-105' : 'bg-gray-200/50 dark:bg-gray-700/50 hover:bg-gray-300/50 dark:hover:bg-gray-600/50'}`} style={{ color: activeCategory === cat ? theme.colors.contrastAccent : theme.colors.text }}>
+                                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-[var(--accent)] text-white shadow-md transform scale-105' : 'hover:bg-black/5 dark:hover:bg-white/5'}`} style={{ backgroundColor: activeCategory === cat ? theme.colors.accent : theme.colors.secondary, color: activeCategory === cat ? theme.colors.contrastAccent : theme.colors.text }}>
                                     {cat === 'ALL' ? t('cat.all') : cat === 'WORK' ? t('cat.work') : cat === 'PERSONAL' ? t('cat.personal') : t('cat.uni')}
                                 </button>
                             ))}
                         </div>
                         <div className="flex gap-2 justify-center sm:justify-end w-full sm:w-auto">
                             {[Mail, Github, Linkedin, Globe].map((Icon, i) => (
-                                <button key={i} className="p-2 rounded-full transition-colors shadow-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-[var(--accent)] hover:text-white"><Icon size={18} /></button>
+                                <button key={i} className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80" style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}><Icon size={18} /></button>
                             ))}
                         </div>
                     </div>
@@ -194,7 +198,7 @@ const AppContent = () => {
                         <div
                             className="w-full p-4 backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.1)] border-t flex justify-center transition-colors duration-700"
                             style={{
-                                backgroundColor: theme.colors.cardBg, // Footer uses Card BG
+                                backgroundColor: theme.colors.cardBg,
                                 borderColor: theme.colors.secondary
                             }}
                         >
@@ -208,7 +212,7 @@ const AppContent = () => {
                                     <button
                                         onClick={() => setShowThemeCreator(!showThemeCreator)}
                                         className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
                                     >
                                         <Palette size={14} /> {t('footer.theme')}
                                     </button>
@@ -219,7 +223,7 @@ const AppContent = () => {
                                     <button
                                         onClick={toggleDarkMode}
                                         className="p-2 rounded-full transition-all hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
                                     >
                                         {theme.isDark ? <Sun size={18} /> : <Moon size={18} />}
                                     </button>
@@ -230,7 +234,7 @@ const AppContent = () => {
                                     <button
                                         onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
                                         className="flex items-center gap-2 px-3 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
                                     >
                                         <Languages size={14} /> {language.toUpperCase()}
                                     </button>
@@ -241,7 +245,7 @@ const AppContent = () => {
                                     <button
                                         onClick={goHome}
                                         className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
                                     >
                                         <Home size={18} />
                                     </button>
@@ -250,7 +254,7 @@ const AppContent = () => {
                                     <button
                                         onClick={() => setViewMode(v => v === 'GRID' ? 'LIST' : 'GRID')}
                                         className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
                                     >
                                         {viewMode === 'GRID' ? <LayoutGrid size={18} /> : <ListIcon size={18} />}
                                     </button>

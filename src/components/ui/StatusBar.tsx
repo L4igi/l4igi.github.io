@@ -1,39 +1,68 @@
 import { motion } from 'framer-motion';
-import { User, Wifi, Battery } from 'lucide-react';
-import type {Theme} from "../../types";
+import type { Theme } from "../../types";
 
 interface StatusBarProps {
     time: string;
-    showProfileWidget: boolean;
-    onProfileClick: () => void;
     theme: Theme;
+    onOpenProfile: () => void;
+    showProfile: boolean; // Controls visibility of the button
 }
 
-export const StatusBar = ({ time, showProfileWidget, onProfileClick, theme }: StatusBarProps) => (
-    <div className="flex justify-between items-center px-4 py-1 bg-black/90 text-white text-xs font-mono border-b border-white/10 z-50 relative select-none h-8 shadow-md shrink-0">
-        <div className="flex items-center gap-4">
-            <motion.button
-                onClick={onProfileClick}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: showProfileWidget ? 0 : -20, opacity: showProfileWidget ? 1 : 0 }}
-                className={`flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-0.5 rounded-full transition-colors border border-gray-600 group ${!showProfileWidget && 'pointer-events-none'}`}
-                title="Back to Profile"
-            >
-                <div className="w-4 h-4 rounded-full border border-white overflow-hidden relative" style={{backgroundColor: theme.colors.accent}}>
-                    <User size={10} className="absolute bottom-0 left-1/2 -translate-x-1/2 text-white/90" />
-                </div>
-                <span className="font-bold text-[10px] group-hover:text-[var(--accent)]">Lukas</span>
-            </motion.button>
-        </div>
-        <div className="flex items-center space-x-4">
-            <span className="hidden sm:inline font-bold tracking-widest opacity-80">{time}</span>
-            <div className="flex items-center space-x-1">
-                <span className="text-[10px] text-gray-400">WiFi</span>
-                <Wifi size={14} className="text-blue-400" />
+export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBarProps) => {
+    return (
+        <div
+            className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
+            style={{ color: theme.colors.text }}
+        >
+            {/* LEFT: User Profile Button (Target of Hero Card Animation) */}
+            <div className="min-w-[140px] h-full flex items-center">
+                {showProfile && (
+                    <motion.button
+                        layoutId="hero-morph" // SHARED ID FOR MORPHING
+                        onClick={onOpenProfile}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm backdrop-blur-md group overflow-hidden relative"
+                        style={{
+                            backgroundColor: theme.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.4)',
+                            borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                        }}
+                        title="Open Profile"
+                    >
+                        {/* Avatar Circle */}
+                        <motion.div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-inner relative overflow-hidden shrink-0"
+                            style={{ backgroundColor: theme.colors.accent }}
+                        >
+                            <span className="font-black text-[10px] z-10">LH</span>
+                            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
+                        </motion.div>
+
+                        {/* Text Label - Fade in/out to avoid squishing during morph */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="flex flex-col items-start justify-center leading-none whitespace-nowrap"
+                        >
+                            <span className="opacity-100 font-black text-xs group-hover:text-[var(--accent)] transition-colors duration-300">Lukas</span>
+                            <span className="opacity-50 text-[9px] font-bold mt-0.5 flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.6)]"></span>
+                                Online
+                            </span>
+                        </motion.div>
+                    </motion.button>
+                )}
             </div>
-            <div className="flex items-center space-x-1">
-                <Battery size={14} className="text-green-400" />
+
+            {/* RIGHT: System Tray */}
+            <div className="flex items-center gap-6 opacity-60">
+                <span className="tabular-nums font-mono font-bold text-sm">
+                    {time}
+                </span>
             </div>
         </div>
-    </div>
-);
+    );
+};

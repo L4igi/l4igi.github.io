@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { ArrowRight, Terminal, Sparkles } from 'lucide-react';
+import type { Theme } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
-import type {Theme} from "../../types";
 
 export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, theme: Theme }) => {
     const { t } = useLanguage();
@@ -32,26 +32,33 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
             onMouseLeave={handleMouseLeave}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }} // Faster exit for wrapper
             transition={{ duration: 0.5, ease: "easeOut" }}
         >
             <motion.div
+                layoutId="hero-morph" // CONNECTS TO STATUS BAR BUTTON
                 ref={cardRef}
                 className="relative w-full max-w-[550px] rounded-[32px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5"
                 style={{
-                    backgroundColor: theme.colors.cardBg, // DYNAMIC THEME COLOR
+                    backgroundColor: theme.colors.cardBg,
                     rotateX,
                     rotateY
                 }}
                 onClick={onOpenTrainer}
                 whileHover={{ scale: 1.02 }}
             >
-                <div className="flex flex-col sm:flex-row h-full min-h-[220px]">
+                {/* Inner content wrapper - Fades out during morph so it doesn't squash */}
+                <motion.div
+                    className="flex flex-col sm:flex-row h-full min-h-[220px]"
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                >
 
                     {/* LEFT: Accent Bar & Avatar */}
                     <div className="w-full sm:w-32 relative shrink-0 flex items-center justify-center sm:justify-end p-6 sm:p-0" style={{ backgroundColor: theme.colors.accent }}>
                         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
+                        {/* Avatar overlapping the edge */}
                         <div className="relative sm:absolute sm:right-[-40px] z-10">
                             <div
                                 className="w-24 h-24 rounded-full flex items-center justify-center text-3xl font-black shadow-lg border-[4px]"
@@ -87,15 +94,18 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                             </span>
                         </div>
 
+                        {/* Nintendo Style Button */}
                         <motion.button
-                            className="w-full sm:w-auto px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 group/btn hover:shadow-lg transition-all"
-                            style={{ backgroundColor: theme.colors.text, color: theme.colors.cardBg }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-full sm:w-auto px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 group/btn shadow-md transition-all"
+                            style={{ backgroundColor: theme.colors.accent, color: theme.colors.contrastAccent }}
                         >
                             {t('hero.open')}
                             <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
                         </motion.button>
                     </div>
-                </div>
+                </motion.div>
             </motion.div>
         </motion.div>
     );
