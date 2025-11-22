@@ -47,7 +47,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-blue-400',
         icon: <Server className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-blue-100', 'bg-blue-200', 'bg-blue-50'],
+        screenshots: [],
         features: ['Multi-Tenancy', 'Complex Logic', 'Graph Viz', 'B2B']
     },
     {
@@ -67,7 +67,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-orange-400',
         icon: <Settings className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-orange-100', 'bg-orange-200', 'bg-orange-50'],
+        screenshots: ['/projects/toboggan/toboggan_2.png'],
         features: ['IoT / Bluetooth', 'Offline First', 'Multi-Tenancy', 'Mobile']
     },
     {
@@ -87,7 +87,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-indigo-400',
         icon: <Database className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-indigo-100', 'bg-indigo-200', 'bg-indigo-50'],
+        screenshots: ['/projects/inno/inno_1.png', '/projects/inno/inno_2.png', '/projects/inno/inno_3.png', '/projects/inno/inno_4.png', '/projects/inno/inno_5.png'],
         features: ['Microservices', 'PDF Generation', 'Configurator', 'Enterprise']
     },
     {
@@ -107,7 +107,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-emerald-400',
         icon: <CreditCard className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-emerald-100'],
+        screenshots: [],
         features: ['FinTech', 'Backend', 'Automation']
     },
     {
@@ -127,7 +127,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-cyan-400',
         icon: <ShoppingCart className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-cyan-100'],
+        screenshots: [],
         features: ['Migration', 'Scalability', 'CI/CD']
     },
     {
@@ -147,7 +147,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-sky-500',
         icon: <Zap className="w-8 h-8 text-white" />,
         category: 'WORK',
-        screenshots: ['bg-sky-100'],
+        screenshots: ['/projects/energy/energy_1.webp', '/projects/energy/energy_2.webp', '/projects/energy/energy_3.webp', '/projects/energy/energy_4.png', '/projects/energy/energy_5.png', '/projects/energy/energy_6.png'],
         features: ['Native Mobile', 'Real-time Data', 'CMS']
     },
 
@@ -169,7 +169,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-rose-500',
         icon: <Gamepad2 className="w-8 h-8 text-white" />,
         category: 'PERSONAL',
-        screenshots: ['bg-rose-100'],
+        screenshots: ['/projects/smash/combat_showcase1.mp4', '/projects/smash/resultscreen.mp4'],
         features: ['Game Physics', 'State Machines', 'Hitboxes']
     },
     {
@@ -189,7 +189,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-green-400',
         icon: <Gamepad2 className="w-8 h-8 text-white" />,
         category: 'PERSONAL',
-        screenshots: ['bg-green-100', 'bg-green-200', 'bg-green-50'],
+        screenshots: ['/projects/mauer/mauer_1.png', '/projects/mauer/mauer_2.png', '/projects/mauer/mauer_3.png'],
         features: ['EdTech', 'Procedural Gen', 'UI/UX']
     },
     {
@@ -209,7 +209,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-red-400',
         icon: <Gamepad2 className="w-8 h-8 text-white" />,
         category: 'PERSONAL',
-        screenshots: ['bg-red-100', 'bg-red-200', 'bg-red-50'],
+        screenshots: ['/projects/fox/fox-1.png', '/projects/fox/fox-2.png', '/projects/fox/fox-3.png','/projects/fox/fox-4.png','/projects/fox/fox-5.png' ],
         features: ['Art Installation', '3D Modeling', 'Interactive']
     },
 
@@ -231,7 +231,7 @@ export const PROJECTS: Project[] = [
         color: 'bg-purple-400',
         icon: <Terminal className="w-8 h-8 text-white" />,
         category: 'UNI',
-        screenshots: ['bg-purple-100', 'bg-purple-200', 'bg-purple-50'],
+        screenshots: ['/projects/endless/combat.mp4', '/projects/endless/enemy_variety.mp4', '/projects/endless/room_generation.mp4'],
         features: ['Research', 'Graph Theory', 'PCG']
     },
     {

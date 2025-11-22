@@ -10,6 +10,7 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
     const { t, language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'ID' | 'EXP' | 'SKILLS' | 'LIKES'>('ID');
     const [isClosing, setIsClosing] = useState(false);
+    const [imgError, setImgError] = useState(false); // Track image error
 
     const handleClose = () => { setIsClosing(true); setTimeout(onClose, 300); };
 
@@ -53,13 +54,10 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
             >
                 {/* --- HERO HEADER --- */}
                 <div className="relative h-40 shrink-0 overflow-hidden" style={{ backgroundColor: theme.colors.accent }}>
-                    {/* Pattern Overlay */}
                     <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
 
-                    {/* Header Content */}
                     <div className="relative z-10 h-full px-8 flex items-center justify-between">
-                        {/* Empty space for avatar layout */}
                         <div className="ml-32 sm:ml-40 mt-4 text-white drop-shadow-md">
                             <h2 className="text-3xl sm:text-4xl font-black tracking-tight">Lukas Höwarth</h2>
                             <p className="opacity-90 font-bold text-sm sm:text-base flex items-center gap-2 uppercase tracking-wider">
@@ -82,10 +80,19 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                         initial={{ scale: 0, rotate: -10 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
-                        className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-[6px] shadow-2xl overflow-hidden flex items-center justify-center"
-                        style={{ backgroundColor: theme.colors.cardBg, borderColor: theme.colors.cardBg }}
+                        className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-[6px] shadow-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800"
+                        style={{ borderColor: theme.colors.cardBg }}
                     >
-                        <div className="text-4xl font-black" style={{ color: theme.colors.accent }}>LH</div>
+                        {!imgError ? (
+                            <img
+                                src="/public/profile/me.jpg"
+                                alt="Lukas"
+                                className="w-full h-full object-cover"
+                                onError={() => setImgError(true)}
+                            />
+                        ) : (
+                            <div className="text-4xl font-black w-full h-full flex items-center justify-center" style={{ color: theme.colors.accent }}>LH</div>
+                        )}
                     </motion.div>
                 </div>
 

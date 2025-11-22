@@ -1,9 +1,56 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { X, ImageIcon, CheckCircle2, Star, ChevronLeft, ChevronRight, Cpu, ListChecks } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { X, ImageIcon, CheckCircle2, Star, ChevronLeft, ChevronRight, Cpu, ListChecks, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Project, Theme } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+import { useDraggableScroll } from '../../hooks/useDraggableScroll';
 import type {Variants} from "motion";
+
+// --- HELPER: Video Detection ---
+const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
+const isImagePath = (str: string) => str.includes('/') || str.includes('.');
+
+// --- SUB-COMPONENT: Video Thumbnail ---
+// Handles hover-to-play logic independently for better performance
+const VideoThumbnail = ({ src }: { src: string }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const handleMouseEnter = () => {
+        videoRef.current?.play().catch(() => {}); // Ignore play errors (e.g. if user hasn't interacted)
+    };
+
+    const handleMouseLeave = () => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0; // Reset to start
+        }
+    };
+
+    return (
+        <div
+            className="relative w-full h-full bg-black"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+            <video
+                ref={videoRef}
+                src={src}
+                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                muted
+                loop
+                playsInline
+                // No controls for thumbnail
+            />
+
+            {/* Play Icon Overlay (Hidden when playing/hovered) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-full border border-white/20 shadow-lg">
+                    <Play size={16} className="text-white fill-white" />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 interface GameScreenProps {
     project: Project;
@@ -17,6 +64,9 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
     const { language, t } = useLanguage();
     const [isClosing, setIsClosing] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+    // Drag to Scroll Hook
+    const { scrollRef, hasMoved, events: dragEvents } = useDraggableScroll();
 
     const handleClose = () => { setIsClosing(true); setTimeout(onClose, 300); };
 
@@ -81,23 +131,61 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                         </button>
                         <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-12" onClick={(e) => e.stopPropagation()}>
                             {project.screenshots.length > 1 && (
-                                <button onClick={showPrevImg} className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all">
+                                <button onClick={showPrevImg} className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50">
                                     <ChevronLeft size={48} />
                                 </button>
                             )}
+
                             <motion.div
                                 key={lightboxIndex}
-                                initial={{ opacity: 0, scale: 0.9 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`w-full h-full max-w-6xl max-h-[85vh] rounded-xl shadow-2xl ${project.screenshots[lightboxIndex]} flex items-center justify-center ring-4 ring-white/10`}
+                                className={`w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/50 backdrop-blur-xl`}
                             >
-                                <div className="text-center">
-                                    <span className="font-mono text-white/20 text-4xl font-bold block mb-2">PREVIEW</span>
-                                    <span className="font-mono text-white/40 text-sm">{lightboxIndex + 1} / {project.screenshots.length}</span>
-                                </div>
+                                {isVideo(project.screenshots[lightboxIndex]) ? (
+                                    // --- VIDEO PLAYER ---
+                                    <div className="w-full h-full flex items-center justify-center bg-black relative">
+                                        <video
+                                            src={project.screenshots[lightboxIndex]}
+                                            className="w-full h-full object-contain"
+                                            muted
+                                            controls
+                                            autoPlay
+                                            loop
+                                            playsInline
+                                        />
+                                    </div>
+                                ) : isImagePath(project.screenshots[lightboxIndex]) ? (
+                                    // --- DUAL-LAYER IMAGE ---
+                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                                        {/* Layer 1: Blurred Atmospheric Background */}
+                                        <div className="absolute inset-0 z-0">
+                                            <img
+                                                src={project.screenshots[lightboxIndex]}
+                                                alt=""
+                                                className="w-full h-full object-cover blur-2xl opacity-40 scale-110 brightness-75"
+                                            />
+                                        </div>
+                                        {/* Layer 2: Sharp Content Image */}
+                                        <img
+                                            src={project.screenshots[lightboxIndex]}
+                                            alt={`Screenshot ${lightboxIndex + 1}`}
+                                            className="relative z-10 w-full h-full object-contain shadow-2xl"
+                                        />
+                                    </div>
+                                ) : (
+                                    // --- COLOR FALLBACK ---
+                                    <div className={`w-full h-full ${project.screenshots[lightboxIndex]} flex items-center justify-center`}>
+                                        <div className="text-center">
+                                            <span className="font-mono text-white/20 text-4xl font-bold block mb-2">PREVIEW</span>
+                                            <span className="font-mono text-white/40 text-sm">{lightboxIndex + 1} / {project.screenshots.length}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
+
                             {project.screenshots.length > 1 && (
-                                <button onClick={showNextImg} className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all">
+                                <button onClick={showNextImg} className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50">
                                     <ChevronRight size={48} />
                                 </button>
                             )}
@@ -115,7 +203,7 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                 className="w-full max-w-5xl max-h-[90vh] rounded-[36px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[8px] flex flex-col relative"
                 style={{ backgroundColor: theme.colors.cardBg, borderColor: theme.colors.primary }}
             >
-                {/* --- FLOATING ICON (FIXED Z-INDEX) --- */}
+                {/* --- FLOATING ICON --- */}
                 <div className="absolute top-48 sm:top-64 right-8 -translate-y-1/2 z-30 pointer-events-none">
                     <motion.div
                         initial={{ scale: 0, rotate: -45 }}
@@ -130,18 +218,14 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
 
                 {/* --- HERO HEADER --- */}
                 <div className={`relative h-48 sm:h-64 shrink-0 ${project.color} overflow-hidden`}>
-                    {/* Background Pattern Overlay */}
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
-                    {/* Giant Background Icon */}
                     <div className="absolute -right-12 -bottom-16 text-white opacity-10 transform rotate-12 scale-[3]">
                         {project.icon}
                     </div>
 
-                    {/* Header Content */}
                     <div className="relative z-10 h-full p-8 flex flex-col justify-between">
-                        {/* Top Bar */}
                         <div className="flex justify-between items-start">
                             <div className="flex gap-2">
                                 <span className="bg-black/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
@@ -152,7 +236,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                 </span>
                             </div>
 
-                            {/* Header Actions */}
                             <div className="flex items-center gap-2">
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -162,7 +245,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                 >
                                     <Star size={24} fill={isFavorite ? "currentColor" : "none"} />
                                 </motion.button>
-
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
                                     onClick={handleClose}
@@ -173,7 +255,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                             </div>
                         </div>
 
-                        {/* Title Area */}
                         <div className="mt-auto pr-24">
                             <motion.h1
                                 initial={{ y: 20, opacity: 0 }}
@@ -193,26 +274,52 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
 
                     <div className="p-8 pt-16 space-y-8">
 
-                        {/* 1. GALLERY STRIP */}
+                        {/* 1. GALLERY STRIP (Scrollable & Draggable) */}
                         {project.screenshots && project.screenshots.length > 0 && (
                             <motion.div custom={0} variants={contentVariants} initial="hidden" animate="visible">
                                 <div className="flex items-center gap-2 mb-4">
                                     <ImageIcon size={18} style={{ color: theme.colors.text }} />
                                     <span className="text-sm font-black uppercase tracking-widest" style={{ color: theme.colors.text }}>{t('game.gallery')}</span>
                                 </div>
-                                <div className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar">
-                                    {project.screenshots.map((bg, i) => (
+
+                                {/* Draggable Container */}
+                                <div
+                                    ref={scrollRef}
+                                    {...dragEvents}
+                                    className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"
+                                >
+                                    {project.screenshots.map((item, i) => (
                                         <motion.button
                                             key={i}
                                             whileHover={{ scale: 1.05, y: -5 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => setLightboxIndex(i)}
-                                            className={`w-64 h-40 shrink-0 rounded-xl shadow-md ${bg} flex items-center justify-center relative group border-4 overflow-hidden`}
+                                            onClick={() => {
+                                                if (!hasMoved.current) setLightboxIndex(i);
+                                            }}
+                                            className={`w-64 h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5`}
                                             style={{ borderColor: theme.colors.primary }}
                                         >
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                                            <div className="absolute bottom-2 right-2 bg-black/50 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                                IMG_0{i+1}
+                                            {/* RENDER VIDEO THUMBNAIL */}
+                                            {isVideo(item) ? (
+                                                <VideoThumbnail src={item} />
+                                            ) : isImagePath(item) ? (
+                                                // STYLISH IMAGE THUMBNAIL
+                                                <div className="w-full h-full relative pointer-events-none">
+                                                    <div className="absolute inset-0">
+                                                        <img src={item} className="w-full h-full object-cover blur-md opacity-60 scale-125" alt="" />
+                                                    </div>
+                                                    <img src={item} alt={`Thumb ${i}`} className="relative z-10 w-full h-full object-contain p-1" />
+                                                </div>
+                                            ) : (
+                                                <div className={`w-full h-full ${item}`}></div>
+                                            )}
+
+                                            {/* Hover Highlight */}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-20 pointer-events-none"></div>
+
+                                            {/* Label (Image or Video) */}
+                                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none flex items-center gap-1">
+                                                {isVideo(item) ? 'VIDEO' : `IMG_0${i+1}`}
                                             </div>
                                         </motion.button>
                                     ))}
@@ -220,9 +327,8 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                             </motion.div>
                         )}
 
+                        {/* ... Description & Stats (No changes here) ... */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                            {/* 2. DESCRIPTION CARD */}
                             <motion.div custom={1} variants={contentVariants} initial="hidden" animate="visible" className="lg:col-span-2 flex flex-col">
                                 <div className="rounded-3xl p-6 sm:p-8 shadow-sm border h-full" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                     <h3 className="text-xl font-black mb-6 flex items-center gap-2" style={{ color: theme.colors.text }}>
@@ -235,10 +341,7 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                 </div>
                             </motion.div>
 
-                            {/* 3. SIDEBAR STATS */}
                             <div className="lg:col-span-1 space-y-6">
-
-                                {/* Technologies */}
                                 <motion.div custom={3} variants={contentVariants} initial="hidden" animate="visible" className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                     <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}>
                                         <Cpu size={14} /> {t('game.tech')}
@@ -252,7 +355,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                     </div>
                                 </motion.div>
 
-                                {/* Features */}
                                 <motion.div custom={4} variants={contentVariants} initial="hidden" animate="visible" className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                     <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}>
                                         <ListChecks size={14} /> {t('game.features')}
@@ -266,7 +368,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                         ))}
                                     </div>
                                 </motion.div>
-
                             </div>
                         </div>
                     </div>

@@ -13,7 +13,8 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Scanlines } from './components/ui/Scanlines';
 import { BootSplash } from './components/ui/BootSplash';
 import { StatusBar } from './components/ui/StatusBar';
-import { ThemeBackground } from './components/ui/ThemeBackground';
+import { ThemeBackground } from './components/ui/ThemeBackground'; // Still used for inside the device screen if needed, but LivingBackground is for the outer wall
+import { LivingBackground } from './components/ui/LivingBackground'; // NEW
 import { HeroCard } from './components/projects/HeroCard';
 import { ProjectPreview } from './components/projects/ProjectPreview';
 import { GameTile } from './components/projects/GameTile';
@@ -90,14 +91,24 @@ const AppContent = () => {
     if (isBooting) return <BootSplash onComplete={() => setIsBooting(false)} />;
 
     return (
-        <div className={`h-screen w-full bg-neutral-950 flex justify-center overflow-hidden ${theme.isDark ? 'dark' : ''}`}>
+        <div
+            className={`h-screen w-full flex justify-center items-center overflow-hidden relative transition-colors duration-700 ${theme.isDark ? 'dark' : ''}`}
+            style={{
+                backgroundColor: theme.isDark ? '#0f172a' : '#f1f5f9'
+            }}
+        >
+            {/* --- NEW LIVING BACKGROUND COMPONENT --- */}
+            <LivingBackground theme={theme} />
+
+            {/* --- MAIN DEVICE CONTAINER --- */}
             <div
-                className="w-full max-w-[1200px] h-full shadow-2xl overflow-hidden relative flex flex-col transition-colors duration-700"
+                className="w-full max-w-[1200px] h-full sm:h-[95vh] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] sm:rounded-[32px] overflow-hidden relative flex flex-col transition-colors duration-700 z-10 border-x-0 sm:border-x-8 border-y-0 sm:border-y-8 border-transparent"
                 style={{
                     backgroundColor: theme.colors.primary,
                     '--accent': theme.colors.accent,
                     '--panel': theme.colors.secondary,
-                    '--text': theme.colors.text
+                    '--text': theme.colors.text,
+                    borderColor: theme.isDark ? '#1e293b' : '#ffffff'
                 } as React.CSSProperties}
             >
                 <Scanlines active={theme.scanlines} />
@@ -121,12 +132,14 @@ const AppContent = () => {
                     style={{backgroundColor: theme.colors.primary}}
                 >
                     <ThemeBackground theme={theme} />
+
                     <StatusBar
                         time={currentTime}
                         theme={theme}
                         onOpenProfile={() => setIsAboutOpen(true)}
                         showProfile={!!displayedProject}
                     />
+
                     <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
                         {displayedProject ? (
                             <div key={displayedProject.id} className={`w-full h-full absolute inset-0 animate-slide-${slideDir}`}>

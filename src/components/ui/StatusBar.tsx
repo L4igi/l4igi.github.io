@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import type { Theme } from "../../types";
+import {useState} from "react";
 
 interface StatusBarProps {
     time: string;
@@ -9,6 +10,8 @@ interface StatusBarProps {
 }
 
 export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBarProps) => {
+    const [imgError, setImgError] = useState(false);
+
     return (
         <div
             className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
@@ -36,7 +39,18 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
                             className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-inner relative overflow-hidden shrink-0"
                             style={{ backgroundColor: theme.colors.accent }}
                         >
-                            <span className="font-black text-[10px] z-10">LH</span>
+                            {!imgError ? (
+                                <img
+                                    src="/public/profile/me.jpg"
+                                    alt="Lukas"
+                                    className="w-full h-full object-cover"
+                                    onError={() => setImgError(true)}
+                                />
+                            ) : (
+                                <span className="font-black text-[10px] z-10">LH</span>
+                            )}
+
+                            {/* Shine/Gradient Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
                         </motion.div>
 
