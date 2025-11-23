@@ -58,3 +58,17 @@ export interface LikeItem {
     color: string;
     icon: React.ReactNode;
 }
+
+export type SkillLevel = 'PROFICIENT' | 'ADVANCED' | 'BASIC';
+
+export interface SkillItem {
+    name: string;
+    level: number;
+}
+
+export interface SkillCategory {
+    id: SkillLevel;
+    label: { en: string; de: string };
+    description: { en: string; de: string };
+    skills: SkillItem[];
+}

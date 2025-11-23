@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { ArrowRight, Terminal, Sparkles } from 'lucide-react';
+import { ArrowRight, Terminal } from 'lucide-react';
 import type { Theme } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -86,11 +86,6 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
 
                     {/* RIGHT: Content */}
                     <div className="flex-1 p-6 sm:p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left">
-
-                        <div className="mb-1.5 flex items-center justify-center sm:justify-start gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-50" style={{ color: theme.colors.text }}>
-                            <Sparkles size={12} /> Player Profile
-                        </div>
-
                         <h1 className="text-3xl sm:text-5xl font-black leading-none tracking-tighter mb-3" style={{ color: theme.colors.text }}>
                             Lukas Höwarth
                         </h1>

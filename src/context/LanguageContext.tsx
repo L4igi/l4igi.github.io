@@ -1,5 +1,5 @@
 import {createContext, type ReactNode, useContext, useState} from 'react';
-import type {Language} from "../types";
+import type { Language } from '../types';
 
 const TRANSLATIONS = {
     en: {
@@ -20,15 +20,22 @@ const TRANSLATIONS = {
         'modal.loc_name': 'Vienna, Austria',
         'modal.langs': 'Languages',
         'modal.lang_native': 'German (Native)',
-        'modal.lang_fluent': 'English (C1)',
+        'modal.lang_fluent': 'English (Fluent)',
         'modal.hobbies': 'Hobbies',
         'modal.hobbies_list': 'Game Design, Cooking',
         'modal.hobbies_learning': 'Japanese (Learning)',
+        'modal.badges': 'Badges & Certs',
         'modal.quote': 'About Me',
-        'modal.quote_text': "Recently, I finished my Computer Science Bachelor's Degree with a specification in Media Computer Science at the University of Vienna. For me one of the most fascinating parts of IT is learning to understand the inner workings of technology and software that surrounds us. Software development represents a canvas of endless possibilities, constantly providing new challenges and opportunities. It is never static, there is always something new to create or improve upon. After my degree I took three months off to work on some smaller personal projects. The goal was to create something that, in the end, I am satisfied with. For me Game Development is one of the most fascinating and interesting parts in this field. It brings ideas to life in ways no other medium is able to.",
+        // UPDATED BIO
+        'modal.quote_text': "As a Fullstack Engineer with 4 years of experience, my focus lies within the Kotlin & Spring Boot ecosystem. I view software development as a collaborative process: Sustainable architecture and clean code emerge from shared decisions, mentoring, and a proactive error culture. In my projects, I take responsibility for the entire stack, always pragmatically weighing technical perfection against business value. Privately, I use Game Development (Godot) as a creative contrast to gain new technical perspectives.",
+        // UPDATED QUOTE
+        'modal.sakurai_quote': '"That feeling of doubt, or wanting to do more, is my engine to move forward and make the next iteration."',
         'modal.exp_title': 'Adventure Log',
         'modal.stats': 'Stats & Skills',
-        'modal.likes_title': 'Things I Enjoy', // New
+        'modal.likes_title': 'Things I Enjoy',
+        'skill.proficient': 'Proficient',
+        'skill.advanced': 'Advanced',
+        'skill.basic': 'Basics',
         'game.gallery': 'Software Gallery',
         'game.desc': 'Software Description',
         'game.compatible': 'Compatible',
@@ -56,15 +63,22 @@ const TRANSLATIONS = {
         'modal.loc_name': 'Wien, Österreich',
         'modal.langs': 'Sprachen',
         'modal.lang_native': 'Deutsch (Muttersprache)',
-        'modal.lang_fluent': 'Englisch (C1)',
+        'modal.lang_fluent': 'Englisch (Fließend)',
         'modal.hobbies': 'Hobbys',
         'modal.hobbies_list': 'Game Design, Kochen',
         'modal.hobbies_learning': 'Japanisch (Lernen)',
+        'modal.badges': 'Orden & Zertifikate',
         'modal.quote': 'Über Mich',
-        'modal.quote_text': "Kürzlich habe ich mein Bachelorstudium Informatik mit Schwerpunkt Medieninformatik an der Universität Wien abgeschlossen. Für mich ist es einer der faszinierendsten Aspekte der IT, die inneren Abläufe der Technologie und Software, die uns umgibt, zu verstehen. Softwareentwicklung ist wie eine Leinwand voller unendlicher Möglichkeiten, die ständig neue Herausforderungen und Chancen bietet. Sie ist nie statisch; es gibt immer etwas Neues zu erschaffen oder zu verbessern. Nach meinem Abschluss habe ich mir drei Monate Zeit genommen, um an kleineren persönlichen Projekten zu arbeiten. Das Ziel war es, etwas zu schaffen, mit dem ich am Ende zufrieden bin. Für mich ist die Spieleentwicklung einer der faszinierendsten und interessantesten Bereiche in diesem Feld. Sie erweckt Ideen auf eine Weise zum Leben, wie es kein anderes Medium kann.",
+        // UPDATED BIO
+        'modal.quote_text': "Als Fullstack Engineer mit 4 Jahren Erfahrung liegt mein Fokus auf dem Kotlin & Spring Boot Ökosystem. Ich verstehe Softwareentwicklung als kollaborativen Prozess: Nachhaltige Architektur und sauberer Code entstehen durch gemeinsame Entscheidungen, Mentoring und eine proaktive Fehlerkultur. In meinen Projekten übernehme ich Verantwortung für den gesamten Stack und wäge technische Perfektion stets pragmatisch gegen den geschäftlichen Nutzen ab. Privat nutze ich Game Development (Godot) als kreativen Kontrast.",
+        // UPDATED QUOTE
+        'modal.sakurai_quote': '"That feeling of doubt, or wanting to do more, is my engine to move forward and make the next iteration."',
         'modal.exp_title': 'Abenteuer Logbuch',
         'modal.stats': 'Werte & Skills',
-        'modal.likes_title': 'Dinge, die ich mag', // New
+        'modal.likes_title': 'Dinge, die ich mag',
+        'skill.proficient': 'Experte',
+        'skill.advanced': 'Fortgeschritten',
+        'skill.basic': 'Basiswissen',
         'game.gallery': 'Software Galerie',
         'game.desc': 'Software Beschreibung',
         'game.compatible': 'Kompatibel',

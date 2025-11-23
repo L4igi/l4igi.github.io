@@ -41,7 +41,7 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
                         >
                             {!imgError ? (
                                 <img
-                                    src="/public/profile/me.jpg"
+                                    src="/profile/me.jpg"
                                     alt="Lukas"
                                     className="w-full h-full object-cover"
                                     onError={() => setImgError(true)}

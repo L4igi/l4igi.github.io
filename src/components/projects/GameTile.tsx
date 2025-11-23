@@ -22,7 +22,7 @@ interface GameTileProps {
     theme: Theme;
 }
 
-export const GameTile = ({ project, onClick, onHover, isSelected, isFavorite, theme }: GameTileProps) => {
+export const GameTile = ({ project, onClick, onHover, isSelected, isPressed, isFavorite, theme }: GameTileProps) => {
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const rotateX = useTransform(y, [-50, 50], [10, -10]);
@@ -30,12 +30,8 @@ export const GameTile = ({ project, onClick, onHover, isSelected, isFavorite, th
 
     const handleMouseMove = (event: React.MouseEvent) => {
         const rect = event.currentTarget.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-        x.set((mouseX / width - 0.5) * 100);
-        y.set((mouseY / height - 0.5) * 100);
+        x.set((event.clientX - rect.left / rect.width - 0.5) * 50);
+        y.set((event.clientY - rect.top / rect.height - 0.5) * 50);
         onHover(event);
     };
 
@@ -47,40 +43,53 @@ export const GameTile = ({ project, onClick, onHover, isSelected, isFavorite, th
                 onClick={onClick}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
-                animate={isSelected ? { scale: 1.15, y: -10 } : { scale: 1, y: 0 }}
-                whileTap={{ scale: 0.9 }}
+                animate={isSelected ? { scale: 1.05, y: -5 } : { scale: 1, y: 0 }}
+                whileTap={{ scale: 0.95 }}
                 style={{ rotateX, rotateY }}
                 className="w-full h-full relative group transform-style-3d"
             >
-                {/* Flex Column Layout: Ensures Icon and Text never overlap */}
+                {/* TACTILE CARTRIDGE CONTAINER */}
+                {/* The border-b-[X]px creates the 3D 'button' depth */}
                 <div
-                    className="w-full h-full rounded-2xl shadow-xl flex flex-col relative overflow-hidden border-8"
+                    className={`
+                        w-full h-full rounded-[24px] shadow-lg flex flex-col relative overflow-hidden
+                        transition-all duration-100 ease-out
+                        border-2 border-b-[6px]
+                        ${isPressed ? 'border-b-[2px] translate-y-1 shadow-sm' : ''}
+                    `}
                     style={{
                         backgroundColor: theme.colors.cardBg,
-                        borderColor: theme.colors.cardBg
+                        borderColor: theme.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.05)',
+                        borderBottomColor: theme.colors.secondary // The "side" of the button
                     }}
                 >
 
-                    {/* Background Color Layer */}
-                    <div className={`absolute inset-2 rounded-xl ${project.color} opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none`}></div>
+                    {/* Subtle Background Tint */}
+                    <div className={`absolute inset-2 rounded-[18px] ${project.color} opacity-5 group-hover:opacity-15 transition-opacity pointer-events-none`}></div>
 
-                    {/* ICON SECTION: Takes all available top space */}
+                    {/* ICON SECTION */}
                     <div className="flex-1 w-full flex items-center justify-center relative z-10">
-                        <div className={`p-4 sm:p-6 rounded-2xl ${project.color} text-white shadow-lg group-hover:rotate-12 transition-transform duration-300`}>
-                            {React.cloneElement(project.icon as React.ReactElement<any>, { size: 28 })}
+                        <div className={`
+                            p-3 sm:p-5 rounded-2xl ${project.color} text-white shadow-md 
+                            group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300
+                        `}>
+                            {/* Adjusted Icon Size for Mobile/Desktop */}
+                            {React.cloneElement(project.icon as React.ReactElement<any>, {
+                                className: "w-6 h-6 sm:w-8 sm:h-8"
+                            })}
                         </div>
                     </div>
 
-                    {/* LABEL SECTION: Sits naturally at the bottom */}
+                    {/* LABEL SECTION */}
                     <div
-                        className="shrink-0 w-full backdrop-blur-sm py-2 px-1 border-t z-20 relative"
+                        className="shrink-0 w-full backdrop-blur-md py-2 px-2 border-t z-20 relative"
                         style={{
-                            backgroundColor: theme.isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.8)',
+                            backgroundColor: theme.isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.6)',
                             borderColor: theme.colors.secondary
                         }}
                     >
                         <span
-                            className="block text-[10px] sm:text-xs font-bold text-center truncate uppercase tracking-tight leading-none"
+                            className="block text-[10px] sm:text-xs font-black text-center truncate uppercase tracking-tight leading-none opacity-70 group-hover:opacity-100 transition-opacity"
                             style={{ color: theme.colors.text }}
                         >
                             {project.title}
@@ -88,14 +97,21 @@ export const GameTile = ({ project, onClick, onHover, isSelected, isFavorite, th
                     </div>
 
                     {/* Favorite Star */}
-                    {isFavorite && <div className="absolute top-2 right-2 z-30 text-yellow-400 drop-shadow-md"><Star fill="currentColor" size={16} /></div>}
+                    {isFavorite && (
+                        <div className="absolute top-2 right-2 z-30 text-yellow-400 drop-shadow-sm">
+                            <Star fill="currentColor" size={14} className="sm:w-4 sm:h-4" />
+                        </div>
+                    )}
                 </div>
 
-                {/* Shadow beneath tile */}
+                {/* Floor Shadow */}
                 <motion.div
-                    className="absolute -bottom-8 left-1/2 w-20 h-4 rounded-[100%] blur-md -z-10"
-                    style={{ backgroundColor: theme.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.2)' }}
-                    animate={{ scale: isSelected ? 0.6 : 1, opacity: isSelected ? 0.2 : 0.4 }}
+                    className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-20 h-3 rounded-[100%] blur-md -z-10"
+                    style={{ backgroundColor: theme.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)' }}
+                    animate={{
+                        scale: isSelected ? 0.6 : 1,
+                        opacity: isSelected ? 0.2 : 1
+                    }}
                 />
             </motion.button>
         </motion.div>

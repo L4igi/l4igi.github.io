@@ -43,14 +43,7 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const { scrollRef, hasMoved, events: dragEvents } = useDraggableScroll();
 
-    // STAGE 1: Animation Running, STAGE 2: Content Ready
     const [isReady, setIsReady] = useState(false);
-
-    // Simulate "Loading" / "Thinking" phase for the pop effect
-    useEffect(() => {
-        const timer = setTimeout(() => setIsReady(true), 450);
-        return () => clearTimeout(timer);
-    }, []);
 
     const handleClose = () => { setIsClosing(true); setTimeout(onClose, 300); };
 
@@ -81,7 +74,6 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [lightboxIndex, showNextImg, showPrevImg]);
 
-    // --- ANIMATION VARIANTS ---
     const modalVariants: Variants = {
         initial: { opacity: 0, scale: 0.85, y: 50 },
         animate: {
@@ -89,11 +81,11 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
             transition: { type: "spring", stiffness: 200, damping: 20 }
         },
         expanded: {
-            height: '85vh', // Grow to full height
+            height: '85vh',
             transition: { type: "spring", stiffness: 120, damping: 18, delay: 0.1 }
         },
         collapsed: {
-            height: 320, // Initial "Loading" height
+            height: 320,
             transition: { type: "spring", stiffness: 200, damping: 20 }
         },
         exit: { opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2 } }
@@ -175,7 +167,7 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                 }}
             >
 
-                {/* --- HERO HEADER --- */}
+                {/* --- HERO HEADER (Always Visible) --- */}
                 <div className={`relative h-48 sm:h-64 shrink-0 ${project.color} overflow-hidden transition-all duration-500`}>
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
@@ -190,11 +182,12 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                         </motion.div>
                     )}
 
-                    <div className="relative z-10 h-full p-8 flex flex-col justify-between">
+                    <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col justify-between">
                         <div className="flex justify-between items-start">
+                            {/* Header Badges */}
                             <div className="flex gap-2">
-                                <span className="bg-black/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">{project.year}</span>
-                                <span className="bg-white/90 text-[var(--accent)] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm" style={{ color: theme.colors.accent }}>{project.category}</span>
+                                <span className="bg-black/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full border border-white/20">{project.year}</span>
+                                <span className="bg-white/90 text-[var(--accent)] text-[10px] sm:text-xs font-black px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider shadow-sm" style={{ color: theme.colors.accent }}>{project.category}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -205,16 +198,17 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                             </div>
                         </div>
 
-                        <div className="mt-auto pr-24">
+                        {/* FIX: Added pr-16 for mobile to avoid text touching edge, pr-24 desktop */}
+                        <div className="mt-auto pr-4 sm:pr-24">
                             <motion.h1
                                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
-                                className="text-4xl sm:text-6xl font-black tracking-tighter text-white drop-shadow-md leading-none"
+                                className="text-3xl sm:text-6xl font-black tracking-tighter text-white drop-shadow-md leading-none break-words"
                             >
                                 {project.title}
                             </motion.h1>
                             <motion.p
                                 initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} transition={{ delay: 0.2, duration: 0.4 }}
-                                className="font-bold text-sm sm:text-base mt-1 ml-1 text-white"
+                                className="font-bold text-xs sm:text-sm mt-1 ml-1 text-white"
                             >
                                 {project.role[language]}
                             </motion.p>
@@ -222,50 +216,35 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                     </div>
                 </div>
 
-                {/* --- FLOATING ICON (Moved outside Content Body) --- */}
-                {/* Positioned absolute relative to the main card, anchored to the header seam */}
+                {/* --- FLOATING ICON (Moved OUTSIDE content body to float correctly) --- */}
+                {/* Positioned absolutely relative to the MAIN CARD CONTAINER */}
                 {isReady && (
                     <motion.div
                         initial={{ scale: 0, opacity: 0, rotate: -45 }}
                         animate={{ scale: 1, opacity: 1, rotate: 0 }}
                         transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                        // top-48/64 matches header height exactly.
-                        className="absolute top-48 sm:top-64 right-8 -translate-y-1/2 z-30 pointer-events-none"
+                        // Desktop: top-64 (big header), Mobile: top-48 (small header)
+                        // Mobile: right-4, Desktop: right-8
+                        className="absolute top-48 sm:top-64 right-4 sm:right-8 -translate-y-1/2 z-30 pointer-events-none"
                     >
                         <div
-                            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
+                            className={`w-16 h-16 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
                             style={{ borderColor: theme.colors.cardBg }}
                         >
-                            {React.cloneElement(project.icon as React.ReactElement<any>, { size: 40 })}
+                            {React.cloneElement(project.icon as React.ReactElement<any>, { size: 28 })}
                         </div>
                     </motion.div>
                 )}
 
                 {/* --- CONTENT BODY --- */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative" style={{ backgroundColor: theme.colors.cardBg }}>
-
                     {isReady && (
                         <motion.div
                             variants={contentStagger}
                             initial="hidden"
                             animate="visible"
-                            className="p-8 pt-16 space-y-8"
+                            className="p-6 sm:p-8 sm:pt-16 space-y-8"
                         >
-                            {/* Floating Icon */}
-                            <motion.div
-                                initial={{ scale: 0, opacity: 0, rotate: -45 }}
-                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                                transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                                className="absolute top-0 right-8 -translate-y-1/2 z-30 pointer-events-none"
-                            >
-                                <div
-                                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
-                                    style={{ borderColor: theme.colors.cardBg }}
-                                >
-                                    {React.cloneElement(project.icon as React.ReactElement<any>, { size: 40 })}
-                                </div>
-                            </motion.div>
-
                             {/* Gallery */}
                             {project.screenshots && project.screenshots.length > 0 && (
                                 <motion.div variants={itemVariants} className="mb-8">
@@ -277,10 +256,11 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                         {project.screenshots.map((item, i) => (
                                             <motion.button
                                                 key={i}
+                                                variants={itemVariants}
                                                 whileHover={{ scale: 1.05, y: -5 }}
                                                 whileTap={{ scale: 0.95 }}
                                                 onClick={() => { if (!hasMoved.current) setLightboxIndex(i); }}
-                                                className={`w-64 h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5`}
+                                                className={`w-56 h-32 sm:w-64 sm:h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5`}
                                                 style={{ borderColor: theme.colors.primary }}
                                             >
                                                 {isVideo(item) ? <VideoThumbnail src={item} /> : isImagePath(item) ? (
@@ -301,7 +281,7 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                 <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col">
                                     <div className="rounded-3xl p-6 sm:p-8 shadow-sm border h-full" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                         <h3 className="text-xl font-black mb-6 flex items-center gap-2" style={{ color: theme.colors.text }}><span className={`w-2 h-8 rounded-full ${project.color}`}></span>{t('game.desc')}</h3>
-                                        <p className="leading-relaxed whitespace-pre-wrap text-base sm:text-lg font-medium opacity-80" style={{ color: theme.colors.text }}>{project.details[language]}</p>
+                                        <p className="leading-relaxed whitespace-pre-wrap text-sm sm:text-lg font-medium opacity-80" style={{ color: theme.colors.text }}>{project.details[language]}</p>
                                     </div>
                                 </motion.div>
 
@@ -309,13 +289,13 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
                                     <motion.div variants={itemVariants} className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                         <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}><Cpu size={14} /> {t('game.tech')}</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {project.tech.map(t => (<span key={t} className="px-3 py-1.5 text-xs font-bold rounded-full shadow-sm cursor-default border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}>{t}</span>))}
+                                            {project.tech.map(t => (<span key={t} className="px-3 py-1.5 text-[10px] sm:text-xs font-bold rounded-full shadow-sm cursor-default border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}>{t}</span>))}
                                         </div>
                                     </motion.div>
                                     <motion.div variants={itemVariants} className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                         <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}><ListChecks size={14} /> {t('game.features')}</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {project.features.map(f => (<div key={f} className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}><CheckCircle2 size={14} className="shrink-0" style={{ color: theme.colors.accent }} /><span>{f}</span></div>))}
+                                            {project.features.map(f => (<div key={f} className="flex items-center gap-2 px-3 py-2 text-[10px] sm:text-xs font-bold rounded-xl border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}><CheckCircle2 size={14} className="shrink-0" style={{ color: theme.colors.accent }} /><span>{f}</span></div>))}
                                         </div>
                                     </motion.div>
                                 </div>
