@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { ArrowRight, Terminal } from 'lucide-react';
+import {ArrowRight, Terminal} from 'lucide-react';
 import type { Theme } from '../../types';
 import { useLanguage } from '../../context/LanguageContext';
+
 
 export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, theme: Theme }) => {
     const { t } = useLanguage();
@@ -29,25 +30,31 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
 
     return (
         <motion.div
-            className="w-full h-full flex items-center justify-center perspective-container p-4 sm:p-6"
+            className="w-full h-full flex items-center justify-center perspective-container p-4 sm:p-6 will-change-transform"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
+            // OPTIMIZED ENTRANCE: Handles the "Slide Down" + "Fade In" in one GPU pass
+            initial={{ opacity: 0, scale: 0.95, y: -40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+            transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 20,
+                mass: 1
+            }}
         >
             <motion.div
                 layoutId="hero-morph"
                 ref={cardRef}
-                className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5 will-change-transform"
+                className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5"
                 style={{
                     backgroundColor: theme.colors.cardBg,
                     rotateX,
                     rotateY
                 }}
                 onClick={onOpenTrainer}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }} // Reduced scale for smoother performance
             >
                 <motion.div
                     className="flex flex-col sm:flex-row h-full min-h-[180px] sm:min-h-[240px]"
@@ -70,11 +77,11 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                             >
                                 {!imgError ? (
                                     <img
-                                        src="/profile/me.jpg"
+                                        src="/profile.jpg"
                                         alt="Lukas"
                                         className="w-full h-full object-cover"
                                         onError={() => setImgError(true)}
-                                        decoding="async" // OPTIMIZATION
+                                        decoding="async"
                                     />
                                 ) : (
                                     <span className="text-3xl sm:text-5xl font-black">LH</span>
@@ -114,4 +121,4 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
             </motion.div>
         </motion.div>
     );
-};
+}

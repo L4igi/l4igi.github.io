@@ -1,16 +1,20 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Clock } from 'lucide-react';
 import type { Theme } from "../../types";
-import {useState} from "react";
 
 interface StatusBarProps {
     time: string;
     theme: Theme;
     onOpenProfile: () => void;
-    showProfile: boolean; // Controls visibility of the button
+    showProfile: boolean;
 }
 
 export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBarProps) => {
     const [imgError, setImgError] = useState(false);
+
+    // Split time for blinking colon effect
+    const [hours, minutes] = time.split(':');
 
     return (
         <div
@@ -21,7 +25,7 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
             <div className="min-w-[140px] h-full flex items-center">
                 {showProfile && (
                     <motion.button
-                        layoutId="hero-morph" // SHARED ID FOR MORPHING
+                        layoutId="hero-morph"
                         onClick={onOpenProfile}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -54,7 +58,7 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
                             <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
                         </motion.div>
 
-                        {/* Text Label - Fade in/out to avoid squishing during morph */}
+                        {/* Text Label */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -67,11 +71,28 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
                 )}
             </div>
 
-            {/* RIGHT: System Tray */}
-            <div className="flex items-center gap-6 opacity-60">
-                <span className="tabular-nums font-mono font-bold text-sm">
-                    {time}
-                </span>
+            {/* RIGHT: System Clock (Nintendo Style Pill) */}
+            <div className="flex items-center justify-end min-w-[100px]">
+                <div
+                    className="flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm"
+                    style={{
+                        backgroundColor: theme.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.4)',
+                        borderColor: theme.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                    }}
+                >
+                    <Clock size={14} className="opacity-60" />
+                    <div className="font-mono text-sm font-bold flex items-center">
+                        <span>{hours}</span>
+                        <motion.span
+                            animate={{ opacity: [1, 0.2, 1] }}
+                            transition={{ repeat: Infinity, duration: 1 }}
+                            className="mx-[1px]"
+                        >
+                            :
+                        </motion.span>
+                        <span>{minutes}</span>
+                    </div>
+                </div>
             </div>
         </div>
     );

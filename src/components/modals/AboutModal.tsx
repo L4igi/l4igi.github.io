@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {
     X,
     User,
@@ -30,10 +30,20 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
     const [isExpanded, setIsExpanded] = useState(false);
     const [isImageLoaded, setIsImageLoaded] = useState(false);
 
+    // Ref for the scrollable content container
+    const contentRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         const timer = setTimeout(() => setIsExpanded(true), 400);
         return () => clearTimeout(timer);
     }, []);
+
+    // Scroll to top when switching tabs or skill levels
+    useEffect(() => {
+        if (contentRef.current) {
+            contentRef.current.scrollTop = 0;
+        }
+    }, [activeTab, activeSkillLevel]);
 
     const handleClose = () => { setIsClosing(true); setTimeout(onClose, 300); };
 
@@ -130,18 +140,40 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                     {/* DESKTOP SIDEBAR */}
                     <div className="hidden sm:flex w-64 p-4 pt-24 flex-col gap-2 border-r z-10" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                         {isExpanded && (
-                            <motion.div variants={contentStagger} initial="hidden" animate="visible" className="space-y-2">
-                                {TABS.map((tab) => (
-                                    <motion.button variants={itemVariants} key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center gap-4 p-3 rounded-xl font-bold text-sm transition-all relative overflow-hidden group`} style={{ backgroundColor: activeTab === tab.id ? theme.colors.accent : 'transparent', color: activeTab === tab.id ? theme.colors.contrastAccent : theme.colors.textLight }}>
-                                        <div className={`relative z-10 flex items-center gap-3`}>{tab.icon}<span className="tracking-wide">{tab.label}</span></div>
-                                    </motion.button>
-                                ))}
+                            <motion.div variants={contentStagger} initial="hidden" animate="visible" className="flex flex-col h-full">
+                                <div className="space-y-2">
+                                    {TABS.map((tab) => (
+                                        <motion.button variants={itemVariants} key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center gap-4 p-3 rounded-xl font-bold text-sm transition-all relative overflow-hidden group`} style={{ backgroundColor: activeTab === tab.id ? theme.colors.accent : 'transparent', color: activeTab === tab.id ? theme.colors.contrastAccent : theme.colors.textLight }}>
+                                            <div className={`relative z-10 flex items-center gap-3`}>{tab.icon}<span className="tracking-wide">{tab.label}</span></div>
+                                        </motion.button>
+                                    ))}
+                                </div>
+
+                                {/* DESKTOP CONNECT */}
+                                <div className="mt-auto pt-6">
+                                    <h4 className="text-xs font-black uppercase tracking-widest opacity-50 mb-3 px-2" style={{ color: theme.colors.text }}>Connect</h4>
+                                    <div className="flex gap-2">
+                                        {SOCIALS.map((social, i) => (
+                                            <a key={i} href={social.url} target="_blank" rel="noopener noreferrer"
+                                               className="p-2.5 rounded-xl border flex items-center justify-center transition-all hover:scale-110 hover:shadow-md"
+                                               style={{ backgroundColor: theme.colors.cardBg, borderColor: theme.colors.secondary, color: theme.colors.text }}
+                                               title={social.label}
+                                            >
+                                                {social.icon}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
                     </div>
 
                     {/* CONTENT AREA */}
-                    <div className="flex-1 p-6 sm:p-10 overflow-y-auto custom-scrollbar relative" style={{ backgroundColor: theme.colors.cardBg }}>
+                    <div
+                        ref={contentRef}
+                        className="flex-1 p-6 sm:p-10 overflow-y-auto custom-scrollbar relative"
+                        style={{ backgroundColor: theme.colors.cardBg }}
+                    >
                         {isExpanded && (
                             <AnimatePresence mode="wait">
 
@@ -173,7 +205,9 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                                             ))}
 
                                             <motion.div variants={itemVariants} className="sm:col-span-2 p-4 rounded-2xl border shadow-sm flex items-center gap-4" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
-                                                <div className="p-2.5 rounded-xl bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"><Medal size={24} /></div>
+                                                <div className="p-3 rounded-xl" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.accent, border: `2px solid ${theme.colors.secondary}` }}>
+                                                    <Medal size={24} />
+                                                </div>
                                                 <div>
                                                     <div className="text-[10px] font-black uppercase mb-1 tracking-widest opacity-50" style={{ color: theme.colors.text }}>{t('modal.badges')}</div>
                                                     <div className="font-bold text-sm sm:text-base" style={{ color: theme.colors.text }}>Certified Scrum Master (2021)</div>
@@ -181,21 +215,25 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                                             </motion.div>
                                         </div>
 
-                                        <motion.div variants={itemVariants} className="space-y-3">
-                                            <h4 className="text-xs font-black uppercase tracking-widest opacity-80" style={{ color: theme.colors.text }}>Connect</h4>
-                                            <div className="grid grid-cols-3 gap-3">
-                                                {SOCIALS.map((social, i) => (
-                                                    <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform cursor-pointer" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary, color: theme.colors.text }}>
-                                                        <div className="opacity-80">{social.icon}</div>
-                                                        <span className="text-xs font-bold">{social.label}</span>
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        </motion.div>
+                                        {/* MOBILE CONNECT */}
+                                        <div className="sm:hidden">
+                                            <motion.div variants={itemVariants} className="space-y-3">
+                                                <h4 className="text-xs font-black uppercase tracking-widest opacity-80" style={{ color: theme.colors.text }}>Connect</h4>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    {SOCIALS.map((social, i) => (
+                                                        <a key={i} href={social.url} target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform cursor-pointer" style={{ backgroundColor: theme.colors.accent, color: theme.colors.contrastAccent, boxShadow: '0 4px 15px -5px rgba(0,0,0,0.3)' }}>
+                                                            <div className="opacity-80">{social.icon}</div>
+                                                            <span className="text-xs font-bold">{social.label}</span>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        </div>
 
                                         <motion.div variants={itemVariants} className="p-6 rounded-2xl border relative mt-4" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
                                             <Quote size={32} className="absolute top-4 right-4 rotate-12 opacity-20" style={{ color: theme.colors.accent }} />
                                             <p className="text-lg font-bold italic relative z-10 text-center" style={{ color: theme.colors.text }}>{t('modal.sakurai_quote')}</p>
+                                            <p className="text-xs font-black uppercase tracking-widest text-right mt-4 opacity-60" style={{ color: theme.colors.text }}>{t('modal.quote_author')}</p>
                                         </motion.div>
                                     </motion.div>
                                 )}
@@ -221,15 +259,10 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                                     </motion.div>
                                 )}
 
-                                {/* === TAB: SKILLS (Fixed & Optimized) === */}
+                                {/* === TAB: SKILLS === */}
                                 {activeTab === 'SKILLS' && (
                                     <motion.div key="SKILLS" variants={contentStagger} initial="hidden" animate="visible" exit={{ opacity: 0 }} className="sm:pt-4 space-y-6">
-
-                                        {/* Sub-Nav for Skill Levels - CENTERED & NO SCROLLBAR */}
-                                        <div
-                                            className="flex gap-2 p-1 rounded-xl border w-fit max-w-full overflow-x-auto no-scrollbar mx-auto"
-                                            style={{ borderColor: theme.colors.secondary, backgroundColor: theme.colors.primary }}
-                                        >
+                                        <div className="flex gap-2 p-1 rounded-xl border w-fit max-w-full overflow-x-auto no-scrollbar mx-auto" style={{ borderColor: theme.colors.secondary, backgroundColor: theme.colors.primary }}>
                                             {SKILLS_DATA.map((cat) => (
                                                 <button
                                                     key={cat.id}
@@ -250,11 +283,10 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                                             ))}
                                         </div>
 
-                                        {/* Skill Description & Grid */}
                                         <AnimatePresence mode="wait">
                                             {activeSkillCategory && (
                                                 <motion.div
-                                                    key={activeSkillCategory.id} // KEY IS CRITICAL HERE
+                                                    key={activeSkillCategory.id}
                                                     initial={{ opacity: 0, x: 10 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     exit={{ opacity: 0, x: -10 }}

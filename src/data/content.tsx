@@ -238,13 +238,12 @@ export const PROJECTS: Project[] = [
             en: 'Bachelor studies at the University of Vienna with a specialization in Media Informatics. The curriculum covered core Computer Science (Algorithms, Software Engineering) and advanced topics like Signal and Image Processing, Gaming Technologies, and Human-Computer Interaction (HCI). This laid the foundation for my interest in bridging technical backend logic with visual/interactive frontend experiences.',
             de: 'Bachelorstudium an der Universität Wien mit Vertiefung in Medieninformatik. Das Studium umfasste Kerninformatik (Algorithmen, Software Engineering) sowie fortgeschrittene Themen wie Signal- und Bildverarbeitung, Gaming-Technologien und Mensch-Computer-Interaktion (HCI). Dies legte den Grundstein für mein Interesse an der Verbindung von technischer Backend-Logik mit visuellen/interaktiven Frontend-Erlebnissen.'
         },
-        tech: ['Java', 'HCI', 'Signal Processing', 'Multimedia'],
+        tech: ['C++', 'JAVA', 'Angular', 'Spring Boot', 'Multimedia'],
         color: 'bg-yellow-400',
         icon: <GraduationCap className="w-8 h-8 text-white" />,
         category: 'UNI',
-        placeholder: true,
-        screenshots: ['bg-yellow-100'],
-        features: ['Education', 'Multimedia', 'HCI']
+        screenshots: [],
+        features: ['Education', 'Multimedia', 'Algorithms', 'Software Patterns', 'Computer Graphics', 'Signal Processing']
     }
 ];
 
@@ -288,25 +287,25 @@ export const LIKES_DATA: LikeItem[] = [
 export const EXPERIENCE_DATA: ExperienceItem[] = [
     {
         year: '2025',
-        title: 'Objectbay (Selecthor)',
+        title: 'Objectbay',
         role: { en: 'Software Engineer', de: 'Software Engineer' },
         desc: { en: 'Modular Monolith (Kotlin/Spring), Angular, NX, Playwright. AI-Workflows.', de: 'Modularer Monolith (Kotlin/Spring), Angular, NX, Playwright. AI-Workflows.' }
     },
     {
         year: '2024',
-        title: 'Objectbay (Sunkid)',
+        title: 'Objectbay',
         role: { en: 'Software Engineer', de: 'Software Engineer' },
         desc: { en: 'Backend & Security (Keycloak), Flutter integration, Bluetooth LE.', de: 'Backend & Sicherheit (Keycloak), Flutter Integration, Bluetooth LE.' }
     },
     {
         year: '2022',
-        title: 'Objectbay (INNODOC)',
+        title: 'Objectbay',
         role: { en: 'Fullstack Ownership', de: 'Fullstack Ownership' },
         desc: { en: 'Kotlin, Angular, RabbitMQ, Multi-Tenancy, CI/CD (Azure).', de: 'Kotlin, Angular, RabbitMQ, Multi-Tenancy, CI/CD (Azure).' }
     },
     {
         year: '2021',
-        title: 'Objectbay (Enterprise)',
+        title: 'Objectbay',
         role: { en: 'Software Engineer', de: 'Software Engineer' },
         desc: { en: 'Modernization, Micro-Frontends (React), iOS App Dev.', de: 'Modernisierung, Micro-Frontends (React), iOS App Dev.' }
     },
@@ -314,7 +313,7 @@ export const EXPERIENCE_DATA: ExperienceItem[] = [
         year: '2016',
         title: 'Uni Wien',
         role: { en: 'BSc. Media Informatics', de: 'BSc. Medieninformatik' },
-        desc: { en: 'Focus: Multimedia, Signal Processing & HCI.', de: 'Fokus: Multimedia, Signalverarbeitung & HCI.' }
+        desc: { en: 'Focus: Multimedia, Signal Processing & Computer Graphics.', de: 'Fokus: Multimedia, Signalverarbeitung & Computer Graphics.' }
     }
 ];
 

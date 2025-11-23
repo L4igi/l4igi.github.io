@@ -26,10 +26,9 @@ const TRANSLATIONS = {
         'modal.hobbies_learning': 'Japanese (Learning)',
         'modal.badges': 'Badges & Certs',
         'modal.quote': 'About Me',
-        // UPDATED BIO
         'modal.quote_text': "As a Fullstack Engineer with 4 years of experience, my focus lies within the Kotlin & Spring Boot ecosystem. I view software development as a collaborative process: Sustainable architecture and clean code emerge from shared decisions, mentoring, and a proactive error culture. In my projects, I take responsibility for the entire stack, always pragmatically weighing technical perfection against business value. Privately, I use Game Development (Godot) as a creative contrast to gain new technical perspectives.",
-        // UPDATED QUOTE
         'modal.sakurai_quote': '"That feeling of doubt, or wanting to do more, is my engine to move forward and make the next iteration."',
+        'modal.quote_author': '— Masahiro Sakurai',
         'modal.exp_title': 'Adventure Log',
         'modal.stats': 'Stats & Skills',
         'modal.likes_title': 'Things I Enjoy',
@@ -44,6 +43,49 @@ const TRANSLATIONS = {
         'game.tech': 'Technologies',
         'game.features': 'Key Features',
         'footer.theme': 'THEME',
+        'footer.legal': 'LEGAL',
+        // LEGAL TEXTS
+        'legal.title': 'Legal & Privacy',
+        'legal.imprint': 'Imprint',
+        'legal.privacy': 'Privacy',
+        'legal.imprint_text': `
+            <h3>Legal Notice (Impressum)</h3>
+            <p>Information according to § 5 ECG.</p>
+            <br/>
+            <h4>Service Provider</h4>
+            <p>Lukas Höwarth</p>
+            <p>Software Engineer</p>
+            <p>[Your Street Address]</p>
+            <p>[Your Zip/City]</p>
+            <p>Austria</p>
+            <br/>
+            <p><strong>E-Mail:</strong> [your.email@example.com]</p>
+            <br/>
+            <p><strong>Responsible for content:</strong> Lukas Höwarth.</p>
+            <p>This website is a personal portfolio for presenting projects and professional activities in the field of software development.</p>
+            <br/>
+            <p>Status: November 2025</p>
+        `,
+        'legal.privacy_text': `
+            <h3>Privacy Policy</h3>
+            <p>Information on the processing of personal data on this website.</p>
+            <br/>
+            <h4>1. Controller</h4>
+            <p>Service provider and controller within the meaning of the General Data Protection Regulation (GDPR) is:</p>
+            <p>Lukas Höwarth</p>
+            <p>[Your Address]</p>
+            <p>Austria</p>
+            <p>E-Mail: [your.email@example.com]</p>
+            <br/>
+            <h4>2. General Data Processing</h4>
+            <p>When visiting this website, personal data is only processed to the extent necessary for the operation of the site and the provision of content. No cookies are set for advertising or tracking purposes without consent.</p>
+            <br/>
+            <h4>3. Hosting & Server Log Files</h4>
+            <p>This website is hosted by Vercel Inc. (USA). When accessing the website, standard technical data (IP address, browser, timestamp) is transmitted to the provider to ensure stability and security (Art. 6 para. 1 lit. f GDPR).</p>
+            <br/>
+            <h4>4. Your Rights</h4>
+            <p>You have the right to access, rectification, deletion, and restriction of processing of your data. You can contact me at any time via email to exercise these rights.</p>
+        `
     },
     de: {
         'hero.role': 'Fullstack Entwickler',
@@ -69,10 +111,9 @@ const TRANSLATIONS = {
         'modal.hobbies_learning': 'Japanisch (Lernen)',
         'modal.badges': 'Orden & Zertifikate',
         'modal.quote': 'Über Mich',
-        // UPDATED BIO
-        'modal.quote_text': "Als Fullstack Engineer mit 4 Jahren Erfahrung liegt mein Fokus auf dem Kotlin & Spring Boot Ökosystem. Ich verstehe Softwareentwicklung als kollaborativen Prozess: Nachhaltige Architektur und sauberer Code entstehen durch gemeinsame Entscheidungen, Mentoring und eine proaktive Fehlerkultur. In meinen Projekten übernehme ich Verantwortung für den gesamten Stack und wäge technische Perfektion stets pragmatisch gegen den geschäftlichen Nutzen ab. Privat nutze ich Game Development (Godot) als kreativen Kontrast.",
-        // UPDATED QUOTE
+        'modal.quote_text': "Als Fullstack Engineer mit 4 Jahren Erfahrung liegt mein Fokus auf dem Kotlin & Spring Boot Ökosystem. Ich verstehe Softwareentwicklung als kollaborativen Prozess: Nachhaltige Architektur und sauberer Code entstehen durch gemeinsame Entscheidungen, Mentoring und eine proaktive Fehlerkultur. In meinen Projekten übernehme ich Verantwortung für den gesamten Stack und wäge technische Perfektion stets pragmatisch gegen den geschäftlichen Nutzen ab. Privat nutze ich Game Development (Godot) als kreativen Kontrast, um neue technische Perspektiven einzunehmen und Tools zu entwickeln, die anderen die Umsetzung ihrer Ideen ermöglichen.",
         'modal.sakurai_quote': '"That feeling of doubt, or wanting to do more, is my engine to move forward and make the next iteration."',
+        'modal.quote_author': '— Masahiro Sakurai',
         'modal.exp_title': 'Abenteuer Logbuch',
         'modal.stats': 'Werte & Skills',
         'modal.likes_title': 'Dinge, die ich mag',
@@ -87,6 +128,48 @@ const TRANSLATIONS = {
         'game.tech': 'Technologien',
         'game.features': 'Features',
         'footer.theme': 'THEME',
+        'footer.legal': 'RECHTLICHES',
+        // LEGAL TEXTS
+        'legal.title': 'Rechtliches & Datenschutz',
+        'legal.imprint': 'Impressum',
+        'legal.privacy': 'Datenschutz',
+        'legal.imprint_text': `
+            <h3>Impressum</h3>
+            <p>Angaben gemäß § 5 ECG.</p>
+            <br/>
+            <h4>Diensteanbieter</h4>
+            <p>Lukas Höwarth</p>
+            <p>[Deine Straße / Hausnummer]</p>
+            <p>[PLZ Ort]</p>
+            <p>Österreich</p>
+            <br/>
+            <p><strong>E-Mail:</strong> [deine.email@example.com]</p>
+            <br/>
+            <p><strong>Verantwortlich für den Inhalt:</strong> Lukas Höwarth.</p>
+            <p>Diese Website ist ein persönliches Portfolio zur Darstellung von Projekten und beruflichen Tätigkeiten im Bereich Softwareentwicklung.</p>
+            <br/>
+            <p>Stand: November 2025</p>
+        `,
+        'legal.privacy_text': `
+            <h3>Datenschutzerklärung</h3>
+            <p>Informationen zur Verarbeitung personenbezogener Daten auf dieser Website.</p>
+            <br/>
+            <h4>1. Verantwortlicher</h4>
+            <p>Diensteanbieter und Verantwortlicher im Sinne der DSGVO ist:</p>
+            <p>Lukas Höwarth</p>
+            <p>[Deine Adresse]</p>
+            <p>Österreich</p>
+            <p>E-Mail: [deine.email@example.com]</p>
+            <br/>
+            <h4>2. Allgemeines zur Datenverarbeitung</h4>
+            <p>Beim Besuch dieser Website werden personenbezogene Daten nur in dem Umfang verarbeitet, wie es für den Betrieb der Seite und die Bereitstellung der Inhalte erforderlich ist. Es werden keine Cookies zu Werbe- oder Trackingzwecken gesetzt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).</p>
+            <br/>
+            <h4>3. Bereitstellung der Website</h4>
+            <p>Diese Website wird bei Vercel Inc. (USA) gehostet. Beim Aufruf der Website übermittelt Ihr Browser automatisch Daten (IP-Adresse, Browser, Zeitstempel), die in Server-Logfiles gespeichert werden können. Diese Daten dienen der Sicherheit und Stabilität.</p>
+            <br/>
+            <h4>4. Ihre Rechte</h4>
+            <p>Ihnen stehen die Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch zu. Kontaktieren Sie mich dazu bitte per E-Mail.</p>
+        `
     }
 };
 
