@@ -13,8 +13,8 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { Scanlines } from './components/ui/Scanlines';
 import { BootSplash } from './components/ui/BootSplash';
 import { StatusBar } from './components/ui/StatusBar';
-import { ThemeBackground } from './components/ui/ThemeBackground'; // Still used for inside the device screen if needed, but LivingBackground is for the outer wall
-import { LivingBackground } from './components/ui/LivingBackground'; // NEW
+import { ThemeBackground } from './components/ui/ThemeBackground';
+import { LivingBackground } from './components/ui/LivingBackground';
 import { HeroCard } from './components/projects/HeroCard';
 import { ProjectPreview } from './components/projects/ProjectPreview';
 import { GameTile } from './components/projects/GameTile';
@@ -41,6 +41,9 @@ const AppContent = () => {
     const [isAboutOpen, setIsAboutOpen] = useState(false);
     const [isPressed, setIsPressed] = useState(false);
     const [slideDir, setSlideDir] = useState<string>('from-right');
+
+    // Check if any heavy modal is open
+    const isModalOpen = isAboutOpen || !!activeProject || showThemeCreator;
 
     const filteredProjects = useMemo(() => {
         return activeCategory === 'ALL' ? PROJECTS : PROJECTS.filter(p => p.category === activeCategory);
@@ -92,13 +95,15 @@ const AppContent = () => {
 
     return (
         <div
-            className={`h-screen w-full flex justify-center items-center overflow-hidden relative transition-colors duration-700 ${theme.isDark ? 'dark' : ''}`}
+            className={`h-[100dvh] w-full flex justify-center items-center overflow-hidden relative transition-colors duration-700 ${theme.isDark ? 'dark' : ''}`}
             style={{
                 backgroundColor: theme.isDark ? '#0f172a' : '#f1f5f9'
             }}
         >
-            {/* --- NEW LIVING BACKGROUND COMPONENT --- */}
-            <LivingBackground theme={theme} />
+            {/* Only render LivingBackground on Desktop */}
+            <div className="hidden md:block absolute inset-0 w-full h-full z-0">
+                <LivingBackground theme={theme} />
+            </div>
 
             {/* --- MAIN DEVICE CONTAINER --- */}
             <div
@@ -113,8 +118,10 @@ const AppContent = () => {
             >
                 <Scanlines active={theme.scanlines} />
 
+                {/* --- MODALS LAYER (Z-Index 50) --- */}
                 <AnimatePresence>
                     {isAboutOpen && <AboutModal onClose={() => setIsAboutOpen(false)} theme={theme} />}
+
                     {activeProject && (
                         <GameScreen
                             project={activeProject}
@@ -124,153 +131,163 @@ const AppContent = () => {
                             theme={theme}
                         />
                     )}
+
+                    {/* MOVED THEME CREATOR HERE: Now sits at root level to avoid clipping */}
+                    {showThemeCreator && (
+                        <ThemeCreatorMenu
+                            currentTheme={theme}
+                            onApply={updateTheme}
+                            onClose={() => setShowThemeCreator(false)}
+                        />
+                    )}
                 </AnimatePresence>
 
-                {/* --- TOP SCREEN --- */}
-                <div
-                    className="h-[45vh] shrink-0 relative w-full overflow-hidden flex flex-col shadow-sm z-10 transition-colors duration-700 border-b-4 border-black/5"
-                    style={{backgroundColor: theme.colors.primary}}
-                >
-                    <ThemeBackground theme={theme} />
+                {/* --- DASHBOARD CONTENT (Hidden on mobile when modal is open to prevent lag) --- */}
+                <div className={`flex-1 flex-col w-full h-full relative ${isModalOpen ? 'hidden md:flex' : 'flex'}`}>
 
-                    <StatusBar
-                        time={currentTime}
-                        theme={theme}
-                        onOpenProfile={() => setIsAboutOpen(true)}
-                        showProfile={!!displayedProject}
-                    />
+                    {/* --- TOP SCREEN --- */}
+                    <div
+                        className="h-[45vh] shrink-0 relative w-full overflow-hidden flex flex-col shadow-sm z-10 transition-colors duration-700 border-b-4 border-black/5"
+                        style={{backgroundColor: theme.colors.primary}}
+                    >
+                        <ThemeBackground theme={theme} />
 
-                    <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
-                        {displayedProject ? (
-                            <div key={displayedProject.id} className={`w-full h-full absolute inset-0 animate-slide-${slideDir}`}>
-                                <ProjectPreview project={displayedProject} onStart={() => launchProject(displayedProject)} isFavorite={favorites.includes(displayedProject.id)} theme={theme} />
-                            </div>
-                        ) : (
-                            <div className="w-full h-full absolute inset-0 animate-slide-from-top">
-                                <HeroCard onOpenTrainer={() => setIsAboutOpen(true)} theme={theme} />
-                            </div>
-                        )}
-                    </div>
-                </div>
+                        <StatusBar
+                            time={currentTime}
+                            theme={theme}
+                            onOpenProfile={() => setIsAboutOpen(true)}
+                            showProfile={!!displayedProject}
+                        />
 
-                {/* --- HINGE --- */}
-                <div className="h-8 shrink-0 flex items-center justify-center shadow-inner z-20 relative transition-colors duration-700" style={{ background: `linear-gradient(to bottom, ${theme.colors.console}, ${theme.colors.consoleEdge})` }}>
-                    <div className="w-1/3 h-2 bg-black/20 rounded-full shadow-inner border-b border-white/10"></div>
-                </div>
-
-                {/* --- BOTTOM SCREEN --- */}
-                <div className="flex-1 bg-[var(--panel)] relative flex flex-col shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-10 transition-colors duration-700 overflow-hidden">
-
-                    {/* Category Toolbar */}
-                    <div className="flex flex-col sm:flex-row justify-between items-center p-3 px-6 bg-[var(--panel)] gap-4 z-20 shadow-sm border-b border-gray-100/10">
-                        <div className="flex gap-2 p-1 overflow-x-auto no-scrollbar w-full sm:w-auto items-center justify-center sm:justify-start">
-                            {(['ALL', 'WORK', 'PERSONAL', 'UNI'] as Category[]).map(cat => (
-                                <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-[var(--accent)] text-white shadow-md transform scale-105' : 'hover:bg-black/5 dark:hover:bg-white/5'}`} style={{ backgroundColor: activeCategory === cat ? theme.colors.accent : theme.colors.secondary, color: activeCategory === cat ? theme.colors.contrastAccent : theme.colors.text }}>
-                                    {cat === 'ALL' ? t('cat.all') : cat === 'WORK' ? t('cat.work') : cat === 'PERSONAL' ? t('cat.personal') : t('cat.uni')}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="flex gap-2 justify-center sm:justify-end w-full sm:w-auto">
-                            {[Mail, Github, Linkedin, Globe].map((Icon, i) => (
-                                <button key={i} className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80" style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}><Icon size={18} /></button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Scrollable Area */}
-                    <div className="flex-1 overflow-y-auto p-6 pb-24 custom-scrollbar bg-opacity-50 relative flex flex-col">
-                        <AnimatePresence mode="wait">
-                            {viewMode === 'GRID' ? (
-                                <motion.div key="grid" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full justify-items-center relative z-10 pt-4">
-                                    {filteredProjects.map((project) => (
-                                        <GameTile
-                                            key={project.id} project={project}
-                                            onClick={() => { setIsPressed(true); setTimeout(() => setIsPressed(false), 150); launchProject(project); }}
-                                            onHover={(e) => handleHover(project, e)}
-                                            isSelected={selectedId === project.id} isPressed={selectedId === project.id && isPressed} isFavorite={favorites.includes(project.id)} theme={theme}
-                                        />
-                                    ))}
-                                </motion.div>
-                            ) : (
-                                <motion.div key="list" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="flex flex-col gap-3 max-w-3xl mx-auto relative z-10 w-full">
-                                    {filteredProjects.map((project) => (
-                                        <ListRow
-                                            key={project.id} project={project}
-                                            onClick={() => launchProject(project)}
-                                            onHover={(e) => handleHover(project, e)}
-                                            isSelected={selectedId === project.id || hoveredId === project.id} isFavorite={favorites.includes(project.id)} theme={theme}
-                                        />
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
-                    {/* FOOTER */}
-                    <div className="absolute bottom-0 left-0 w-full z-50">
-                        <div
-                            className="w-full p-4 backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.1)] border-t flex justify-center transition-colors duration-700"
-                            style={{
-                                backgroundColor: theme.colors.cardBg,
-                                borderColor: theme.colors.secondary
-                            }}
-                        >
-                            <div className="max-w-2xl w-full flex justify-between items-center px-2 sm:px-6">
-                                <div className="flex items-center gap-4 relative">
-                                    <AnimatePresence>
-                                        {showThemeCreator && <ThemeCreatorMenu currentTheme={theme} onApply={updateTheme} onClose={() => setShowThemeCreator(false)} />}
-                                    </AnimatePresence>
-
-                                    {/* THEME BUTTON */}
-                                    <button
-                                        onClick={() => setShowThemeCreator(!showThemeCreator)}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
-                                    >
-                                        <Palette size={14} /> {t('footer.theme')}
-                                    </button>
-
-                                    <div className="w-px h-6 opacity-20" style={{ backgroundColor: theme.colors.text }}></div>
-
-                                    {/* DARK MODE TOGGLE */}
-                                    <button
-                                        onClick={toggleDarkMode}
-                                        className="p-2 rounded-full transition-all hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
-                                    >
-                                        {theme.isDark ? <Sun size={18} /> : <Moon size={18} />}
-                                    </button>
-
-                                    <div className="w-px h-6 opacity-20" style={{ backgroundColor: theme.colors.text }}></div>
-
-                                    {/* LANGUAGE TOGGLE */}
-                                    <button
-                                        onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
-                                    >
-                                        <Languages size={14} /> {language.toUpperCase()}
-                                    </button>
+                        <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
+                            {displayedProject ? (
+                                <div key={displayedProject.id} className={`w-full h-full absolute inset-0 animate-slide-${slideDir}`}>
+                                    <ProjectPreview project={displayedProject} onStart={() => launchProject(displayedProject)} isFavorite={favorites.includes(displayedProject.id)} theme={theme} />
                                 </div>
+                            ) : (
+                                <div className="w-full h-full absolute inset-0 animate-slide-from-top">
+                                    <HeroCard onOpenTrainer={() => setIsAboutOpen(true)} theme={theme} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-                                <div className="flex items-center gap-2">
-                                    {/* HOME BUTTON */}
-                                    <button
-                                        onClick={goHome}
-                                        className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
-                                    >
-                                        <Home size={18} />
-                                    </button>
+                    {/* --- HINGE --- */}
+                    <div className="h-8 shrink-0 flex items-center justify-center shadow-inner z-20 relative transition-colors duration-700" style={{ background: `linear-gradient(to bottom, ${theme.colors.console}, ${theme.colors.consoleEdge})` }}>
+                        <div className="w-1/3 h-2 bg-black/20 rounded-full shadow-inner border-b border-white/10"></div>
+                    </div>
 
-                                    {/* VIEW MODE TOGGLE */}
-                                    <button
-                                        onClick={() => setViewMode(v => v === 'GRID' ? 'LIST' : 'GRID')}
-                                        className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
-                                        style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
-                                    >
-                                        {viewMode === 'GRID' ? <LayoutGrid size={18} /> : <ListIcon size={18} />}
+                    {/* --- BOTTOM SCREEN --- */}
+                    <div className="flex-1 bg-[var(--panel)] relative flex flex-col shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-10 transition-colors duration-700 overflow-hidden">
+
+                        {/* Category Toolbar */}
+                        <div className="flex flex-col sm:flex-row justify-between items-center p-3 px-6 bg-[var(--panel)] gap-4 z-20 shadow-sm border-b border-gray-100/10">
+                            <div className="flex gap-2 p-1 overflow-x-auto no-scrollbar w-full sm:w-auto items-center justify-center sm:justify-start">
+                                {(['ALL', 'WORK', 'PERSONAL', 'UNI'] as Category[]).map(cat => (
+                                    <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all whitespace-nowrap ${activeCategory === cat ? 'bg-[var(--accent)] text-white shadow-md transform scale-105' : 'hover:bg-black/5 dark:hover:bg-white/5'}`} style={{ backgroundColor: activeCategory === cat ? theme.colors.accent : theme.colors.secondary, color: activeCategory === cat ? theme.colors.contrastAccent : theme.colors.text }}>
+                                        {cat === 'ALL' ? t('cat.all') : cat === 'WORK' ? t('cat.work') : cat === 'PERSONAL' ? t('cat.personal') : t('cat.uni')}
                                     </button>
+                                ))}
+                            </div>
+                            <div className="flex gap-2 justify-center sm:justify-end w-full sm:w-auto">
+                                {[Mail, Github, Linkedin, Globe].map((Icon, i) => (
+                                    <button key={i} className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80" style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}><Icon size={18} /></button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Scrollable Area */}
+                        <div className="flex-1 overflow-y-auto p-6 pb-24 custom-scrollbar bg-opacity-50 relative flex flex-col">
+                            <AnimatePresence mode="wait">
+                                {viewMode === 'GRID' ? (
+                                    <motion.div key="grid" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full justify-items-center relative z-10 pt-4">
+                                        {filteredProjects.map((project) => (
+                                            <GameTile
+                                                key={project.id} project={project}
+                                                onClick={() => { setIsPressed(true); setTimeout(() => setIsPressed(false), 150); launchProject(project); }}
+                                                onHover={(e) => handleHover(project, e)}
+                                                isSelected={selectedId === project.id} isPressed={selectedId === project.id && isPressed} isFavorite={favorites.includes(project.id)} theme={theme}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                ) : (
+                                    <motion.div key="list" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="flex flex-col gap-3 max-w-3xl mx-auto relative z-10 w-full">
+                                        {filteredProjects.map((project) => (
+                                            <ListRow
+                                                key={project.id} project={project}
+                                                onClick={() => launchProject(project)}
+                                                onHover={(e) => handleHover(project, e)}
+                                                isSelected={selectedId === project.id || hoveredId === project.id} isFavorite={favorites.includes(project.id)} theme={theme}
+                                            />
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* FOOTER */}
+                        <div className="absolute bottom-0 left-0 w-full z-50">
+                            <div
+                                className="w-full p-4 backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.1)] border-t flex justify-center transition-colors duration-700"
+                                style={{
+                                    backgroundColor: theme.colors.cardBg,
+                                    borderColor: theme.colors.secondary
+                                }}
+                            >
+                                <div className="max-w-2xl w-full flex justify-between items-center px-2 sm:px-6">
+                                    <div className="flex items-center gap-4 relative">
+
+                                        {/* THEME BUTTON */}
+                                        <button
+                                            onClick={() => setShowThemeCreator(!showThemeCreator)}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
+                                            style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
+                                        >
+                                            <Palette size={14} /> {t('footer.theme')}
+                                        </button>
+
+                                        <div className="w-px h-6 opacity-20" style={{ backgroundColor: theme.colors.text }}></div>
+
+                                        {/* DARK MODE TOGGLE */}
+                                        <button
+                                            onClick={toggleDarkMode}
+                                            className="p-2 rounded-full transition-all hover:opacity-80"
+                                            style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
+                                        >
+                                            {theme.isDark ? <Sun size={18} /> : <Moon size={18} />}
+                                        </button>
+
+                                        <div className="w-px h-6 opacity-20" style={{ backgroundColor: theme.colors.text }}></div>
+
+                                        {/* LANGUAGE TOGGLE */}
+                                        <button
+                                            onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
+                                            className="flex items-center gap-2 px-3 py-2 rounded-full transition-colors text-xs font-bold uppercase shadow-sm hover:opacity-80"
+                                            style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
+                                        >
+                                            <Languages size={14} /> {language.toUpperCase()}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        {/* HOME BUTTON */}
+                                        <button
+                                            onClick={goHome}
+                                            className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
+                                            style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
+                                        >
+                                            <Home size={18} />
+                                        </button>
+
+                                        {/* VIEW MODE TOGGLE */}
+                                        <button
+                                            onClick={() => setViewMode(v => v === 'GRID' ? 'LIST' : 'GRID')}
+                                            className="p-2 rounded-full transition-colors shadow-sm hover:opacity-80"
+                                            style={{ backgroundColor: theme.colors.secondary, color: theme.colors.text }}
+                                        >
+                                            {viewMode === 'GRID' ? <LayoutGrid size={18} /> : <ListIcon size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

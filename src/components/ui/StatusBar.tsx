@@ -62,10 +62,6 @@ export const StatusBar = ({ time, theme, onOpenProfile, showProfile }: StatusBar
                             className="flex flex-col items-start justify-center leading-none whitespace-nowrap"
                         >
                             <span className="opacity-100 font-black text-xs group-hover:text-[var(--accent)] transition-colors duration-300">Lukas</span>
-                            <span className="opacity-50 text-[9px] font-bold mt-0.5 flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.6)]"></span>
-                                Online
-                            </span>
                         </motion.div>
                     </motion.button>
                 )}

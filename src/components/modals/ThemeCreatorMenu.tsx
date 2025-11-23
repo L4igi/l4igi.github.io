@@ -47,7 +47,9 @@ export const ThemeCreatorMenu = ({ currentTheme, onApply, onClose }: ThemeCreato
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute bottom-full left-0 mb-6 z-[9999] w-80 rounded-3xl shadow-2xl border-2 origin-bottom-left overflow-hidden backdrop-blur-xl"
+            // FIX: Changed to 'fixed' positioning to break out of footer stacking context
+            // Centered horizontally, placed above footer
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] w-80 max-w-[90vw] rounded-3xl shadow-2xl border-2 overflow-hidden backdrop-blur-xl"
             style={{
                 backgroundColor: currentTheme.isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
                 borderColor: currentTheme.colors.primary,
@@ -174,9 +176,9 @@ export const ThemeCreatorMenu = ({ currentTheme, onApply, onClose }: ThemeCreato
                 </motion.div>
             </div>
 
-            {/* Triangle Pointer */}
+            {/* Pointer - Adjusted for centered fixed position */}
             <div
-                className="absolute -bottom-2 left-9 w-4 h-4 border-b-2 border-r-2 rotate-45"
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 border-b-2 border-r-2 rotate-45"
                 style={{
                     backgroundColor: currentTheme.colors.cardBg,
                     borderColor: currentTheme.colors.primary

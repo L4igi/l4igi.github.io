@@ -29,7 +29,7 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
 
     return (
         <motion.div
-            className="w-full h-full flex items-center justify-center perspective-container p-6"
+            className="w-full h-full flex items-center justify-center perspective-container p-4 sm:p-6"
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             initial={{ opacity: 0, scale: 0.9 }}
@@ -40,7 +40,7 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
             <motion.div
                 layoutId="hero-morph"
                 ref={cardRef}
-                className="relative w-full max-w-[600px] rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5"
+                className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5 will-change-transform"
                 style={{
                     backgroundColor: theme.colors.cardBg,
                     rotateX,
@@ -50,19 +50,19 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                 whileHover={{ scale: 1.02 }}
             >
                 <motion.div
-                    className="flex flex-col sm:flex-row h-full min-h-[240px]"
+                    className="flex flex-col sm:flex-row h-full min-h-[180px] sm:min-h-[240px]"
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0, transition: { duration: 0.1 } }}
                 >
 
                     {/* LEFT: Accent Bar & Avatar */}
-                    <div className="w-full sm:w-48 relative shrink-0 flex items-center justify-center sm:justify-end p-8 sm:p-0" style={{ backgroundColor: theme.colors.accent }}>
+                    <div className="w-full sm:w-48 relative shrink-0 flex items-center justify-center sm:justify-end p-6 sm:p-0" style={{ backgroundColor: theme.colors.accent }}>
                         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
                         {/* Avatar overlapping the edge */}
                         <div className="relative sm:absolute sm:right-[-50px] z-10">
                             <div
-                                className="w-32 h-32 sm:w-40 sm:h-40 rounded-full flex items-center justify-center shadow-xl border-[6px] overflow-hidden relative bg-white dark:bg-gray-800 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2"
+                                className="w-24 h-24 sm:w-40 sm:h-40 rounded-full flex items-center justify-center shadow-xl border-[4px] sm:border-[6px] overflow-hidden relative bg-white dark:bg-gray-800 transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2"
                                 style={{
                                     borderColor: theme.colors.cardBg,
                                     color: theme.colors.text
@@ -70,36 +70,37 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                             >
                                 {!imgError ? (
                                     <img
-                                        src="/public/profile/me.jpg"
+                                        src="/profile/me.jpg"
                                         alt="Lukas"
                                         className="w-full h-full object-cover"
                                         onError={() => setImgError(true)}
+                                        decoding="async" // OPTIMIZATION
                                     />
                                 ) : (
-                                    <span className="text-5xl font-black">LH</span>
+                                    <span className="text-3xl sm:text-5xl font-black">LH</span>
                                 )}
                             </div>
-                            <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-[3px] rounded-full shadow-sm" style={{ borderColor: theme.colors.cardBg }}></div>
+                            <div className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 border-[3px] rounded-full shadow-sm" style={{ borderColor: theme.colors.cardBg }}></div>
                         </div>
                     </div>
 
                     {/* RIGHT: Content */}
-                    <div className="flex-1 p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left">
+                    <div className="flex-1 p-6 sm:p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left">
 
-                        <div className="mb-1.5 flex items-center justify-center sm:justify-start gap-2 text-xs font-bold uppercase tracking-widest opacity-50" style={{ color: theme.colors.text }}>
+                        <div className="mb-1.5 flex items-center justify-center sm:justify-start gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest opacity-50" style={{ color: theme.colors.text }}>
                             <Sparkles size={12} /> Player Profile
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl font-black leading-none tracking-tighter mb-3" style={{ color: theme.colors.text }}>
+                        <h1 className="text-3xl sm:text-5xl font-black leading-none tracking-tighter mb-3" style={{ color: theme.colors.text }}>
                             Lukas Höwarth
                         </h1>
 
-                        <div className="inline-flex items-center justify-center sm:justify-start gap-2 mb-8">
+                        <div className="inline-flex items-center justify-center sm:justify-start gap-2 mb-6 sm:mb-8">
                             <span
-                                className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide flex items-center gap-2 opacity-80"
+                                className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wide flex items-center gap-2 opacity-80"
                                 style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
                             >
-                                <Terminal size={14} /> {t('hero.role')}
+                                <Terminal size={12} className="sm:w-3.5 sm:h-3.5" /> {t('hero.role')}
                             </span>
                         </div>
 
@@ -107,11 +108,11 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-3 group/btn shadow-lg transition-all"
+                            className="w-full sm:w-auto px-6 py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-3 group/btn shadow-lg transition-all"
                             style={{ backgroundColor: theme.colors.accent, color: theme.colors.contrastAccent }}
                         >
                             {t('hero.open')}
-                            <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                            <ArrowRight size={14} className="sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform" />
                         </motion.button>
                     </div>
                 </motion.div>

@@ -6,47 +6,24 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useDraggableScroll } from '../../hooks/useDraggableScroll';
 import type {Variants} from "motion";
 
-// --- HELPER: Video Detection ---
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 const isImagePath = (str: string) => str.includes('/') || str.includes('.');
 
-// --- SUB-COMPONENT: Video Thumbnail ---
-// Handles hover-to-play logic independently for better performance
 const VideoThumbnail = ({ src }: { src: string }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-
-    const handleMouseEnter = () => {
-        videoRef.current?.play().catch(() => {}); // Ignore play errors (e.g. if user hasn't interacted)
-    };
-
+    const handleMouseEnter = () => { videoRef.current?.play().catch(() => {}); };
     const handleMouseLeave = () => {
         if (videoRef.current) {
             videoRef.current.pause();
-            videoRef.current.currentTime = 0; // Reset to start
+            videoRef.current.currentTime = 0;
         }
     };
 
     return (
-        <div
-            className="relative w-full h-full bg-black"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-        >
-            <video
-                ref={videoRef}
-                src={src}
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                muted
-                loop
-                playsInline
-                // No controls for thumbnail
-            />
-
-            {/* Play Icon Overlay (Hidden when playing/hovered) */}
+        <div className="relative w-full h-full bg-black" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+            <video ref={videoRef} src={src} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" muted loop playsInline />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
-                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-full border border-white/20 shadow-lg">
-                    <Play size={16} className="text-white fill-white" />
-                </div>
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-full border border-white/20 shadow-lg"><Play size={16} className="text-white fill-white" /></div>
             </div>
         </div>
     );
@@ -64,13 +41,19 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
     const { language, t } = useLanguage();
     const [isClosing, setIsClosing] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
-    // Drag to Scroll Hook
     const { scrollRef, hasMoved, events: dragEvents } = useDraggableScroll();
+
+    // STAGE 1: Animation Running, STAGE 2: Content Ready
+    const [isReady, setIsReady] = useState(false);
+
+    // Simulate "Loading" / "Thinking" phase for the pop effect
+    useEffect(() => {
+        const timer = setTimeout(() => setIsReady(true), 450);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleClose = () => { setIsClosing(true); setTimeout(onClose, 300); };
 
-    // --- LIGHTBOX LOGIC ---
     const showNextImg = useCallback((e?: React.MouseEvent) => {
         e?.stopPropagation();
         if (lightboxIndex === null || project.screenshots.length === 0) return;
@@ -99,95 +82,75 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
     }, [lightboxIndex, showNextImg, showPrevImg]);
 
     // --- ANIMATION VARIANTS ---
-    const containerVariants: Variants = {
-        hidden: { opacity: 0, scale: 0.9, y: 20 },
-        visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
-        exit: { opacity: 0, scale: 0.95, y: 20, transition: { duration: 0.2 } }
+    const modalVariants: Variants = {
+        initial: { opacity: 0, scale: 0.85, y: 50 },
+        animate: {
+            opacity: 1, scale: 1, y: 0,
+            transition: { type: "spring", stiffness: 200, damping: 20 }
+        },
+        expanded: {
+            height: '85vh', // Grow to full height
+            transition: { type: "spring", stiffness: 120, damping: 18, delay: 0.1 }
+        },
+        collapsed: {
+            height: 320, // Initial "Loading" height
+            transition: { type: "spring", stiffness: 200, damping: 20 }
+        },
+        exit: { opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.2 } }
     };
 
-    const contentVariants: Variants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: (i: number) => ({
-            opacity: 1, y: 0,
-            transition: { delay: 0.15 + (i * 0.05), duration: 0.4, type: "spring", stiffness: 100 }
-        })
+    const contentStagger: Variants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.15, delayChildren: 0.1 }
+        }
+    };
+
+    const itemVariants: Variants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 15 } }
     };
 
     return (
-        <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-md transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/90 sm:bg-black/70 sm:backdrop-blur-md transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
 
             {/* LIGHTBOX OVERLAY */}
             <AnimatePresence>
                 {lightboxIndex !== null && (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
                         onClick={() => setLightboxIndex(null)}
                     >
-                        <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors z-50">
-                            <X size={32} />
-                        </button>
+                        <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors z-50"><X size={32} /></button>
                         <div className="relative w-full h-full flex items-center justify-center p-4 sm:p-12" onClick={(e) => e.stopPropagation()}>
                             {project.screenshots.length > 1 && (
-                                <button onClick={showPrevImg} className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50">
-                                    <ChevronLeft size={48} />
-                                </button>
+                                <button onClick={showPrevImg} className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"><ChevronLeft size={48} /></button>
                             )}
-
                             <motion.div
-                                key={lightboxIndex}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className={`w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/50 backdrop-blur-xl`}
+                                key={lightboxIndex} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                                className={`w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/90 sm:bg-black/50 sm:backdrop-blur-xl transform-gpu`}
                             >
                                 {isVideo(project.screenshots[lightboxIndex]) ? (
-                                    // --- VIDEO PLAYER ---
                                     <div className="w-full h-full flex items-center justify-center bg-black relative">
-                                        <video
-                                            src={project.screenshots[lightboxIndex]}
-                                            className="w-full h-full object-contain"
-                                            muted
-                                            controls
-                                            autoPlay
-                                            loop
-                                            playsInline
-                                        />
+                                        <video src={project.screenshots[lightboxIndex]} className="w-full h-full object-contain" controls autoPlay loop muted playsInline />
                                     </div>
                                 ) : isImagePath(project.screenshots[lightboxIndex]) ? (
-                                    // --- DUAL-LAYER IMAGE ---
                                     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                                        {/* Layer 1: Blurred Atmospheric Background */}
-                                        <div className="absolute inset-0 z-0">
-                                            <img
-                                                src={project.screenshots[lightboxIndex]}
-                                                alt=""
-                                                className="w-full h-full object-cover blur-2xl opacity-40 scale-110 brightness-75"
-                                            />
+                                        <div className="absolute inset-0 z-0 hidden sm:block">
+                                            <img src={project.screenshots[lightboxIndex]} alt="" className="w-full h-full object-cover blur-2xl opacity-40 scale-110 brightness-75" decoding="async" />
                                         </div>
-                                        {/* Layer 2: Sharp Content Image */}
-                                        <img
-                                            src={project.screenshots[lightboxIndex]}
-                                            alt={`Screenshot ${lightboxIndex + 1}`}
-                                            className="relative z-10 w-full h-full object-contain shadow-2xl"
-                                        />
+                                        <img src={project.screenshots[lightboxIndex]} alt={`Screenshot ${lightboxIndex + 1}`} className="relative z-10 w-full h-full object-contain shadow-2xl" decoding="async" />
                                     </div>
                                 ) : (
-                                    // --- COLOR FALLBACK ---
                                     <div className={`w-full h-full ${project.screenshots[lightboxIndex]} flex items-center justify-center`}>
-                                        <div className="text-center">
-                                            <span className="font-mono text-white/20 text-4xl font-bold block mb-2">PREVIEW</span>
-                                            <span className="font-mono text-white/40 text-sm">{lightboxIndex + 1} / {project.screenshots.length}</span>
-                                        </div>
+                                        <div className="text-center"><span className="font-mono text-white/20 text-4xl font-bold block mb-2">PREVIEW</span><span className="font-mono text-white/40 text-sm">{lightboxIndex + 1} / {project.screenshots.length}</span></div>
                                     </div>
                                 )}
                             </motion.div>
-
                             {project.screenshots.length > 1 && (
-                                <button onClick={showNextImg} className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50">
-                                    <ChevronRight size={48} />
-                                </button>
+                                <button onClick={showNextImg} className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"><ChevronRight size={48} /></button>
                             )}
                         </div>
                     </motion.div>
@@ -196,181 +159,169 @@ export const GameScreen = ({ project, onClose, isFavorite, toggleFavorite, theme
 
             <motion.div
                 key={project.id}
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
+                variants={modalVariants}
+                initial="initial"
+                animate={[
+                    "animate",
+                    isReady ? "expanded" : "collapsed"
+                ]}
                 exit="exit"
-                className="w-full max-w-5xl max-h-[90vh] rounded-[36px] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-[8px] flex flex-col relative"
-                style={{ backgroundColor: theme.colors.cardBg, borderColor: theme.colors.primary }}
+                onAnimationComplete={() => setIsReady(true)}
+                className="w-full max-w-5xl rounded-[36px] overflow-hidden border-[8px] flex flex-col relative will-change-transform"
+                style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.primary,
+                    boxShadow: isReady ? '0 25px 50px -12px rgba(0,0,0,0.5)' : 'none'
+                }}
             >
-                {/* --- FLOATING ICON --- */}
-                <div className="absolute top-48 sm:top-64 right-8 -translate-y-1/2 z-30 pointer-events-none">
-                    <motion.div
-                        initial={{ scale: 0, rotate: -45 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.3 }}
-                        className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
-                        style={{ borderColor: theme.colors.cardBg }}
-                    >
-                        {React.cloneElement(project.icon as React.ReactElement<any>, { size: 40 })}
-                    </motion.div>
-                </div>
 
                 {/* --- HERO HEADER --- */}
-                <div className={`relative h-48 sm:h-64 shrink-0 ${project.color} overflow-hidden`}>
+                <div className={`relative h-48 sm:h-64 shrink-0 ${project.color} overflow-hidden transition-all duration-500`}>
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
                     <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
-                    <div className="absolute -right-12 -bottom-16 text-white opacity-10 transform rotate-12 scale-[3]">
-                        {project.icon}
-                    </div>
+                    {/* Decorative background icon */}
+                    {isReady && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 0.1, scale: 3 }} transition={{ type: "spring", duration: 1 }}
+                            className="absolute -right-12 -bottom-16 text-white transform rotate-12"
+                        >
+                            {project.icon}
+                        </motion.div>
+                    )}
 
                     <div className="relative z-10 h-full p-8 flex flex-col justify-between">
                         <div className="flex justify-between items-start">
                             <div className="flex gap-2">
-                                <span className="bg-black/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
-                                    {project.year}
-                                </span>
-                                <span className="bg-white/90 text-[var(--accent)] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm" style={{ color: theme.colors.accent }}>
-                                    {project.category}
-                                </span>
+                                <span className="bg-black/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">{project.year}</span>
+                                <span className="bg-white/90 text-[var(--accent)] text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm" style={{ color: theme.colors.accent }}>{project.category}</span>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={toggleFavorite}
-                                    className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorite ? 'bg-yellow-400 border-yellow-300 text-white shadow-[0_0_15px_rgba(250,204,21,0.5)]' : 'bg-black/20 border-white/20 text-white hover:bg-white hover:text-black'}`}
-                                    title={t('game.add_fav')}
-                                >
-                                    <Star size={24} fill={isFavorite ? "currentColor" : "none"} />
-                                </motion.button>
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={handleClose}
-                                    className="bg-black/20 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all duration-200 backdrop-blur-md border border-white/20"
-                                >
-                                    <X size={24} />
-                                </motion.button>
+                                {isReady && (
+                                    <motion.button initial={{ scale: 0 }} animate={{ scale: 1 }} whileTap={{ scale: 0.9 }} onClick={toggleFavorite} className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorite ? 'bg-yellow-400 border-yellow-300 text-white shadow-[0_0_15px_rgba(250,204,21,0.5)]' : 'bg-black/20 border-white/20 text-white hover:bg-white hover:text-black'}`} title={t('game.add_fav')}><Star size={24} fill={isFavorite ? "currentColor" : "none"} /></motion.button>
+                                )}
+                                <motion.button whileTap={{ scale: 0.9 }} onClick={handleClose} className="bg-black/20 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all duration-200 backdrop-blur-md border border-white/20"><X size={24} /></motion.button>
                             </div>
                         </div>
 
                         <div className="mt-auto pr-24">
                             <motion.h1
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.2 }}
+                                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
                                 className="text-4xl sm:text-6xl font-black tracking-tighter text-white drop-shadow-md leading-none"
                             >
                                 {project.title}
                             </motion.h1>
-                            <p className="text-white/80 font-bold text-sm sm:text-base mt-1 ml-1">{project.role[language]}</p>
+                            <motion.p
+                                initial={{ opacity: 0 }} animate={{ opacity: 0.8 }} transition={{ delay: 0.2, duration: 0.4 }}
+                                className="font-bold text-sm sm:text-base mt-1 ml-1 text-white"
+                            >
+                                {project.role[language]}
+                            </motion.p>
                         </div>
                     </div>
                 </div>
 
+                {/* --- FLOATING ICON (Moved outside Content Body) --- */}
+                {/* Positioned absolute relative to the main card, anchored to the header seam */}
+                {isReady && (
+                    <motion.div
+                        initial={{ scale: 0, opacity: 0, rotate: -45 }}
+                        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                        transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                        // top-48/64 matches header height exactly.
+                        className="absolute top-48 sm:top-64 right-8 -translate-y-1/2 z-30 pointer-events-none"
+                    >
+                        <div
+                            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
+                            style={{ borderColor: theme.colors.cardBg }}
+                        >
+                            {React.cloneElement(project.icon as React.ReactElement<any>, { size: 40 })}
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* --- CONTENT BODY --- */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar relative" style={{ backgroundColor: theme.colors.cardBg }}>
 
-                    <div className="p-8 pt-16 space-y-8">
-
-                        {/* 1. GALLERY STRIP (Scrollable & Draggable) */}
-                        {project.screenshots && project.screenshots.length > 0 && (
-                            <motion.div custom={0} variants={contentVariants} initial="hidden" animate="visible">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <ImageIcon size={18} style={{ color: theme.colors.text }} />
-                                    <span className="text-sm font-black uppercase tracking-widest" style={{ color: theme.colors.text }}>{t('game.gallery')}</span>
-                                </div>
-
-                                {/* Draggable Container */}
+                    {isReady && (
+                        <motion.div
+                            variants={contentStagger}
+                            initial="hidden"
+                            animate="visible"
+                            className="p-8 pt-16 space-y-8"
+                        >
+                            {/* Floating Icon */}
+                            <motion.div
+                                initial={{ scale: 0, opacity: 0, rotate: -45 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                                className="absolute top-0 right-8 -translate-y-1/2 z-30 pointer-events-none"
+                            >
                                 <div
-                                    ref={scrollRef}
-                                    {...dragEvents}
-                                    className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing"
+                                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-3xl ${project.color} shadow-2xl flex items-center justify-center text-white border-4`}
+                                    style={{ borderColor: theme.colors.cardBg }}
                                 >
-                                    {project.screenshots.map((item, i) => (
-                                        <motion.button
-                                            key={i}
-                                            whileHover={{ scale: 1.05, y: -5 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => {
-                                                if (!hasMoved.current) setLightboxIndex(i);
-                                            }}
-                                            className={`w-64 h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5`}
-                                            style={{ borderColor: theme.colors.primary }}
-                                        >
-                                            {/* RENDER VIDEO THUMBNAIL */}
-                                            {isVideo(item) ? (
-                                                <VideoThumbnail src={item} />
-                                            ) : isImagePath(item) ? (
-                                                // STYLISH IMAGE THUMBNAIL
-                                                <div className="w-full h-full relative pointer-events-none">
-                                                    <div className="absolute inset-0">
-                                                        <img src={item} className="w-full h-full object-cover blur-md opacity-60 scale-125" alt="" />
+                                    {React.cloneElement(project.icon as React.ReactElement<any>, { size: 40 })}
+                                </div>
+                            </motion.div>
+
+                            {/* Gallery */}
+                            {project.screenshots && project.screenshots.length > 0 && (
+                                <motion.div variants={itemVariants} className="mb-8">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <ImageIcon size={18} style={{ color: theme.colors.text }} />
+                                        <span className="text-sm font-black uppercase tracking-widest" style={{ color: theme.colors.text }}>{t('game.gallery')}</span>
+                                    </div>
+                                    <div ref={scrollRef} {...dragEvents} className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing transform-gpu">
+                                        {project.screenshots.map((item, i) => (
+                                            <motion.button
+                                                key={i}
+                                                whileHover={{ scale: 1.05, y: -5 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => { if (!hasMoved.current) setLightboxIndex(i); }}
+                                                className={`w-64 h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5`}
+                                                style={{ borderColor: theme.colors.primary }}
+                                            >
+                                                {isVideo(item) ? <VideoThumbnail src={item} /> : isImagePath(item) ? (
+                                                    <div className="w-full h-full relative pointer-events-none">
+                                                        <div className="absolute inset-0"><img src={item} className="w-full h-full object-cover blur-md opacity-60 scale-125" alt="" decoding="async" /></div>
+                                                        <img src={item} alt={`Thumb ${i}`} className="relative z-10 w-full h-full object-contain p-1" decoding="async" />
                                                     </div>
-                                                    <img src={item} alt={`Thumb ${i}`} className="relative z-10 w-full h-full object-contain p-1" />
-                                                </div>
-                                            ) : (
-                                                <div className={`w-full h-full ${item}`}></div>
-                                            )}
-
-                                            {/* Hover Highlight */}
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-20 pointer-events-none"></div>
-
-                                            {/* Label (Image or Video) */}
-                                            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none flex items-center gap-1">
-                                                {isVideo(item) ? 'VIDEO' : `IMG_0${i+1}`}
-                                            </div>
-                                        </motion.button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* ... Description & Stats (No changes here) ... */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <motion.div custom={1} variants={contentVariants} initial="hidden" animate="visible" className="lg:col-span-2 flex flex-col">
-                                <div className="rounded-3xl p-6 sm:p-8 shadow-sm border h-full" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
-                                    <h3 className="text-xl font-black mb-6 flex items-center gap-2" style={{ color: theme.colors.text }}>
-                                        <span className={`w-2 h-8 rounded-full ${project.color}`}></span>
-                                        {t('game.desc')}
-                                    </h3>
-                                    <p className="leading-relaxed whitespace-pre-wrap text-base sm:text-lg font-medium opacity-80" style={{ color: theme.colors.text }}>
-                                        {project.details[language]}
-                                    </p>
-                                </div>
-                            </motion.div>
-
-                            <div className="lg:col-span-1 space-y-6">
-                                <motion.div custom={3} variants={contentVariants} initial="hidden" animate="visible" className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
-                                    <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}>
-                                        <Cpu size={14} /> {t('game.tech')}
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {project.tech.map(t => (
-                                            <span key={t} className="px-3 py-1.5 text-xs font-bold rounded-full shadow-sm cursor-default border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}>
-                                                {t}
-                                            </span>
+                                                ) : (<div className={`w-full h-full ${item}`}></div>)}
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 z-20 pointer-events-none"></div>
+                                                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none flex items-center gap-1">{isVideo(item) ? 'VIDEO' : `IMG_0${i+1}`}</div>
+                                            </motion.button>
                                         ))}
                                     </div>
                                 </motion.div>
+                            )}
 
-                                <motion.div custom={4} variants={contentVariants} initial="hidden" animate="visible" className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
-                                    <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}>
-                                        <ListChecks size={14} /> {t('game.features')}
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {project.features.map(f => (
-                                            <div key={f} className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}>
-                                                <CheckCircle2 size={14} className="shrink-0" style={{ color: theme.colors.accent }} />
-                                                <span>{f}</span>
-                                            </div>
-                                        ))}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <motion.div variants={itemVariants} className="lg:col-span-2 flex flex-col">
+                                    <div className="rounded-3xl p-6 sm:p-8 shadow-sm border h-full" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
+                                        <h3 className="text-xl font-black mb-6 flex items-center gap-2" style={{ color: theme.colors.text }}><span className={`w-2 h-8 rounded-full ${project.color}`}></span>{t('game.desc')}</h3>
+                                        <p className="leading-relaxed whitespace-pre-wrap text-base sm:text-lg font-medium opacity-80" style={{ color: theme.colors.text }}>{project.details[language]}</p>
                                     </div>
                                 </motion.div>
+
+                                <div className="lg:col-span-1 space-y-6">
+                                    <motion.div variants={itemVariants} className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
+                                        <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}><Cpu size={14} /> {t('game.tech')}</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {project.tech.map(t => (<span key={t} className="px-3 py-1.5 text-xs font-bold rounded-full shadow-sm cursor-default border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}>{t}</span>))}
+                                        </div>
+                                    </motion.div>
+                                    <motion.div variants={itemVariants} className="rounded-3xl p-6 shadow-sm border" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
+                                        <h4 className="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2 opacity-60" style={{ color: theme.colors.text }}><ListChecks size={14} /> {t('game.features')}</h4>
+                                        <div className="flex flex-wrap gap-2">
+                                            {project.features.map(f => (<div key={f} className="flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl border" style={{ backgroundColor: theme.colors.cardBg, color: theme.colors.text, borderColor: theme.colors.cardBg }}><CheckCircle2 size={14} className="shrink-0" style={{ color: theme.colors.accent }} /><span>{f}</span></div>))}
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                        )}
                 </div>
             </motion.div>
         </div>
