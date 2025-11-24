@@ -16,54 +16,74 @@ const itemVariants: Variants = {
 
 interface GameTileProps {
   project: Project;
-  onClick: () => void;
-  onHover: (e: React.MouseEvent) => void;
-  isSelected: boolean;
-  isPressed: boolean;
-  isFavorite: boolean;
   theme: Theme;
+  // State Props
+  isSelected: boolean; // Is currently open (Hero Card)
+  isPressed: boolean; // Is currently being clicked down
+  isFavorite: boolean;
+  isHighlighted: boolean; // NEW: True if hovered (Desktop) or Tapped Once (Mobile)
+  // Handlers
+  onClick: () => void; // Triggers launch
+  onHover: () => void; // Triggers highlight
+  onLeave: () => void; // NEW: Clears highlight (Desktop only)
 }
 
 export const GameTile = ({
   project,
   onClick,
   onHover,
+  onLeave,
   isSelected,
   isPressed,
   isFavorite,
+  isHighlighted, // Use this prop instead of local state
   theme,
 }: GameTileProps) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+
+  // 3D Tilt (Desktop Only)
   const rotateX = useTransform(y, [-50, 50], [10, -10]);
   const rotateY = useTransform(x, [-50, 50], [-10, 10]);
 
-  // Detect touch to switch interaction modes
   const [isTouch, setIsTouch] = useState(false);
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
+  // Logic: Active if Selected (Open) OR Highlighted (Hover/Tap)
+  const isActive = isSelected || isHighlighted;
+
   const handleMouseMove = (event: React.MouseEvent) => {
-    if (isTouch) return; // Skip tilt on touch
+    if (isTouch) return;
     const rect = event.currentTarget.getBoundingClientRect();
     x.set((event.clientX - rect.left / rect.width - 0.5) * 50);
     y.set((event.clientY - rect.top / rect.height - 0.5) * 50);
-    onHover(event);
+
+    // Desktop: Hovering triggers highlight immediately
+    onHover();
   };
 
   const handleMouseLeave = () => {
     x.set(0);
     y.set(0);
+    // Desktop: Leaving clears highlight
+    onLeave();
   };
 
-  const handleInteraction = (e: React.MouseEvent) => {
+  const handleInteraction = () => {
     if (isTouch) {
-      // Mobile: Tap to select, Tap again to open
-      if (isSelected) onClick();
-      else onHover(e);
+      // Mobile Logic:
+      // 1. If already highlighted (tapped once), launch it.
+      // 2. If not highlighted, tap sets highlight (activates animation).
+      if (isHighlighted || isSelected) {
+        onClick();
+      } else {
+        onHover();
+        // Note: We DO NOT call onLeave() here.
+        // This keeps the tile "Active" until the user taps a different tile.
+      }
     } else {
-      // Desktop: Always open (hover already selected it)
       onClick();
     }
   };
@@ -78,20 +98,26 @@ export const GameTile = ({
         onClick={handleInteraction}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        // Only animate scale on selection if on mobile (desktop has hover tilt)
+        // UNIFIED ANIMATION: Driven by props now, works identically on Mobile/Desktop
         animate={
-          isSelected && isTouch ? { scale: 1.05, y: -5 } : { scale: 1, y: 0 }
+          isActive
+            ? { scale: 1.05, y: -5, zIndex: 20 }
+            : { scale: 1, y: 0, zIndex: 0 }
         }
         whileTap={{ scale: 0.95 }}
-        style={{ rotateX, rotateY }}
+        style={{
+          rotateX: isTouch ? 0 : rotateX,
+          rotateY: isTouch ? 0 : rotateY,
+        }}
         className="w-full h-full relative group transform-style-3d"
       >
-        {/* TACTILE CARTRIDGE CONTAINER */}
+        {/* TACTILE CONTAINER */}
         <div
           className={`
             w-full h-full rounded-[24px] shadow-lg flex flex-col relative overflow-hidden
-            transition-all duration-100 ease-out
-            border-2 border-b-[6px]
+            transition-all duration-200 ease-out
+            border-2 
+            ${isTouch ? "border-b-[4px]" : "border-b-[6px]"} 
             ${isPressed ? "border-b-[2px] translate-y-1 shadow-sm" : ""}
           `}
           style={{
@@ -106,16 +132,23 @@ export const GameTile = ({
             className={`absolute inset-2 rounded-[18px] ${project.color} opacity-5 group-hover:opacity-15 transition-opacity pointer-events-none`}
           ></div>
 
+          {/* ICON SECTION */}
           <div className="flex-1 w-full flex items-center justify-center relative z-10">
-            <div
-              className={`p-3 sm:p-5 rounded-2xl ${project.color} text-white shadow-md group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300`}
+            <motion.div
+              // Icon Animation driven by isActive prop
+              animate={
+                isActive ? { rotate: 6, scale: 1.1 } : { rotate: 0, scale: 1 }
+              }
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className={`p-3 sm:p-5 rounded-2xl ${project.color} text-white shadow-md`}
             >
               {React.cloneElement(project.icon as React.ReactElement<any>, {
                 className: "w-6 h-6 sm:w-8 sm:h-8",
               })}
-            </div>
+            </motion.div>
           </div>
 
+          {/* LABEL SECTION */}
           <div
             className="shrink-0 w-full backdrop-blur-md py-2 px-2 border-t z-20 relative"
             style={{
@@ -126,7 +159,11 @@ export const GameTile = ({
             }}
           >
             <span
-              className="block text-[10px] sm:text-xs font-black text-center truncate uppercase tracking-tight leading-none opacity-70 group-hover:opacity-100 transition-opacity"
+              className={`
+                  block text-[10px] sm:text-xs font-black text-center truncate uppercase tracking-tight leading-none 
+                  transition-opacity duration-300
+                  ${isActive ? "opacity-100" : "opacity-70"}
+              `}
               style={{ color: theme.colors.text }}
             >
               {project.title}
@@ -148,8 +185,8 @@ export const GameTile = ({
               : "rgba(0,0,0,0.15)",
           }}
           animate={{
-            scale: isSelected ? 0.6 : 1,
-            opacity: isSelected ? 0.2 : 1,
+            scale: isActive ? 0.6 : 1,
+            opacity: isActive ? 0.2 : 1,
           }}
         />
       </motion.button>

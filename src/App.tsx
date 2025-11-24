@@ -21,9 +21,9 @@ import { ProjectPreview } from "./components/projects/ProjectPreview";
 import { GameTile } from "./components/projects/GameTile";
 import { ListRow } from "./components/projects/ListRow";
 import { SystemSettings } from "./components/modals/SystemSettings.tsx";
-import { LegalModal } from "./components/modals/LegalModal.tsx";
 import { AboutModal } from "./components/about/AboutModal.tsx";
 import { GameScreen } from "./components/game/GameScreen.tsx";
+import { LegalModal } from "./components/modals/LegalModal.tsx";
 import type { Variants } from "motion";
 
 const AppContent = () => {
@@ -154,7 +154,6 @@ const AppContent = () => {
     boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
   };
 
-  // 1. BOTTOM ANIMATION: Slides DOWN to hide
   const controlVariants: Variants = {
     visible: {
       y: 0,
@@ -163,14 +162,13 @@ const AppContent = () => {
       transition: { type: "spring", stiffness: 300, damping: 20 },
     },
     hidden: {
-      y: 60, // Slide down
+      y: 60,
       scale: 0.5,
       opacity: 0,
       transition: { duration: 0.2, ease: "easeIn" },
     },
   };
 
-  // 2. TOP ANIMATION: Slides UP to hide (Symmetric)
   const topControlVariants: Variants = {
     visible: {
       y: 0,
@@ -179,7 +177,7 @@ const AppContent = () => {
       transition: { type: "spring", stiffness: 300, damping: 20 },
     },
     hidden: {
-      y: -60, // Slide UP (negative Y)
+      y: -60,
       scale: 0.5,
       opacity: 0,
       transition: { duration: 0.2, ease: "easeIn" },
@@ -334,9 +332,13 @@ const AppContent = () => {
                           launchProject(project);
                         }}
                         onHover={() => handleHover(project)}
+                        // UPDATED: onLeave no longer resets hover state (Persistent Desktop Selection)
+                        onLeave={() => {}}
                         isSelected={selectedId === project.id}
                         isPressed={selectedId === project.id && isPressed}
                         isFavorite={favorites.includes(project.id)}
+                        // Connects parent state to child animation
+                        isHighlighted={hoveredId === project.id}
                         theme={theme}
                       />
                     ))}
@@ -425,7 +427,7 @@ const AppContent = () => {
               <AnimatePresence>
                 {displayedProject && (
                   <motion.div
-                    variants={topControlVariants} // Use the "Slide Up" logic here
+                    variants={topControlVariants}
                     initial="hidden"
                     animate={showControls ? "visible" : "hidden"}
                     exit="hidden"
