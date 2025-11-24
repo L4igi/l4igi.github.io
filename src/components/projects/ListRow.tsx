@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Star } from "lucide-react";
 import type { Project, Theme } from "../../types";
@@ -23,6 +23,9 @@ export const ListRow = ({
 }: ListRowProps) => {
   const { language } = useLanguage();
 
+  const [isHovered, setIsHovered] = useState(false);
+  const isActive = isSelected || isHovered;
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -43,7 +46,13 @@ export const ListRow = ({
     y.set(yPct);
   };
 
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    onHover();
+  };
+
   const handleMouseLeave = () => {
+    setIsHovered(false);
     x.set(0);
     y.set(0);
   };
@@ -62,25 +71,30 @@ export const ListRow = ({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      layout
     >
       <motion.button
         onClick={handleInteraction}
-        onMouseEnter={onHover}
+        onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.98, y: 2 }}
+        animate={{
+          scale: isSelected ? 1.02 : 1,
+          y: isSelected ? -2 : 0,
+        }}
+        whileTap={{ scale: 0.98, y: 4 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         style={{ rotateX, rotateY }}
         className="w-full relative group outline-none transform-style-3d"
       >
         {/* TACTILE CONTAINER */}
         <div
           className={`
-                        w-full flex items-center gap-5 p-3 rounded-[20px] overflow-hidden relative
-                        border-2 border-b-[6px] transition-all duration-100 ease-out
-                        active:border-b-[2px] active:translate-y-1
-                    `}
+            w-full flex items-center gap-5 p-3 rounded-[20px] overflow-hidden relative
+            border-2 transition-all duration-100 ease-out
+            border-b-[6px] mb-0
+            group-active:border-b-[2px] 
+            group-active:mb-[4px]
+          `}
           style={{
             backgroundColor: theme.colors.cardBg,
             borderColor: theme.isDark
@@ -101,12 +115,20 @@ export const ListRow = ({
               layoutId="activeRowBar"
               className="absolute left-0 top-0 bottom-0 w-1.5 z-20"
               style={{ backgroundColor: theme.colors.accent }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />
           )}
 
-          {/* 3. Icon Box */}
-          <div
-            className={`w-14 h-14 rounded-xl ${project.color} flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300 z-10`}
+          {/* 3. Icon Box - ANIMATED */}
+          <motion.div
+            animate={
+              isActive ? { rotate: 6, scale: 1.1 } : { rotate: 0, scale: 1 }
+            }
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className={`
+                w-14 h-14 rounded-xl ${project.color} flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden z-10
+                /* Removed group-hover CSS classes */
+            `}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/10"></div>
             <div className="relative z-10 drop-shadow-md">
@@ -114,7 +136,7 @@ export const ListRow = ({
                 size: 24,
               })}
             </div>
-          </div>
+          </motion.div>
 
           {/* 4. Text Content */}
           <div className="text-left flex-1 min-w-0 py-1 relative z-10">
