@@ -1,7 +1,8 @@
+import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useCallback } from "react";
 
+// Helpers
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 const isImagePath = (str: string) => str.includes("/") || str.includes(".");
 
@@ -9,7 +10,7 @@ interface LightboxProps {
   index: number | null;
   screenshots: string[];
   onClose: () => void;
-  setIndex: (i: number | null) => void;
+  setIndex: (i: number) => void;
 }
 
 export const Lightbox = ({
@@ -18,16 +19,25 @@ export const Lightbox = ({
   onClose,
   setIndex,
 }: LightboxProps) => {
-  const showNext = useCallback(() => {
-    if (index === null) return;
-    setIndex((index + 1) % screenshots.length);
-  }, [index, screenshots.length, setIndex]);
+  const showNext = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (index === null) return;
+      setIndex((index + 1) % screenshots.length);
+    },
+    [index, screenshots.length, setIndex],
+  );
 
-  const showPrev = useCallback(() => {
-    if (index === null) return;
-    setIndex((index - 1 + screenshots.length) % screenshots.length);
-  }, [index, screenshots.length, setIndex]);
+  const showPrev = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (index === null) return;
+      setIndex((index - 1 + screenshots.length) % screenshots.length);
+    },
+    [index, screenshots.length, setIndex],
+  );
 
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (index === null) return;
@@ -49,51 +59,87 @@ export const Lightbox = ({
           className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
           onClick={onClose}
         >
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 rounded-full z-50">
+          {/* Close Button */}
+          <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors z-50">
             <X size={32} />
           </button>
+
           <div
-            className="relative w-full h-full flex items-center justify-center p-4"
+            className="relative w-full h-full flex items-center justify-center p-4 sm:p-12"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Prev Button */}
             {screenshots.length > 1 && (
               <button
                 onClick={showPrev}
-                className="absolute left-2 sm:left-8 text-white z-50"
+                className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"
               >
                 <ChevronLeft size={48} />
               </button>
             )}
 
+            {/* Main Content Container */}
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-6xl max-h-[85vh] rounded-2xl overflow-hidden bg-black flex items-center justify-center"
+              // FIXED: Restored max-h and flex centering to prevent zooming
+              className="w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/90 sm:bg-black/50 sm:backdrop-blur-xl transform-gpu"
             >
               {isVideo(screenshots[index]) ? (
-                <video
-                  src={screenshots[index]}
-                  className="w-full h-full object-contain"
-                  controls
-                  autoPlay
-                  loop
-                />
+                <div className="w-full h-full flex items-center justify-center bg-black relative">
+                  {/* FIXED: Added 'muted' and 'playsInline' */}
+                  <video
+                    src={screenshots[index]}
+                    className="w-full h-full object-contain"
+                    controls
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                </div>
               ) : isImagePath(screenshots[index]) ? (
-                <img
-                  src={screenshots[index]}
-                  className="w-full h-full object-contain"
-                  alt=""
-                />
+                // FIXED: Restored the Background Blur + Foreground Contain layout
+                <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                  {/* Blurred Background Layer (Desktop only for performance) */}
+                  <div className="absolute inset-0 z-0 hidden sm:block">
+                    <img
+                      src={screenshots[index]}
+                      alt=""
+                      className="w-full h-full object-cover blur-2xl opacity-40 scale-110 brightness-75"
+                      decoding="async"
+                    />
+                  </div>
+                  {/* Main Image (Contained) */}
+                  <img
+                    src={screenshots[index]}
+                    alt={`Screenshot ${index + 1}`}
+                    className="relative z-10 w-full h-full object-contain shadow-2xl"
+                    decoding="async"
+                  />
+                </div>
               ) : (
-                <div className={`w-full h-full ${screenshots[index]}`} />
+                <div
+                  className={`w-full h-full ${screenshots[index]} flex items-center justify-center`}
+                >
+                  <div className="text-center">
+                    <span className="font-mono text-white/20 text-4xl font-bold block mb-2">
+                      PREVIEW
+                    </span>
+                    <span className="font-mono text-white/40 text-sm">
+                      {index + 1} / {screenshots.length}
+                    </span>
+                  </div>
+                </div>
               )}
             </motion.div>
 
+            {/* Next Button */}
             {screenshots.length > 1 && (
               <button
                 onClick={showNext}
-                className="absolute right-2 sm:right-8 text-white z-50"
+                className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"
               >
                 <ChevronRight size={48} />
               </button>
