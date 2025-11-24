@@ -21,8 +21,8 @@ import { ProjectPreview } from "./components/projects/ProjectPreview";
 import { GameTile } from "./components/projects/GameTile";
 import { ListRow } from "./components/projects/ListRow";
 import { SystemSettings } from "./components/modals/SystemSettings.tsx";
-import { AboutModal } from "./components/modals/AboutModal";
-import { GameScreen } from "./components/modals/GameScreen";
+import { AboutModal } from "./components/about/AboutModal.tsx";
+import { GameScreen } from "./components/game/GameScreen.tsx";
 import { LegalModal } from "./components/modals/LegalModal.tsx";
 
 const AppContent = () => {

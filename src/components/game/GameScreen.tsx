@@ -1,58 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   X,
   ImageIcon,
   CheckCircle2,
   Star,
-  ChevronLeft,
-  ChevronRight,
   Cpu,
   ListChecks,
-  Play,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Project, Theme } from "../../types";
-import { useLanguage } from "../../context/LanguageContext";
-import { useDraggableScroll } from "../../hooks/useDraggableScroll";
+import { useLanguage } from "../../context/LanguageContext.tsx";
+import { useDraggableScroll } from "../../hooks/useDraggableScroll.ts";
 import type { Variants } from "motion";
+import { VideoThumbnail } from "../ui/VideoThumbnail.tsx";
+import { Lightbox } from "./Lightbox.tsx";
 
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 const isImagePath = (str: string) => str.includes("/") || str.includes(".");
-
-const VideoThumbnail = ({ src }: { src: string }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const handleMouseEnter = () => {
-    videoRef.current?.play().catch(() => {});
-  };
-  const handleMouseLeave = () => {
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
-  };
-
-  return (
-    <div
-      className="relative w-full h-full bg-black"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <video
-        ref={videoRef}
-        src={src}
-        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-        muted
-        loop
-        playsInline
-      />
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity duration-300">
-        <div className="bg-black/50 backdrop-blur-sm p-2 rounded-full border border-white/20 shadow-lg">
-          <Play size={16} className="text-white fill-white" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface GameScreenProps {
   project: Project;
@@ -73,49 +37,32 @@ export const GameScreen = ({
   const [isClosing, setIsClosing] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { scrollRef, hasMoved, events: dragEvents } = useDraggableScroll();
-
   const [isReady, setIsReady] = useState(false);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setIsClosing(true);
     setTimeout(onClose, 300);
-  };
-
-  const showNextImg = useCallback(
-    (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      if (lightboxIndex === null || project.screenshots.length === 0) return;
-      setLightboxIndex((prev) => (prev! + 1) % project.screenshots.length);
-    },
-    [lightboxIndex, project.screenshots.length],
-  );
-
-  const showPrevImg = useCallback(
-    (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      if (lightboxIndex === null || project.screenshots.length === 0) return;
-      setLightboxIndex(
-        (prev) =>
-          (prev! - 1 + project.screenshots.length) % project.screenshots.length,
-      );
-    },
-    [lightboxIndex, project.screenshots.length],
-  );
+  }, [onClose]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (lightboxIndex !== null) {
-        if (e.key === "ArrowRight") showNextImg();
-        if (e.key === "ArrowLeft") showPrevImg();
-      }
-      if (e.key === "Escape") {
-        if (lightboxIndex !== null) setLightboxIndex(null);
-        else handleClose();
+        if (e.key === "ArrowRight")
+          setLightboxIndex((prev) => (prev! + 1) % project.screenshots.length);
+        if (e.key === "ArrowLeft")
+          setLightboxIndex(
+            (prev) =>
+              (prev! - 1 + project.screenshots.length) %
+              project.screenshots.length,
+          );
+        if (e.key === "Escape") setLightboxIndex(null);
+      } else if (e.key === "Escape") {
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, showNextImg, showPrevImg]);
+  }, [lightboxIndex, project.screenshots.length, handleClose]);
 
   const modalVariants: Variants = {
     initial: { opacity: 0, scale: 0.85, y: 50 },
@@ -157,91 +104,14 @@ export const GameScreen = ({
     <div
       className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/90 sm:bg-black/70 sm:backdrop-blur-md transition-opacity duration-300 ${isClosing ? "opacity-0" : "opacity-100"}`}
     >
-      {/* LIGHTBOX OVERLAY */}
       <AnimatePresence>
         {lightboxIndex !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
-            onClick={() => setLightboxIndex(null)}
-          >
-            <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors z-50">
-              <X size={32} />
-            </button>
-            <div
-              className="relative w-full h-full flex items-center justify-center p-4 sm:p-12"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {project.screenshots.length > 1 && (
-                <button
-                  onClick={showPrevImg}
-                  className="absolute left-2 sm:left-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"
-                >
-                  <ChevronLeft size={48} />
-                </button>
-              )}
-              <motion.div
-                key={lightboxIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/90 sm:bg-black/50 sm:backdrop-blur-xl transform-gpu`}
-              >
-                {isVideo(project.screenshots[lightboxIndex]) ? (
-                  <div className="w-full h-full flex items-center justify-center bg-black relative">
-                    <video
-                      src={project.screenshots[lightboxIndex]}
-                      className="w-full h-full object-contain"
-                      controls
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                    />
-                  </div>
-                ) : isImagePath(project.screenshots[lightboxIndex]) ? (
-                  <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                    <div className="absolute inset-0 z-0 hidden sm:block">
-                      <img
-                        src={project.screenshots[lightboxIndex]}
-                        alt=""
-                        className="w-full h-full object-cover blur-2xl opacity-40 scale-110 brightness-75"
-                        decoding="async"
-                      />
-                    </div>
-                    <img
-                      src={project.screenshots[lightboxIndex]}
-                      alt={`Screenshot ${lightboxIndex + 1}`}
-                      className="relative z-10 w-full h-full object-contain shadow-2xl"
-                      decoding="async"
-                    />
-                  </div>
-                ) : (
-                  <div
-                    className={`w-full h-full ${project.screenshots[lightboxIndex]} flex items-center justify-center`}
-                  >
-                    <div className="text-center">
-                      <span className="font-mono text-white/20 text-4xl font-bold block mb-2">
-                        PREVIEW
-                      </span>
-                      <span className="font-mono text-white/40 text-sm">
-                        {lightboxIndex + 1} / {project.screenshots.length}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-              {project.screenshots.length > 1 && (
-                <button
-                  onClick={showNextImg}
-                  className="absolute right-2 sm:right-8 text-white/50 hover:text-white p-3 rounded-full hover:bg-white/10 transition-all z-50"
-                >
-                  <ChevronRight size={48} />
-                </button>
-              )}
-            </div>
-          </motion.div>
+          <Lightbox
+            index={lightboxIndex}
+            screenshots={project.screenshots}
+            onClose={() => setLightboxIndex(null)}
+            setIndex={setLightboxIndex}
+          />
         )}
       </AnimatePresence>
 
@@ -259,7 +129,7 @@ export const GameScreen = ({
           boxShadow: isReady ? "0 25px 50px -12px rgba(0,0,0,0.5)" : "none",
         }}
       >
-        {/* --- HERO HEADER (Always Visible) --- */}
+        {/* --- HERO HEADER --- */}
         <div
           className={`relative h-48 sm:h-64 shrink-0 ${project.color} overflow-hidden transition-all duration-500`}
         >
@@ -319,7 +189,6 @@ export const GameScreen = ({
               </div>
             </div>
 
-            {/* FIX: Added pr-16 for mobile to avoid text touching edge, pr-24 desktop */}
             <div className="mt-auto pr-4 sm:pr-24">
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
@@ -341,15 +210,12 @@ export const GameScreen = ({
           </div>
         </div>
 
-        {/* --- FLOATING ICON (Moved OUTSIDE content body to float correctly) --- */}
-        {/* Positioned absolutely relative to the MAIN CARD CONTAINER */}
+        {/* --- FLOATING ICON --- */}
         {isReady && (
           <motion.div
             initial={{ scale: 0, opacity: 0, rotate: -45 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-            // Desktop: top-64 (big header), Mobile: top-48 (small header)
-            // Mobile: right-4, Desktop: right-8
             className="absolute top-48 sm:top-64 right-4 sm:right-8 -translate-y-1/2 z-30 pointer-events-none"
           >
             <div
@@ -375,7 +241,7 @@ export const GameScreen = ({
               animate="visible"
               className="p-6 sm:p-8 sm:pt-16 space-y-8"
             >
-              {/* Gallery */}
+              {/* Gallery Section */}
               {project.screenshots && project.screenshots.length > 0 && (
                 <motion.div variants={itemVariants} className="mb-8">
                   <div className="flex items-center gap-2 mb-4">
@@ -436,7 +302,9 @@ export const GameScreen = ({
                 </motion.div>
               )}
 
+              {/* Info Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Description */}
                 <motion.div
                   variants={itemVariants}
                   className="lg:col-span-2 flex flex-col"
@@ -466,7 +334,9 @@ export const GameScreen = ({
                   </div>
                 </motion.div>
 
+                {/* Tech & Features */}
                 <div className="lg:col-span-1 space-y-6">
+                  {/* Tech Stack */}
                   <motion.div
                     variants={itemVariants}
                     className="rounded-3xl p-6 shadow-sm border"
@@ -497,6 +367,8 @@ export const GameScreen = ({
                       ))}
                     </div>
                   </motion.div>
+
+                  {/* Features List */}
                   <motion.div
                     variants={itemVariants}
                     className="rounded-3xl p-6 shadow-sm border"
