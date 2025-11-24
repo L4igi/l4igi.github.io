@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from 'react';
+import {useState, useEffect, useRef, useMemo} from 'react';
 import {
     X,
     User,
@@ -82,6 +82,17 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
         visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 100 } }
     };
 
+    const shuffledLikes = useMemo(() => {
+        const array = [...LIKES_DATA];
+
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+
+        return array;
+    }, []);
+
     return (
         <div className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/90 sm:bg-black/70 sm:backdrop-blur-md transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
 
@@ -99,7 +110,13 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
             >
                 {/* --- HERO HEADER --- */}
                 <div className="relative h-40 shrink-0 overflow-hidden" style={{ backgroundColor: theme.colors.accent }}>
-                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                    <div
+                        className="absolute inset-0 opacity-30"
+                        style={{
+                            backgroundImage: 'linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px)',
+                            backgroundSize: '32px 32px'
+                        }}
+                    ></div>
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20"></div>
                     <div className="relative z-10 h-full px-8 flex items-center justify-between">
                         <div className="ml-32 sm:ml-40 mt-4 text-white drop-shadow-md">
@@ -143,7 +160,7 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                             <motion.div variants={contentStagger} initial="hidden" animate="visible" className="flex flex-col h-full">
                                 <div className="space-y-2">
                                     {TABS.map((tab) => (
-                                        <motion.button variants={itemVariants} key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center gap-4 p-3 rounded-xl font-bold text-sm transition-all relative overflow-hidden group`} style={{ backgroundColor: activeTab === tab.id ? theme.colors.accent : 'transparent', color: activeTab === tab.id ? theme.colors.contrastAccent : theme.colors.textLight }}>
+                                        <motion.button variants={itemVariants} key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`w-full flex items-center gap-4 p-3 rounded-xl font-bold text-sm relative overflow-hidden group`} style={{ backgroundColor: activeTab === tab.id ? theme.colors.accent : 'transparent', color: activeTab === tab.id ? theme.colors.contrastAccent : theme.colors.textLight }}>
                                             <div className={`relative z-10 flex items-center gap-3`}>{tab.icon}<span className="tracking-wide">{tab.label}</span></div>
                                         </motion.button>
                                     ))}
@@ -332,14 +349,33 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
 
                                 {/* === TAB: LIKES === */}
                                 {activeTab === 'LIKES' && (
-                                    <motion.div key="LIKES" variants={contentStagger} initial="hidden" animate="visible" exit={{ opacity: 0 }} className="grid grid-cols-1 gap-4 sm:pt-4">
-                                        {LIKES_DATA.map((item) => (
-                                            <motion.div variants={itemVariants} key={item.id} className="p-5 rounded-2xl shadow-sm border flex gap-5 items-center hover:shadow-md transition-all hover:scale-[1.01]" style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}>
-                                                <div className={`w-16 h-16 rounded-2xl ${item.color} flex items-center justify-center text-white shrink-0 shadow-md`}>{item.icon}</div>
+                                    <motion.div
+                                        key="LIKES"
+                                        variants={contentStagger}
+                                        initial="hidden"
+                                        animate="visible"
+                                        exit={{ opacity: 0 }}
+                                        className="grid grid-cols-1 gap-4 sm:pt-4"
+                                    >
+                                        {/* CHANGE LIKES_DATA to shuffledLikes HERE */}
+                                        {shuffledLikes.map((item) => (
+                                            <motion.div
+                                                variants={itemVariants}
+                                                key={item.id}
+                                                className="p-5 rounded-2xl shadow-sm border flex gap-5 items-center hover:shadow-md hover:scale-[1.01]"
+                                                style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.secondary }}
+                                            >
+                                                <div className={`w-16 h-16 rounded-2xl ${item.color} flex items-center justify-center text-white shrink-0 shadow-md`}>
+                                                    {item.icon}
+                                                </div>
                                                 <div>
                                                     <h3 className="font-bold text-lg" style={{ color: theme.colors.text }}>{item.title}</h3>
-                                                    <p className="text-xs font-bold uppercase tracking-wide mb-1 opacity-60" style={{ color: theme.colors.text }}>{item.role[language]}</p>
-                                                    <p className="text-sm leading-snug opacity-80" style={{ color: theme.colors.text }}>{item.description[language]}</p>
+                                                    <p className="text-xs font-bold uppercase tracking-wide mb-1 opacity-60" style={{ color: theme.colors.text }}>
+                                                        {item.role[language]}
+                                                    </p>
+                                                    <p className="text-sm leading-snug opacity-80" style={{ color: theme.colors.text }}>
+                                                        {item.description[language]}
+                                                    </p>
                                                 </div>
                                             </motion.div>
                                         ))}

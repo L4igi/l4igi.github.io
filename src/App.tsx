@@ -89,8 +89,24 @@ const AppContent = () => {
         const metaThemeColor = document.querySelector("meta[name=theme-color]");
         if (metaThemeColor) {
             metaThemeColor.setAttribute("content", activeColor);
+        } else {
+            const meta = document.createElement('meta');
+            meta.name = "theme-color";
+            meta.content = activeColor;
+            document.head.appendChild(meta);
         }
+
+        // 2. Handle Body Background (Overscroll)
         document.body.style.backgroundColor = activeColor;
+
+        // 3. Handle Global Tailwind Dark Mode
+        // This ensures Portals (like SystemSettings) get the dark class too
+        if (theme.isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
     }, [theme.isDark]);
 
     const launchProject = (p: Project) => {
@@ -118,7 +134,7 @@ const AppContent = () => {
 
     return (
         <div
-            className={`h-[100dvh] w-full flex justify-center items-center overflow-hidden relative transition-colors duration-700 ${theme.isDark ? 'dark' : ''}`}
+            className="h-[100dvh] w-full flex justify-center items-center overflow-hidden relative transition-colors duration-700"
             style={{ backgroundColor: theme.isDark ? '#0f172a' : '#f1f5f9' }}
         >
             <div className="hidden md:block absolute inset-0 w-full h-full z-0">

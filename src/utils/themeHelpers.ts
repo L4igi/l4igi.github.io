@@ -67,7 +67,6 @@ export const createThemeColors = (
     isDark: boolean,
     consoleVariant: { base: string, edge: string }
 ): ThemeColors => {
-    // --- LIGHT MODE ---
     const lightColors = {
         primary: '#f8fafc',
         secondary: '#e2e8f0',
@@ -79,7 +78,6 @@ export const createThemeColors = (
         contrastAccent: getContrastColor(accent)
     };
 
-    // --- DARK MODE ---
     const darkColors = {
         primary: '#020617',
         cardBg: '#0f172a',

@@ -14,7 +14,7 @@ import {
     Tv,
     Music,
     Skull,
-    CreditCard, Terminal
+    CreditCard, Terminal, Wrench, UtensilsCrossed, Swords, Cat, Bot, Twitch
 } from 'lucide-react';
 import type {Project, Pattern, ConsoleColor, ExperienceItem, LikeItem, SkillCategory} from '../types';
 
@@ -280,39 +280,115 @@ export const LIKES_DATA: LikeItem[] = [
         },
         color: 'bg-indigo-500',
         icon: <Music className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'northernlion',
+        title: 'Northernlion',
+        role: { en: 'Streamer / Content Creator', de: 'Streamer / Content Creator' },
+        description: {
+            en: 'A witty and endless source of banter. His quick pop-culture references and rogue-like gameplay are unparalleled.',
+            de: 'Ein witziger und endloser Quell an Unterhaltung. Seine schnellen Popkultur-Referenzen und Rogue-like-Gameplay sind unvergleichlich.'
+        },
+        color: 'bg-purple-500',
+        icon: <Twitch className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'godot',
+        title: 'Godot',
+        role: { en: 'Game Engine', de: 'Spiel-Engine' },
+        description: {
+            en: 'A lightweight, open-source powerhouse. The node-based system is intuitive and perfect for turning creative concepts into reality.',
+            de: 'Ein leichtgewichtiges Open-Source-Kraftpaket. Das Node-System ist intuitiv und perfekt, um kreative Konzepte in die Realität umzusetzen.'
+        },
+        color: 'bg-blue-500',
+        icon: <Bot className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'cats',
+        title: 'Cinder & Marcy',
+        role: { en: 'Companions', de: 'Gefährten' },
+        description: {
+            en: 'The chaotic duo that brings warmth to the apartment. They are expert napping supervisors and cute distractions.',
+            de: 'Das chaotische Duo, das Wärme in die Wohnung bringt. Sie sind Experten im Überwachen von Nickerchen und süße Ablenkungen.'
+        },
+        color: 'bg-orange-400',
+        icon: <Cat className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'smash_bros',
+        title: 'Super Smash Bros. Ultimate',
+        role: { en: 'Video Game', de: 'Videospiel' },
+        description: {
+            en: 'A massive celebration of gaming history packed into a chaotic platform fighter. The sheer amount of content is staggering.',
+            de: 'Eine riesige Hommage an die Gaming-Geschichte, verpackt in einen chaotischen Platform-Fighter. Der Umfang des Inhalts ist überwältigend.'
+        },
+        color: 'bg-slate-800',
+        icon: <Swords className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'nintendo',
+        title: 'Nintendo',
+        role: { en: 'Gaming Company', de: 'Spieleentwickler' },
+        description: {
+            en: 'Pioneers of play who prioritize pure fun. Their titles define childhood nostalgia while consistently reinventing what games can be.',
+            de: 'Pioniere des Spielens, die reinen Spaß priorisieren. Ihre Titel definieren Kindheitsnostalgie und erfinden Spiele immer wieder neu.'
+        },
+        color: 'bg-red-600',
+        icon: <Gamepad2 className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'jp_cooking',
+        title: 'Japanese Cooking & Culture',
+        role: { en: 'Lifestyle', de: 'Lebensstil' },
+        description: {
+            en: 'A practice rooted in mindfulness and seasonal ingredients. Exploring these recipes provides a delicious connection to tradition.',
+            de: 'Eine Praxis verwurzelt in Achtsamkeit und saisonalen Zutaten. Diese Rezepte bieten eine köstliche Verbindung zur Tradition.'
+        },
+        color: 'bg-emerald-600',
+        icon: <UtensilsCrossed className="w-8 h-8 text-white" />
+    },
+    {
+        id: 'gmtk',
+        title: "Game Maker's Toolkit",
+        role: { en: 'Educational / YouTube', de: 'Bildung / YouTube' },
+        description: {
+            en: "Essential viewing for understanding game design. Mark Brown's deep dives into mechanics and accessibility are genuinely enlightening.",
+            de: 'Pflichtprogramm für Game-Design-Verständnis. Mark Browns Deep-Dives in Mechaniken und Barrierefreiheit sind wirklich aufschlussreich.'
+        },
+        color: 'bg-yellow-600',
+        icon: <Wrench className="w-8 h-8 text-white" />
     }
 ];
-
 // --- EXPERIENCE DATA ---
 export const EXPERIENCE_DATA: ExperienceItem[] = [
     {
         year: '2025',
-        title: 'Objectbay',
-        role: { en: 'Software Engineer', de: 'Software Engineer' },
+        title: 'HR Matching Platform',
+        role: { en: 'Software Engineer @Objectbay', de: 'Software Engineer @Objectbay' },
         desc: { en: 'Modular Monolith (Kotlin/Spring), Angular, NX, Playwright. AI-Workflows.', de: 'Modularer Monolith (Kotlin/Spring), Angular, NX, Playwright. AI-Workflows.' }
     },
     {
         year: '2024',
-        title: 'Objectbay',
-        role: { en: 'Software Engineer', de: 'Software Engineer' },
+        title: 'IoT Maintenance App',
+        role: { en: 'Software Engineer @Objectbay', de: 'Software Engineer @Objectbay' },
         desc: { en: 'Backend & Security (Keycloak), Flutter integration, Bluetooth LE.', de: 'Backend & Sicherheit (Keycloak), Flutter Integration, Bluetooth LE.' }
     },
     {
         year: '2022',
-        title: 'Objectbay',
-        role: { en: 'Fullstack Ownership', de: 'Fullstack Ownership' },
+        title: 'Safety Doku Tool',
+        role: { en: 'Software Engineer @Objectbay', de: 'Software Engineer @Objectbay' },
         desc: { en: 'Kotlin, Angular, RabbitMQ, Multi-Tenancy, CI/CD (Azure).', de: 'Kotlin, Angular, RabbitMQ, Multi-Tenancy, CI/CD (Azure).' }
     },
     {
         year: '2021',
-        title: 'Objectbay',
-        role: { en: 'Software Engineer', de: 'Software Engineer' },
+        title: 'Energie & E-Commerce',
+        role: { en: 'Software Engineer @Objectbay', de: 'Software Engineer @Objectbay' },
         desc: { en: 'Modernization, Micro-Frontends (React), iOS App Dev.', de: 'Modernisierung, Micro-Frontends (React), iOS App Dev.' }
     },
     {
         year: '2016',
-        title: 'Uni Wien',
-        role: { en: 'BSc. Media Informatics', de: 'BSc. Medieninformatik' },
+        title: 'Computer Science',
+        role: { en: 'BSc. Media Informatics @Uni Wien', de: 'BSc. Medieninformatik @Uni Wien' },
         desc: { en: 'Focus: Multimedia, Signal Processing & Computer Graphics.', de: 'Fokus: Multimedia, Signalverarbeitung & Computer Graphics.' }
     }
 ];
