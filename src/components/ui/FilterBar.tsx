@@ -24,13 +24,10 @@ export const FilterBar = ({
     { Icon: Linkedin, url: SOCIAL_LINKS.linkedin },
   ];
   return (
-    // Container: Relative (scrolls with page) on mobile, Sticky on Desktop
     <div className="sticky top-0 z-30 w-full flex justify-center pt-4 pb-2 pointer-events-none">
       <div
-        // PILL SHAPE: w-fit centers it tightly. max-w ensures it doesn't overflow screen.
         className="pointer-events-auto backdrop-blur-xl border shadow-sm overflow-hidden transition-all duration-300 rounded-full w-fit max-w-[95%]"
         style={{
-          // GLASSY UPDATE: Low opacity (0.2) allows background to bleed through
           backgroundColor: theme.isDark
             ? "rgba(30, 41, 59, 0.2)"
             : "rgba(255, 255, 255, 0.2)",

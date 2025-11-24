@@ -17,15 +17,13 @@ const itemVariants: Variants = {
 interface GameTileProps {
   project: Project;
   theme: Theme;
-  // State Props
-  isSelected: boolean; // Is currently open (Hero Card)
-  isPressed: boolean; // Is currently being clicked down
+  isSelected: boolean;
+  isPressed: boolean;
   isFavorite: boolean;
-  isHighlighted: boolean; // NEW: True if hovered (Desktop) or Tapped Once (Mobile)
-  // Handlers
-  onClick: () => void; // Triggers launch
-  onHover: () => void; // Triggers highlight
-  onLeave: () => void; // NEW: Clears highlight (Desktop only)
+  isHighlighted: boolean;
+  onClick: () => void;
+  onHover: () => void;
+  onLeave: () => void;
 }
 
 export const GameTile = ({
@@ -36,13 +34,12 @@ export const GameTile = ({
   isSelected,
   isPressed,
   isFavorite,
-  isHighlighted, // Use this prop instead of local state
+  isHighlighted,
   theme,
 }: GameTileProps) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // 3D Tilt (Desktop Only)
   const rotateX = useTransform(y, [-50, 50], [10, -10]);
   const rotateY = useTransform(x, [-50, 50], [-10, 10]);
 
@@ -51,7 +48,6 @@ export const GameTile = ({
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
-  // Logic: Active if Selected (Open) OR Highlighted (Hover/Tap)
   const isActive = isSelected || isHighlighted;
 
   const handleMouseMove = (event: React.MouseEvent) => {
@@ -60,28 +56,21 @@ export const GameTile = ({
     x.set((event.clientX - rect.left / rect.width - 0.5) * 50);
     y.set((event.clientY - rect.top / rect.height - 0.5) * 50);
 
-    // Desktop: Hovering triggers highlight immediately
     onHover();
   };
 
   const handleMouseLeave = () => {
     x.set(0);
     y.set(0);
-    // Desktop: Leaving clears highlight
     onLeave();
   };
 
   const handleInteraction = () => {
     if (isTouch) {
-      // Mobile Logic:
-      // 1. If already highlighted (tapped once), launch it.
-      // 2. If not highlighted, tap sets highlight (activates animation).
       if (isHighlighted || isSelected) {
         onClick();
       } else {
         onHover();
-        // Note: We DO NOT call onLeave() here.
-        // This keeps the tile "Active" until the user taps a different tile.
       }
     } else {
       onClick();
@@ -98,7 +87,6 @@ export const GameTile = ({
         onClick={handleInteraction}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        // UNIFIED ANIMATION: Driven by props now, works identically on Mobile/Desktop
         animate={
           isActive
             ? { scale: 1.05, y: -5, zIndex: 20 }
@@ -135,7 +123,6 @@ export const GameTile = ({
           {/* ICON SECTION */}
           <div className="flex-1 w-full flex items-center justify-center relative z-10">
             <motion.div
-              // Icon Animation driven by isActive prop
               animate={
                 isActive ? { rotate: 6, scale: 1.1 } : { rotate: 0, scale: 1 }
               }

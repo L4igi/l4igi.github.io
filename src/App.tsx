@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Home, LayoutGrid, List as ListIcon, Settings } from "lucide-react";
 
-// Imports
 import "./styles/global.css";
 import type { Category, ViewMode, Project } from "./types";
 import { PROJECTS } from "./data/content";
 import { useThemeSystem } from "./hooks/useThemeSystem";
 import { LanguageProvider } from "./context/LanguageContext";
 
-// Components
 import { Scanlines } from "./components/ui/Scanlines";
 import { BootSplash } from "./components/ui/BootSplash";
 import { StatusBar } from "./components/ui/StatusBar";
@@ -48,7 +46,6 @@ const AppContent = () => {
 
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
-  // --- SCROLL VISIBILITY LOGIC ---
   const [showControls, setShowControls] = useState(true);
   const scrollTimeout = useRef<number | null>(null);
 
@@ -332,12 +329,10 @@ const AppContent = () => {
                           launchProject(project);
                         }}
                         onHover={() => handleHover(project)}
-                        // UPDATED: onLeave no longer resets hover state (Persistent Desktop Selection)
                         onLeave={() => {}}
                         isSelected={selectedId === project.id}
                         isPressed={selectedId === project.id && isPressed}
                         isFavorite={favorites.includes(project.id)}
-                        // Connects parent state to child animation
                         isHighlighted={hoveredId === project.id}
                         theme={theme}
                       />

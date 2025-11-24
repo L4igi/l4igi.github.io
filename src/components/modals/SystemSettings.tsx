@@ -37,11 +37,9 @@ export const SystemSettings = ({
   const { language, setLanguage, t } = useLanguage();
   const [position, setPosition] = useState({ bottom: 24, left: 24 });
 
-  // Calculate position relative to the button before painting
   useLayoutEffect(() => {
     if (anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
-      // Position menu above the button, aligned to its left edge
       setPosition({
         bottom: window.innerHeight - rect.top + 16, // 16px gap above button
         left: rect.left,
@@ -71,7 +69,6 @@ export const SystemSettings = ({
     onApply({ ...currentTheme, colors: newColors });
   };
 
-  // --- ANIMATIONS ---
   const menuVariants: Variants = {
     hidden: {
       opacity: 0,
@@ -331,7 +328,6 @@ export const SystemSettings = ({
           </motion.button>
         </div>
 
-        {/* Pointer - Aligned to center of button (approx 28px in) */}
         <div
           className="absolute -bottom-2 left-7 w-4 h-4 border-b-2 border-r-2 rotate-45"
           style={{

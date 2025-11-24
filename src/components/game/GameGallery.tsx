@@ -6,7 +6,6 @@ import { useDraggableScroll } from "../../hooks/useDraggableScroll";
 import { VideoThumbnail } from "../ui/VideoThumbnail";
 import type { Variants } from "motion";
 
-// Helpers moved here or imported from a utils file
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 const isImagePath = (str: string) => str.includes("/") || str.includes(".");
 
@@ -31,7 +30,6 @@ export const GameGallery = ({
   onImageClick,
 }: GameGalleryProps) => {
   const { t } = useLanguage();
-  // Hook usage is now encapsulated where it belongs
   const { scrollRef, hasMoved, events: dragEvents } = useDraggableScroll();
 
   if (!screenshots || screenshots.length === 0) return null;

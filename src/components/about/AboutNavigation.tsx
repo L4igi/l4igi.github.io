@@ -23,7 +23,6 @@ interface NavProps {
   isExpanded: boolean;
 }
 
-// Animation variants matching the original file
 const contentStagger: Variants = {
   hidden: { opacity: 0 },
   visible: {

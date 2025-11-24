@@ -3,10 +3,8 @@ import { CONSOLE_VARIANTS, PASTEL_PALETTE } from "../data/content";
 import { createThemeColors } from "../utils/themeHelpers";
 import type { ConsoleColor, Theme } from "../types";
 
-// --- CONFIGURATION ---
 const IS_DARK_DEFAULT = true; // Change this single value to switch default mode
 
-// Select appropriate default console color based on mode
 const DEFAULT_CONSOLE = IS_DARK_DEFAULT
   ? CONSOLE_VARIANTS.black
   : CONSOLE_VARIANTS.white;
@@ -31,19 +29,15 @@ export const useThemeSystem = () => {
   const toggleDarkMode = () => {
     const newMode = !theme.isDark;
 
-    // 1. Identify current console color key to preserve custom selections (e.g. Pink)
     let currentConsoleKey =
       (Object.keys(CONSOLE_VARIANTS) as ConsoleColor[]).find(
         (k) => CONSOLE_VARIANTS[k].base === theme.colors.console,
       ) || "white";
 
-    // 2. Smart Switching Logic:
-    // If using a "default" console color (White/Black), switch it to match the new mode.
-    // If using a "custom" color (Pink/Indigo), keep it.
     if (!theme.isDark && currentConsoleKey === "white") {
-      currentConsoleKey = "black"; // Light (White) -> Dark (Black)
+      currentConsoleKey = "black";
     } else if (theme.isDark && currentConsoleKey === "black") {
-      currentConsoleKey = "white"; // Dark (Black) -> Light (White)
+      currentConsoleKey = "white";
     }
 
     const colors = createThemeColors(

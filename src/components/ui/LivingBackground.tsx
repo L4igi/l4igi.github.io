@@ -37,7 +37,6 @@ export const LivingBackground = ({
     return () => window.removeEventListener("mousemove", handleMove);
   }, [mouseX, mouseY, paused]);
 
-  // Static Fallback Layer
   const StaticLayer = () => (
     <div className="absolute inset-0 w-full h-full opacity-30 transition-opacity duration-500">
       <div
@@ -71,7 +70,7 @@ export const LivingBackground = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }} // Smooth fade-in when resuming
+          transition={{ duration: 0.5 }}
           className="hidden md:block absolute inset-0 w-full h-full"
         >
           <svg className="hidden">

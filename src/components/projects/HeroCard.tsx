@@ -14,7 +14,6 @@ export const HeroCard = ({
   const { t } = useLanguage();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // --- 3D MOUSE TILT ---
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [5, -5]);
@@ -48,22 +47,18 @@ export const HeroCard = ({
       className="w-full h-full flex items-center justify-center perspective-container p-4 sm:p-6 will-change-transform"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      // 1. INITIAL STATE (Slide Up)
       initial={{ opacity: 0, scale: 0.9, y: 50, rotateX: 10 }}
-      // 2. ENTER ANIMATION (Spring Snap)
       animate={
         isReady
           ? { opacity: 1, scale: 1, y: 0, rotateX: 0 }
           : { opacity: 0, scale: 0.9, y: 50 }
       }
-      // 3. EXIT ANIMATION (The "Nintendo Drop")
-      // The card tilts back and falls down, clearing the stage for the Project Preview
       exit={{
         opacity: 0,
         scale: 0.85,
-        y: 150, // Drop down significantly
-        rotateX: -20, // Tilt backwards
-        transition: { duration: 0.35, ease: "backIn" }, // "Anticipate" then drop fast
+        y: 150,
+        rotateX: -20,
+        transition: { duration: 0.35, ease: "backIn" },
       }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
     >
@@ -72,7 +67,7 @@ export const HeroCard = ({
         className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5"
         style={{
           backgroundColor: theme.colors.cardBg,
-          rotateX, // Bind mouse tilt
+          rotateX,
           rotateY,
         }}
         onClick={onOpenTrainer}
@@ -87,7 +82,6 @@ export const HeroCard = ({
             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
             {/* Avatar Container */}
-            {/* Z-Index 50 ensures it sits ABOVE the card as it morphs away */}
             <div className="relative sm:absolute sm:right-[-50px] z-50">
               <motion.div
                 layoutId="shared-avatar"
@@ -96,7 +90,6 @@ export const HeroCard = ({
                   borderColor: theme.colors.cardBg,
                   color: theme.colors.text,
                 }}
-                // Ensure the avatar morph is smoother than the card exit
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 {!imgError ? (
@@ -123,8 +116,6 @@ export const HeroCard = ({
             className="flex-1 p-6 sm:p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            // 4. TEXT EXIT (Fast & Clean)
-            // Text vanishes instantly (0.1s) so it doesn't clutter the "Drop" animation
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
             <h1

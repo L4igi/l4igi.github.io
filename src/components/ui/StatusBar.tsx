@@ -7,7 +7,7 @@ interface StatusBarProps {
   time: string;
   theme: Theme;
   onOpenProfile: () => void;
-  onGoHome: () => void; // Add this prop
+  onGoHome: () => void;
   showProfile: boolean;
 }
 
@@ -21,14 +21,10 @@ export const StatusBar = ({
   const [imgError, setImgError] = useState(false);
   const [hours, minutes] = time.split(":");
 
-  // New Logic: Decides what happens when you click the morphing button
   const handleClick = () => {
     if (showProfile) {
-      // If profile is shown (meaning we are deep in a project), go BACK home
       onGoHome();
     } else {
-      // If profile is NOT shown (meaning we are at Hero Card), open About Modal
-      // (Though in this specific layout, this button is only visible when showProfile is true anyway)
       onOpenProfile();
     }
   };
@@ -56,8 +52,6 @@ export const StatusBar = ({
                 ? "rgba(255,255,255,0.1)"
                 : "rgba(0,0,0,0.05)",
             }}
-            // On desktop, this might be confusing if it says "Open Profile" but goes Home.
-            // Updated title to be contextual.
             title={showProfile ? "Return to Home" : "Open Profile"}
           >
             {/* Avatar Circle */}

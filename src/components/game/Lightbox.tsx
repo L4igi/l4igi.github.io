@@ -2,7 +2,6 @@ import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
-// Helpers
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src);
 const isImagePath = (str: string) => str.includes("/") || str.includes(".");
 
@@ -37,7 +36,6 @@ export const Lightbox = ({
     [index, screenshots.length, setIndex],
   );
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (index === null) return;
@@ -59,7 +57,6 @@ export const Lightbox = ({
           className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center"
           onClick={onClose}
         >
-          {/* Close Button */}
           <button className="absolute top-4 right-4 text-white/70 hover:text-white p-2 hover:bg-white/10 rounded-full transition-colors z-50">
             <X size={32} />
           </button>
@@ -68,7 +65,6 @@ export const Lightbox = ({
             className="relative w-full h-full flex items-center justify-center p-4 sm:p-12"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Prev Button */}
             {screenshots.length > 1 && (
               <button
                 onClick={showPrev}
@@ -78,17 +74,14 @@ export const Lightbox = ({
               </button>
             )}
 
-            {/* Main Content Container */}
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              // FIXED: Restored max-h and flex centering to prevent zooming
               className="w-full h-full max-w-6xl max-h-[85vh] rounded-2xl shadow-2xl flex items-center justify-center ring-1 ring-white/10 overflow-hidden bg-black/90 sm:bg-black/50 sm:backdrop-blur-xl transform-gpu"
             >
               {isVideo(screenshots[index]) ? (
                 <div className="w-full h-full flex items-center justify-center bg-black relative">
-                  {/* FIXED: Added 'muted' and 'playsInline' */}
                   <video
                     src={screenshots[index]}
                     className="w-full h-full object-contain"
@@ -100,9 +93,7 @@ export const Lightbox = ({
                   />
                 </div>
               ) : isImagePath(screenshots[index]) ? (
-                // FIXED: Restored the Background Blur + Foreground Contain layout
                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-                  {/* Blurred Background Layer (Desktop only for performance) */}
                   <div className="absolute inset-0 z-0 hidden sm:block">
                     <img
                       src={screenshots[index]}
@@ -111,7 +102,6 @@ export const Lightbox = ({
                       decoding="async"
                     />
                   </div>
-                  {/* Main Image (Contained) */}
                   <img
                     src={screenshots[index]}
                     alt={`Screenshot ${index + 1}`}
@@ -135,7 +125,6 @@ export const Lightbox = ({
               )}
             </motion.div>
 
-            {/* Next Button */}
             {screenshots.length > 1 && (
               <button
                 onClick={showNext}

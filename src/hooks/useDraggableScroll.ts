@@ -7,7 +7,6 @@ export const useDraggableScroll = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Ref to track if movement happened, used to block clicks after dragging
   const hasMoved = useRef(false);
 
   const onMouseDown = useCallback((e: MouseEvent<HTMLDivElement>) => {

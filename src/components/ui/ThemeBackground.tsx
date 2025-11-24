@@ -18,9 +18,6 @@ export const ThemeBackground = ({
       ? "opacity-30"
       : "opacity-60";
 
-  // 1. FREEZE ANIMATION:
-  // We use 'animation-play-state' to pause the CSS animation instantly at its current frame.
-  // This prevents the "jump" because the element doesn't reset to 0, it just stops moving.
   const animationStyle: React.CSSProperties = {
     animationPlayState: paused ? "paused" : "running",
   };
@@ -46,7 +43,6 @@ export const ThemeBackground = ({
       className={`absolute inset-0 z-0 pointer-events-none text-[var(--accent)] transition-all duration-1000 ${baseOpacity} overflow-hidden`}
     >
       {/* --- GLOBAL KEYFRAMES --- */}
-      {/* We use a Transform translation for GPU acceleration instead of background-position */}
       <style>{`
                 @keyframes slide-vertical {
                     from { transform: translateY(0); }

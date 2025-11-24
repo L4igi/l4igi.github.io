@@ -2,13 +2,11 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Project, Theme } from "../../types";
 
-// Components
 import { Lightbox } from "./Lightbox.tsx";
 import { GameHero } from "./GameHero.tsx";
 import { GameGallery } from "./GameGallery.tsx";
 import { GameDetails } from "./GameDetails.tsx";
 
-// Logic
 import { useGameScreen } from "./useGameScreen.tsx";
 import type { Variants } from "motion";
 
@@ -20,7 +18,6 @@ interface GameScreenProps {
   theme: Theme;
 }
 
-// Define variants outside to prevent re-creation
 const MODAL_VARIANTS: Variants = {
   initial: { opacity: 0, scale: 0.85, y: 50 },
   animate: {
@@ -97,7 +94,6 @@ export const GameScreen = ({
           onToggleFavorite={toggleFavorite}
         />
 
-        {/* Floating Icon */}
         {state.isReady && (
           <motion.div
             initial={{ scale: 0, opacity: 0, rotate: -45 }}
@@ -116,7 +112,6 @@ export const GameScreen = ({
           </motion.div>
         )}
 
-        {/* Scrollable Content */}
         <div
           className="flex-1 overflow-y-auto custom-scrollbar relative"
           style={{ backgroundColor: theme.colors.cardBg }}

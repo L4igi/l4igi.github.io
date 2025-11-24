@@ -48,18 +48,16 @@ export const ListRow = ({
     y.set(0);
   };
 
-  // --- MODIFIED CLICK HANDLER ---
   const handleInteraction = () => {
     if (isSelected) {
-      onClick(); // Launch
+      onClick();
     } else {
-      onHover(); // Select
+      onHover();
     }
   };
 
   return (
     <motion.div
-      // Includes your previous padding fix
       className="relative z-10 w-full perspective-container px-4 sm:px-0"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
@@ -67,7 +65,7 @@ export const ListRow = ({
       layout
     >
       <motion.button
-        onClick={handleInteraction} // Updated handler
+        onClick={handleInteraction}
         onMouseEnter={onHover}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

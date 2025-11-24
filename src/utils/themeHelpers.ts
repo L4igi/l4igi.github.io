@@ -8,7 +8,6 @@ export const getContrastColor = (hex: string): string => {
   return yiq >= 128 ? "#0f172a" : "#ffffff";
 };
 
-// Helper to generate a complementary color for the background blobs
 export const getComplementaryColor = (hex: string): string => {
   // Convert hex to RGB
   let r = parseInt(hex.substring(1, 3), 16);

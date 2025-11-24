@@ -97,9 +97,7 @@ export const ProjectPreview = ({
           ></div>
 
           <div className="relative z-10">
-            {/* UPDATED HEADER BADGES */}
             <div className="flex items-center gap-2 mb-3">
-              {/* Category: Colored Pill */}
               <span
                 className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm"
                 style={{
@@ -112,7 +110,6 @@ export const ProjectPreview = ({
                 {project.category}
               </span>
 
-              {/* Year: Simple Tech Text */}
               <span
                 className="flex items-center gap-1 text-[10px] font-bold opacity-50"
                 style={{ color: theme.colors.text }}
@@ -148,7 +145,6 @@ export const ProjectPreview = ({
               ))}
             </div>
 
-            {/* NINTENDO STYLE BUTTON */}
             <motion.button
               onClick={onStart}
               whileHover={{ scale: 1.05 }}

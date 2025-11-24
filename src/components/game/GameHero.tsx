@@ -51,7 +51,6 @@ export const GameHero = ({
               <span className="tracking-wider">{project.year}</span>
             </span>
 
-            {/* CATEGORY BADGE: Glossy/Vibrant Look */}
             <span
               className="flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm border-b-2 border-black/10"
               style={{
@@ -87,7 +86,6 @@ export const GameHero = ({
           </div>
         </div>
 
-        {/* Title */}
         <div className="mt-auto pr-4 sm:pr-24">
           <motion.h1
             initial={{ opacity: 0, x: -20 }}

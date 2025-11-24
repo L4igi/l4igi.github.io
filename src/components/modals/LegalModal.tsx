@@ -14,7 +14,6 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"IMPRINT" | "PRIVACY">("IMPRINT");
 
-  // Performance: Staged loading state
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -22,7 +21,6 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // --- ANIMATION VARIANTS ---
   const modalVariants: Variants = {
     initial: { opacity: 0, scale: 0.9, y: 50 },
     animate: {

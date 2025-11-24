@@ -12,10 +12,6 @@ export const BootSplash = ({ onComplete, theme }: BootSplashProps) => {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    // We set timers without dependencies to ensure they run only ONCE
-    // during the initial application load. This prevents the animation
-    // from rerunning when the theme or props change later.
-
     const t1 = setTimeout(() => setStep(1), 100);
     const t2 = setTimeout(() => setStep(2), 800);
     const t3 = setTimeout(() => setStep(3), 2400);
@@ -74,7 +70,6 @@ export const BootSplash = ({ onComplete, theme }: BootSplashProps) => {
                       mass: 1.2,
                     }}
                     className="text-6xl sm:text-8xl font-black tracking-tighter"
-                    // Highlight the '4' with the theme accent color
                     style={{
                       color: i === 1 ? theme.colors.accent : theme.colors.text,
                     }}
