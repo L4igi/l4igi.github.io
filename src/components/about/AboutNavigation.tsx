@@ -13,7 +13,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { SOCIAL_LINKS, CV_LINKS } from "../../data/content";
 import type { Theme } from "../../types";
 import type { Variants } from "motion";
-import type { AboutTab } from "./useAboutModal.ts";
+import type { AboutTab } from "./useAboutModal.tsx";
 
 interface NavProps {
   activeTab: AboutTab;

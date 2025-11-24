@@ -7,7 +7,7 @@ import { useLanguage } from "../../context/LanguageContext";
 interface ListRowProps {
   project: Project;
   onClick: () => void;
-  onHover: () => void; // Simplified: No event passing needed
+  onHover: () => void;
   isSelected: boolean;
   isFavorite: boolean;
   theme: Theme;
@@ -23,11 +23,9 @@ export const ListRow = ({
 }: ListRowProps) => {
   const { language } = useLanguage();
 
-  // --- INTERNAL MOTION LOGIC (Nintendo Polish) ---
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // Subtle tilt for the list row (less dramatic than grid tiles)
   const rotateX = useTransform(y, [-100, 100], [2, -2]);
   const rotateY = useTransform(x, [-100, 100], [-2, 2]);
 
@@ -38,7 +36,6 @@ export const ListRow = ({
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
 
-    // Calculate tilt values
     const xPct = (mouseX / width - 0.5) * 100;
     const yPct = (mouseY / height - 0.5) * 100;
 
@@ -51,22 +48,32 @@ export const ListRow = ({
     y.set(0);
   };
 
+  // --- MODIFIED CLICK HANDLER ---
+  const handleInteraction = () => {
+    if (isSelected) {
+      onClick(); // Launch
+    } else {
+      onHover(); // Select
+    }
+  };
+
   return (
     <motion.div
-      className="relative z-10 w-full perspective-container"
+      // Includes your previous padding fix
+      className="relative z-10 w-full perspective-container px-4 sm:px-0"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       layout
     >
       <motion.button
-        onClick={onClick}
-        onMouseEnter={onHover} // Only trigger state change on enter
-        onMouseMove={handleMouseMove} // Handle visuals locally
+        onClick={handleInteraction} // Updated handler
+        onMouseEnter={onHover}
+        onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.98, y: 2 }}
-        style={{ rotateX, rotateY }} // Apply local 3D tilt
+        style={{ rotateX, rotateY }}
         className="w-full relative group outline-none transform-style-3d"
       >
         {/* TACTILE CONTAINER */}
@@ -99,7 +106,7 @@ export const ListRow = ({
             />
           )}
 
-          {/* 3. Icon Box (Tilts independently on Hover) */}
+          {/* 3. Icon Box */}
           <div
             className={`w-14 h-14 rounded-xl ${project.color} flex items-center justify-center text-white shadow-md shrink-0 relative overflow-hidden group-hover:rotate-6 group-hover:scale-110 transition-transform duration-300 z-10`}
           >

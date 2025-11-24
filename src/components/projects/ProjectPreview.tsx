@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { Star, ArrowRight } from "lucide-react";
+import { Star, ChevronRight, Calendar, Tag } from "lucide-react"; // Use standard icons
 import type { Project, Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -16,12 +16,22 @@ export const ProjectPreview = ({
   theme: Theme;
 }) => {
   const { language, t } = useLanguage();
+
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+
   const rotateX = useTransform(y, [-100, 100], [5, -5]);
   const rotateY = useTransform(x, [-100, 100], [-5, 5]);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (isTouch) return;
+
     const rect = event.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -46,14 +56,15 @@ export const ProjectPreview = ({
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -100 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       <motion.div
-        className="relative w-full max-w-lg max-h-[90%] min-h-[300px] aspect-[16/9] rounded-[32px] shadow-2xl border-[6px] flex overflow-hidden transform-style-3d"
+        className="relative w-full max-w-lg max-h-[90%] min-h-[300px] aspect-[16/9] rounded-[32px] shadow-2xl border-[6px] flex overflow-hidden transform-style-3d will-change-transform"
         style={{
-          backgroundColor: theme.colors.cardBg, // Explicit theme color fixes light mode
-          borderColor: theme.colors.cardBg, // Match border to card for clean look
-          rotateX,
-          rotateY,
+          backgroundColor: theme.colors.cardBg,
+          borderColor: theme.colors.cardBg,
+          rotateX: isTouch ? 0 : rotateX,
+          rotateY: isTouch ? 0 : rotateY,
         }}
       >
         {/* Left: 3D Art */}
@@ -62,13 +73,15 @@ export const ProjectPreview = ({
         >
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-black/10"></div>
+
           <motion.div
             className="drop-shadow-2xl scale-110 text-white translate-z-20"
             style={{ transform: "scale(1.1)" }}
-            whileHover={{ scale: 1.2, rotate: 5 }}
+            whileHover={isTouch ? undefined : { scale: 1.2, rotate: 5 }}
           >
             {project.icon}
           </motion.div>
+
           {isFavorite && (
             <div className="absolute top-4 left-4 text-yellow-300 drop-shadow-md translate-z-30">
               <Star fill="currentColor" size={28} />
@@ -78,31 +91,37 @@ export const ProjectPreview = ({
 
         {/* Right: Info */}
         <div className="w-2/3 p-6 flex flex-col justify-between relative overflow-hidden">
-          {/* Ambient Glow */}
           <div
-            className="absolute -right-20 -top-20 w-64 h-64 opacity-10 rounded-full blur-3xl"
+            className="hidden sm:block absolute -right-20 -top-20 w-64 h-64 opacity-10 rounded-full blur-3xl"
             style={{ backgroundColor: theme.colors.accent }}
           ></div>
 
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
+            {/* UPDATED HEADER BADGES */}
+            <div className="flex items-center gap-2 mb-3">
+              {/* Category: Colored Pill */}
               <span
-                className="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider border"
+                className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm"
                 style={{
                   backgroundColor: theme.colors.primary,
                   color: theme.colors.textLight,
                   borderColor: theme.colors.secondary,
                 }}
               >
+                <Tag size={10} className="opacity-60" />
                 {project.category}
               </span>
+
+              {/* Year: Simple Tech Text */}
               <span
-                className="text-[10px] font-bold opacity-50"
+                className="flex items-center gap-1 text-[10px] font-bold opacity-50"
                 style={{ color: theme.colors.text }}
               >
+                <Calendar size={10} />
                 {project.year}
               </span>
             </div>
+
             <h1
               className="text-2xl font-black leading-none mb-2 tracking-tight"
               style={{ color: theme.colors.text }}
@@ -129,22 +148,25 @@ export const ProjectPreview = ({
               ))}
             </div>
 
-            {/* Nintendo Style Button: Solid Color, Clicky, No Glow */}
+            {/* NINTENDO STYLE BUTTON */}
             <motion.button
               onClick={onStart}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group flex items-center gap-2 text-xs sm:text-sm font-black px-5 py-2.5 rounded-xl shadow-md transition-all"
+              whileTap={{ scale: 0.95, y: 4 }}
+              className="group relative pl-5 pr-2 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none"
               style={{
                 backgroundColor: theme.colors.accent,
                 color: theme.colors.contrastAccent,
+                borderColor: "rgba(0,0,0,0.2)",
               }}
             >
-              <span>{t("btn.details")}</span>
-              <ArrowRight
-                size={16}
-                className="group-hover:translate-x-1 transition-transform"
-              />
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full pointer-events-none"></div>
+              <span className="relative z-10 drop-shadow-sm">
+                {t("btn.details")}
+              </span>
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
+                <ChevronRight size={18} strokeWidth={3} />
+              </div>
             </motion.button>
           </div>
         </div>

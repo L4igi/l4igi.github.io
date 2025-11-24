@@ -21,9 +21,10 @@ import { ProjectPreview } from "./components/projects/ProjectPreview";
 import { GameTile } from "./components/projects/GameTile";
 import { ListRow } from "./components/projects/ListRow";
 import { SystemSettings } from "./components/modals/SystemSettings.tsx";
+import { LegalModal } from "./components/modals/LegalModal.tsx";
 import { AboutModal } from "./components/about/AboutModal.tsx";
 import { GameScreen } from "./components/game/GameScreen.tsx";
-import { LegalModal } from "./components/modals/LegalModal.tsx";
+import type { Variants } from "motion";
 
 const AppContent = () => {
   const { theme, updateTheme, toggleDarkMode } = useThemeSystem();
@@ -47,20 +48,25 @@ const AppContent = () => {
 
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
-  // --- PERFORMANCE OPTIMIZATION ---
+  // --- SCROLL VISIBILITY LOGIC ---
+  const [showControls, setShowControls] = useState(true);
+  const scrollTimeout = useRef<number | null>(null);
+
+  const handleScroll = () => {
+    if (showControls) setShowControls(false);
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = window.setTimeout(() => setShowControls(true), 400);
+  };
+
   const [backgroundPaused, setBackgroundPaused] = useState(false);
 
-  // Control Background Animation State
   useEffect(() => {
     const anyModalOpen =
       isAboutOpen || !!activeProject || showSystemSettings || isLegalOpen;
 
     if (anyModalOpen) {
-      // Pause immediately when opening
       setBackgroundPaused(true);
     } else {
-      // Resume AFTER animation finishes (500ms delay)
-      // This prevents "jank" during the closing transition
       const timer = setTimeout(() => setBackgroundPaused(false), 500);
       return () => clearTimeout(timer);
     }
@@ -105,11 +111,8 @@ const AppContent = () => {
       document.head.appendChild(meta);
     }
 
-    // 2. Handle Body Background (Overscroll)
     document.body.style.backgroundColor = activeColor;
 
-    // 3. Handle Global Tailwind Dark Mode
-    // This ensures Portals (like SystemSettings) get the dark class too
     if (theme.isDark) {
       document.documentElement.classList.add("dark");
     } else {
@@ -138,7 +141,6 @@ const AppContent = () => {
     else {
       setSelectedId(null);
       setHoveredId(null);
-      setIsAboutOpen(false);
     }
   };
 
@@ -150,6 +152,38 @@ const AppContent = () => {
     borderColor: theme.colors.secondary,
     color: theme.colors.text,
     boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+  };
+
+  // 1. BOTTOM ANIMATION: Slides DOWN to hide
+  const controlVariants: Variants = {
+    visible: {
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 },
+    },
+    hidden: {
+      y: 60, // Slide down
+      scale: 0.5,
+      opacity: 0,
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
+  };
+
+  // 2. TOP ANIMATION: Slides UP to hide (Symmetric)
+  const topControlVariants: Variants = {
+    visible: {
+      y: 0,
+      scale: 1,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 },
+    },
+    hidden: {
+      y: -60, // Slide UP (negative Y)
+      scale: 0.5,
+      opacity: 0,
+      transition: { duration: 0.2, ease: "easeIn" },
+    },
   };
 
   return (
@@ -191,7 +225,7 @@ const AppContent = () => {
           )}
           {showSystemSettings && (
             <SystemSettings
-              anchorRef={settingsButtonRef} // PASS REF HERE
+              anchorRef={settingsButtonRef}
               currentTheme={theme}
               onApply={updateTheme}
               onClose={() => setShowSystemSettings(false)}
@@ -221,34 +255,41 @@ const AppContent = () => {
             }}
           >
             <ThemeBackground theme={theme} paused={backgroundPaused} />
+
             <StatusBar
               time={currentTime}
               theme={theme}
               onOpenProfile={() => setIsAboutOpen(true)}
+              onGoHome={goHome}
               showProfile={!!displayedProject}
             />
 
             <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
-              {displayedProject ? (
-                <div
-                  key={displayedProject.id}
-                  className="w-full h-full absolute inset-0"
-                >
-                  <ProjectPreview
-                    project={displayedProject}
-                    onStart={() => launchProject(displayedProject)}
-                    isFavorite={favorites.includes(displayedProject.id)}
-                    theme={theme}
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-full absolute inset-0 flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                {displayedProject ? (
+                  <motion.div
+                    key="preview"
+                    className="w-full h-full absolute inset-0"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ProjectPreview
+                      project={displayedProject}
+                      onStart={() => launchProject(displayedProject)}
+                      isFavorite={favorites.includes(displayedProject.id)}
+                      theme={theme}
+                    />
+                  </motion.div>
+                ) : (
                   <HeroCard
+                    key="hero"
                     onOpenTrainer={() => setIsAboutOpen(true)}
                     theme={theme}
                   />
-                </div>
-              )}
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -264,7 +305,10 @@ const AppContent = () => {
 
           {/* BOTTOM SCREEN */}
           <div className="flex-1 bg-[var(--panel)] relative flex flex-col shadow-[0_-10px_30px_rgba(0,0,0,0.05)] z-10 transition-colors duration-700 overflow-hidden">
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-opacity-50 relative flex flex-col">
+            <div
+              className="flex-1 overflow-y-auto custom-scrollbar bg-opacity-50 relative flex flex-col"
+              onScroll={handleScroll}
+            >
               <FilterBar
                 activeCategory={activeCategory}
                 setActiveCategory={setActiveCategory}
@@ -325,62 +369,79 @@ const AppContent = () => {
             </div>
 
             {/* CORNER CONTROLS */}
+
             {/* Bottom Left: SETTINGS */}
             <div className="absolute bottom-6 left-6 z-50">
-              <motion.button
-                ref={settingsButtonRef} // ATTACH REF HERE
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => setShowSystemSettings(!showSystemSettings)}
-                className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center group"
-                style={cornerButtonStyle}
-                title="System Settings"
+              <motion.div
+                variants={controlVariants}
+                initial="visible"
+                animate={showControls ? "visible" : "hidden"}
               >
-                <Settings
-                  size={24}
-                  className="group-hover:rotate-90 transition-transform duration-500"
-                />
-              </motion.button>
+                <motion.button
+                  ref={settingsButtonRef}
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setShowSystemSettings(!showSystemSettings)}
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center group"
+                  style={cornerButtonStyle}
+                  title="System Settings"
+                >
+                  <Settings
+                    size={24}
+                    className="group-hover:rotate-90 transition-transform duration-500"
+                  />
+                </motion.button>
+              </motion.div>
             </div>
 
             {/* Bottom Right: VIEW MODE */}
             <div className="absolute bottom-6 right-6 z-50">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() =>
-                  setViewMode((v) => (v === "GRID" ? "LIST" : "GRID"))
-                }
-                className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center"
-                style={cornerButtonStyle}
-                title="Toggle View"
+              <motion.div
+                variants={controlVariants}
+                initial="visible"
+                animate={showControls ? "visible" : "hidden"}
               >
-                {viewMode === "GRID" ? (
-                  <LayoutGrid size={24} />
-                ) : (
-                  <ListIcon size={24} />
-                )}
-              </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() =>
+                    setViewMode((v) => (v === "GRID" ? "LIST" : "GRID"))
+                  }
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center"
+                  style={cornerButtonStyle}
+                  title="Toggle View"
+                >
+                  {viewMode === "GRID" ? (
+                    <LayoutGrid size={24} />
+                  ) : (
+                    <ListIcon size={24} />
+                  )}
+                </motion.button>
+              </motion.div>
             </div>
 
-            {/* Top Right (of Bottom Screen): HOME BUTTON (Restored & Logic Fix) */}
-            <div className="absolute top-6 right-6 z-40 pointer-events-none">
+            {/* Top Right: HOME BUTTON (Desktop Only) */}
+            <div className="absolute top-6 right-6 z-40 pointer-events-none hidden md:block">
               <AnimatePresence>
-                {/* Only show Home button if we are NOT on Hero Card (i.e., a project is displayed/hovered) */}
                 {displayedProject && (
-                  <motion.button
-                    initial={{ scale: 0, opacity: 0, rotate: -90 }}
-                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                    exit={{ scale: 0, opacity: 0, rotate: 90 }}
-                    whileTap={{ scale: 0.9 }}
-                    whileHover={{ scale: 1.05 }}
-                    onClick={goHome}
-                    className="p-3 rounded-full backdrop-blur-xl border-2 transition-all shadow-lg flex items-center justify-center pointer-events-auto"
-                    style={cornerButtonStyle}
-                    title="Return to Home"
+                  <motion.div
+                    variants={topControlVariants} // Use the "Slide Up" logic here
+                    initial="hidden"
+                    animate={showControls ? "visible" : "hidden"}
+                    exit="hidden"
+                    className="pointer-events-auto"
                   >
-                    <Home size={20} />
-                  </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.05 }}
+                      onClick={goHome}
+                      className="p-3 rounded-full backdrop-blur-xl border-2 transition-all shadow-lg flex items-center justify-center"
+                      style={cornerButtonStyle}
+                      title="Return to Home"
+                    >
+                      <Home size={20} />
+                    </motion.button>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>

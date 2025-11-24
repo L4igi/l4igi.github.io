@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { X, Star } from "lucide-react";
+import { X, Star, Calendar, Hash } from "lucide-react";
 import type { Project, Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -44,14 +44,22 @@ export const GameHero = ({
       <div className="relative z-10 h-full p-6 sm:p-8 flex flex-col justify-between">
         {/* Header Actions */}
         <div className="flex justify-between items-start">
-          <div className="flex gap-2">
-            <span className="bg-black/20 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full border border-white/20">
-              {project.year}
+          <div className="flex gap-2 items-center">
+            {/* YEAR BADGE: Tech/Dark Look */}
+            <span className="flex items-center gap-1 bg-black/30 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1.5 rounded-lg border border-white/10 shadow-sm">
+              <Calendar size={10} className="opacity-70" />
+              <span className="tracking-wider">{project.year}</span>
             </span>
+
+            {/* CATEGORY BADGE: Glossy/Vibrant Look */}
             <span
-              className="bg-white/90 text-[var(--accent)] text-[10px] sm:text-xs font-black px-2 sm:px-3 py-1 rounded-full uppercase tracking-wider shadow-sm"
-              style={{ color: theme.colors.accent }}
+              className="flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm border-b-2 border-black/10"
+              style={{
+                backgroundColor: theme.colors.cardBg,
+                color: theme.colors.text,
+              }}
             >
+              <Hash size={10} className="opacity-50" />
               {project.category}
             </span>
           </div>

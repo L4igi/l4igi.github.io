@@ -8,7 +8,7 @@ import {
   TabLikes,
 } from "./AboutTabs.tsx";
 import { AboutNavigation } from "./AboutNavigation.tsx";
-import { useAboutModal } from "./useAboutModal.ts";
+import { useAboutModal } from "./useAboutModal.tsx";
 import type { Variants } from "motion";
 
 const MODAL_VARIANTS: Variants = {
