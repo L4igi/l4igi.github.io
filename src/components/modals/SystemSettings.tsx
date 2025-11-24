@@ -6,6 +6,7 @@ import { createThemeColors } from '../../utils/themeHelpers';
 import { PASTEL_PALETTE, CONSOLE_VARIANTS, PATTERNS } from '../../data/content';
 import { useLanguage } from '../../context/LanguageContext';
 import type {Variants} from "motion";
+import React, {useLayoutEffect, useState} from "react";
 
 interface SystemSettingsProps {
     currentTheme: Theme;
@@ -13,10 +14,24 @@ interface SystemSettingsProps {
     onClose: () => void;
     onToggleDarkMode: () => void;
     onOpenLegal: () => void;
+    anchorRef: React.RefObject<HTMLButtonElement | null>;
 }
 
-export const SystemSettings = ({ currentTheme, onApply, onClose, onToggleDarkMode, onOpenLegal }: SystemSettingsProps) => {
+export const SystemSettings = ({ currentTheme, onApply, onClose, onToggleDarkMode, onOpenLegal, anchorRef }: SystemSettingsProps) => {
     const { language, setLanguage, t } = useLanguage();
+    const [position, setPosition] = useState({ bottom: 24, left: 24 });
+
+    // Calculate position relative to the button before painting
+    useLayoutEffect(() => {
+        if (anchorRef.current) {
+            const rect = anchorRef.current.getBoundingClientRect();
+            // Position menu above the button, aligned to its left edge
+            setPosition({
+                bottom: window.innerHeight - rect.top + 16, // 16px gap above button
+                left: rect.left
+            });
+        }
+    }, [anchorRef]);
 
     const handleColorChange = (hex: string) => {
         const currentConsoleKey = (Object.keys(CONSOLE_VARIANTS) as ConsoleColor[]).find(k => CONSOLE_VARIANTS[k].base === currentTheme.colors.console) || 'white';
@@ -31,12 +46,12 @@ export const SystemSettings = ({ currentTheme, onApply, onClose, onToggleDarkMod
 
     // --- ANIMATIONS ---
     const menuVariants: Variants = {
-        hidden: { opacity: 0, scale: 0.8, y: 20, x: -20, transformOrigin: "bottom left" },
+        hidden: { opacity: 0, scale: 0.8, y: 20, x: -10, transformOrigin: "bottom left" },
         visible: {
             opacity: 1, scale: 1, y: 0, x: 0,
-            transition: { type: "spring", damping: 25, stiffness: 350, staggerChildren: 0.03 }
+            transition: { type: "spring", damping: 22, stiffness: 300, staggerChildren: 0.03 }
         },
-        exit: { opacity: 0, scale: 0.9, y: 20, x: -20, transition: { duration: 0.15 } }
+        exit: { opacity: 0, scale: 0.9, y: 20, x: -10, transition: { duration: 0.15 } }
     };
 
     const itemVariants: Variants = {
@@ -54,9 +69,12 @@ export const SystemSettings = ({ currentTheme, onApply, onClose, onToggleDarkMod
             <motion.div
                 variants={menuVariants}
                 initial="hidden" animate="visible" exit="exit"
-                // UNIFIED POSITIONING: Always Bottom-Left anchored
-                className="fixed bottom-24 left-6 z-[9999] w-80 max-w-[85vw] rounded-[32px] shadow-2xl border-2 overflow-hidden will-change-transform"
+                className="fixed z-[9999] w-80 max-w-[85vw] rounded-[32px] shadow-2xl border-2 overflow-hidden will-change-transform"
                 style={{
+                    // DYNAMIC POSITIONING based on button
+                    bottom: position.bottom,
+                    left: position.left,
+
                     backgroundColor: currentTheme.isDark ? '#0f172a' : '#ffffff',
                     borderColor: currentTheme.colors.primary,
                     color: currentTheme.colors.text,
@@ -148,9 +166,9 @@ export const SystemSettings = ({ currentTheme, onApply, onClose, onToggleDarkMod
                     </motion.button>
                 </div>
 
-                {/* Pointer - Bottom Left */}
+                {/* Pointer - Aligned to center of button (approx 28px in) */}
                 <div
-                    className="absolute -bottom-2 left-8 w-4 h-4 border-b-2 border-r-2 rotate-45"
+                    className="absolute -bottom-2 left-7 w-4 h-4 border-b-2 border-r-2 rotate-45"
                     style={{ backgroundColor: currentTheme.isDark ? '#0f172a' : '#ffffff', borderColor: currentTheme.colors.primary }}
                 ></div>
             </motion.div>

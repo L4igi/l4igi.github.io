@@ -5,7 +5,7 @@ import { getComplementaryColor } from '../../utils/themeHelpers';
 
 interface LivingBackgroundProps {
     theme: Theme;
-    paused?: boolean; // New prop to control animation state
+    paused?: boolean;
 }
 
 export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProps) => {
@@ -13,17 +13,15 @@ export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProp
     const primaryColor = theme.colors.accent;
     const secondaryColor = useMemo(() => getComplementaryColor(primaryColor), [primaryColor]);
 
-    // --- MOUSE INTERACTION ---
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
-    // Tighter spring for Light Mode to feel more "physical"
     const springConfig = { damping: 25, stiffness: 120, mass: 0.8 };
     const x = useSpring(mouseX, springConfig);
     const y = useSpring(mouseY, springConfig);
 
     useEffect(() => {
-        if (paused) return; // Don't attach listeners if paused
+        if (paused) return;
 
         const handleMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
@@ -34,7 +32,7 @@ export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProp
         return () => window.removeEventListener('mousemove', handleMove);
     }, [mouseX, mouseY, paused]);
 
-    // --- STATIC FALLBACK (Used for Mobile OR when Paused) ---
+    // Static Fallback Layer
     const StaticLayer = () => (
         <div className="absolute inset-0 w-full h-full opacity-30 transition-opacity duration-500">
             <div
@@ -51,14 +49,19 @@ export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProp
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none select-none bg-transparent">
 
-            {/* 1. Always show Static Layer on Mobile OR if Paused */}
+            {/* 1. Static Layer (Always rendered on mobile, or when paused on desktop) */}
             <div className={`absolute inset-0 w-full h-full ${paused ? 'block' : 'md:hidden'}`}>
                 <StaticLayer />
             </div>
 
-            {/* 2. Only render Heavy Animation on Desktop AND if NOT Paused */}
+            {/* 2. Heavy Animation Layer (Desktop Only + Not Paused) */}
             {!paused && (
-                <div className="hidden md:block absolute inset-0 w-full h-full">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }} // Smooth fade-in when resuming
+                    className="hidden md:block absolute inset-0 w-full h-full"
+                >
                     <svg className="hidden">
                         <defs>
                             <filter id="goo">
@@ -110,10 +113,10 @@ export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProp
                                 ${theme.isDark ? 'opacity-15 mix-blend-screen' : 'opacity-50 mix-blend-normal'} will-change-transform`}
                         />
                     </div>
-                </div>
+                </motion.div>
             )}
 
-            {/* Texture & Vignette (Always visible) */}
+            {/* Texture & Vignette */}
             <motion.div
                 className="absolute inset-0 w-full h-full z-10 will-change-transform"
                 style={{
@@ -121,7 +124,6 @@ export const LivingBackground = ({ theme, paused = false }: LivingBackgroundProp
                     backgroundSize: '48px 48px',
                     opacity: theme.isDark ? 0.04 : 0.06
                 }}
-                // Pause texture animation if paused to save resources
                 animate={!paused ? { backgroundPosition: ["0px 0px", "48px 48px"] } : undefined}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             />

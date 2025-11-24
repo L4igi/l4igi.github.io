@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { LayoutGrid, List as ListIcon, Settings} from 'lucide-react';
 
@@ -29,7 +29,7 @@ const AppContent = () => {
     const { theme, updateTheme, toggleDarkMode } = useThemeSystem();
 
     const [currentTime, setCurrentTime] = useState('00:00');
-    const [activeCategory, setActiveCategory] = useState<Category>('WORK'); // Default to WORK as per request? Or ALL? Keeping WORK as it was in your snippet
+    const [activeCategory, setActiveCategory] = useState<Category>('WORK');
     const [viewMode, setViewMode] = useState<ViewMode>('GRID');
     const [isBooting, setIsBooting] = useState(true);
     const [isLegalOpen, setIsLegalOpen] = useState(false);
@@ -44,6 +44,26 @@ const AppContent = () => {
     const [isPressed, setIsPressed] = useState(false);
 
     const isModalOpen = isAboutOpen || !!activeProject || isLegalOpen;
+
+    const settingsButtonRef = useRef<HTMLButtonElement>(null);
+
+    // --- PERFORMANCE OPTIMIZATION ---
+    const [backgroundPaused, setBackgroundPaused] = useState(false);
+
+    // Control Background Animation State
+    useEffect(() => {
+        const anyModalOpen = isAboutOpen || !!activeProject || showSystemSettings || isLegalOpen;
+
+        if (anyModalOpen) {
+            // Pause immediately when opening
+            setBackgroundPaused(true);
+        } else {
+            // Resume AFTER animation finishes (500ms delay)
+            // This prevents "jank" during the closing transition
+            const timer = setTimeout(() => setBackgroundPaused(false), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [isAboutOpen, activeProject, showSystemSettings, isLegalOpen]);
 
     const filteredProjects = useMemo(() => {
         return activeCategory === 'ALL' ? PROJECTS : PROJECTS.filter(p => p.category === activeCategory);
@@ -61,7 +81,6 @@ const AppContent = () => {
         return () => clearInterval(timer);
     }, []);
 
-    // --- DYNAMIC SYSTEM THEME ---
     useEffect(() => {
         const darkBg = '#0f172a';
         const lightBg = '#f1f5f9';
@@ -70,15 +89,8 @@ const AppContent = () => {
         const metaThemeColor = document.querySelector("meta[name=theme-color]");
         if (metaThemeColor) {
             metaThemeColor.setAttribute("content", activeColor);
-        } else {
-            const meta = document.createElement('meta');
-            meta.name = "theme-color";
-            meta.content = activeColor;
-            document.head.appendChild(meta);
         }
-
         document.body.style.backgroundColor = activeColor;
-
     }, [theme.isDark]);
 
     const launchProject = (p: Project) => {
@@ -90,12 +102,12 @@ const AppContent = () => {
         setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
     };
 
-    if (isBooting) return <BootSplash onComplete={() => setIsBooting(false)} />;
-
     const handleHover = (p: Project) => {
         if (p.id === hoveredId) return;
         setHoveredId(p.id);
     };
+
+    if (isBooting) return <BootSplash onComplete={() => setIsBooting(false)} />;
 
     const cornerButtonStyle = {
         backgroundColor: theme.colors.cardBg,
@@ -139,6 +151,7 @@ const AppContent = () => {
                     )}
                     {showSystemSettings && (
                         <SystemSettings
+                            anchorRef={settingsButtonRef} // PASS REF HERE
                             currentTheme={theme}
                             onApply={updateTheme}
                             onClose={() => setShowSystemSettings(false)}
@@ -162,18 +175,16 @@ const AppContent = () => {
                             backdropFilter: 'blur(20px)'
                         }}
                     >
-                        <ThemeBackground theme={theme} />
+                        <ThemeBackground theme={theme} paused={backgroundPaused}/>
                         <StatusBar time={currentTime} theme={theme} onOpenProfile={() => setIsAboutOpen(true)} showProfile={!!displayedProject} />
 
                         <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
                             {displayedProject ? (
                                 <div key={displayedProject.id} className="w-full h-full absolute inset-0">
-                                    {/* PERFORMANCE FIX: Removed wrapper CSS animation class `animate-slide-...` */}
                                     <ProjectPreview project={displayedProject} onStart={() => launchProject(displayedProject)} isFavorite={favorites.includes(displayedProject.id)} theme={theme} />
                                 </div>
                             ) : (
                                 <div className="w-full h-full absolute inset-0 flex items-center justify-center">
-                                    {/* PERFORMANCE FIX: Removed wrapper CSS animation class `animate-slide-...` */}
                                     <HeroCard onOpenTrainer={() => setIsAboutOpen(true)} theme={theme} />
                                 </div>
                             )}
@@ -197,7 +208,6 @@ const AppContent = () => {
                                 {viewMode === 'GRID' ? (
                                     <motion.div
                                         key="grid"
-                                        // PERFORMANCE FIX: Switched from Scale to Y-axis fade
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
@@ -229,6 +239,7 @@ const AppContent = () => {
                         {/* Bottom Left: SETTINGS */}
                         <div className="absolute bottom-6 left-6 z-50">
                             <motion.button
+                                ref={settingsButtonRef} // ATTACH REF HERE
                                 whileTap={{ scale: 0.9 }}
                                 whileHover={{ scale: 1.05 }}
                                 onClick={() => setShowSystemSettings(!showSystemSettings)}

@@ -77,7 +77,7 @@ export const HeroCard = ({ onOpenTrainer, theme }: { onOpenTrainer: () => void, 
                             >
                                 {!imgError ? (
                                     <img
-                                        src="/profile.jpg"
+                                        src="/profile/me.jpg"
                                         alt="Lukas"
                                         className="w-full h-full object-cover"
                                         onError={() => setImgError(true)}

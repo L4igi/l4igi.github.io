@@ -118,7 +118,7 @@ export const AboutModal = ({ onClose, theme }: { onClose: () => void, theme: The
                 <div className="absolute top-16 left-8 z-20">
                     <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-[6px] shadow-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-gray-800 relative" style={{ borderColor: theme.colors.cardBg }}>
                         <div className="absolute inset-0 flex items-center justify-center"><span className="text-4xl font-black opacity-20" style={{ color: theme.colors.accent }}>LH</span></div>
-                        <motion.img src="/profile.jpg" alt="LH" className="w-full h-full object-cover relative z-10" initial={{ opacity: 0 }} animate={{ opacity: isImageLoaded ? 1 : 0 }} transition={{ duration: 0.5 }} onLoad={() => setIsImageLoaded(true)} onError={(e) => e.currentTarget.style.display='none'} decoding="async" />
+                        <motion.img src="/profile/me.jpg" alt="LH" className="w-full h-full object-cover relative z-10" initial={{ opacity: 0 }} animate={{ opacity: isImageLoaded ? 1 : 0 }} transition={{ duration: 0.5 }} onLoad={() => setIsImageLoaded(true)} onError={(e) => e.currentTarget.style.display='none'} decoding="async" />
                     </div>
                 </div>
 
