@@ -26,7 +26,8 @@ const TRANSLATIONS = {
     "modal.hobbies_learning": "Japanese (Learning)",
     "modal.badges": "Badges & Certs",
     "modal.quote": "About Me",
-    "modal.quote_text": "As a Fullstack Engineer specializing in the Kotlin & Spring Boot ecosystem, I combine 4 years of hands-on expertise with a strategic mindset. I don't just write code; I take ownership of the entire stack, strictly balancing architectural purity with tangible business value. I believe sustainable systems are built through shared decision-making, mentorship, and a transparent error culture. Outside of enterprise systems, I sharpen my problem-solving skills through Game Development (Godot), using creative constraints to gain fresh technical perspectives.",
+    "modal.quote_text":
+      "As a Fullstack Engineer specializing in the Kotlin & Spring Boot ecosystem, I combine 4 years of hands-on expertise with a strategic mindset. I don't just write code; I take ownership of the entire stack, strictly balancing architectural purity with tangible business value. I believe sustainable systems are built through shared decision-making, mentorship, and a transparent error culture. Outside of enterprise systems, I sharpen my problem-solving skills through Game Development (Godot), using creative constraints to gain fresh technical perspectives.",
     "modal.sakurai_quote":
       "\"I don't think I've ever made something that I'm totally satisfied with.\n" +
       "That feeling of doubt, or wanting to do more, is my engine to move\n" +
@@ -115,7 +116,7 @@ const TRANSLATIONS = {
     "modal.badges": "Orden & Zertifikate",
     "modal.quote": "Über Mich",
     "modal.quote_text":
-        "Als auf das Kotlin- & Spring Boot-Ökosystem spezialisierter Fullstack Engineer verbinde ich 4 Jahre Praxiserfahrung mit einem strategischen Mindset. Ich schreibe nicht nur Code, sondern übernehme Verantwortung für den gesamten Stack – dabei wäge ich stets pragmatisch zwischen architektonischer Sauberkeit und konkretem Business Value ab. Ich bin überzeugt, dass nachhaltige Systeme durch gemeinsame Entscheidungen, Mentoring und eine offene Fehlerkultur entstehen. Abseits der Enterprise-Welt schärfe ich meine Problemlösungskompetenz durch Game Development (Godot) und nutze diese kreativen Spielräume, um neue technische Perspektiven zu gewinnen.",
+      "Als auf das Kotlin- & Spring Boot-Ökosystem spezialisierter Fullstack Engineer verbinde ich 4 Jahre Praxiserfahrung mit einem strategischen Mindset. Ich schreibe nicht nur Code, sondern übernehme Verantwortung für den gesamten Stack – dabei wäge ich stets pragmatisch zwischen architektonischer Sauberkeit und konkretem Business Value ab. Ich bin überzeugt, dass nachhaltige Systeme durch gemeinsame Entscheidungen, Mentoring und eine offene Fehlerkultur entstehen. Abseits der Enterprise-Welt schärfe ich meine Problemlösungskompetenz durch Game Development (Godot) und nutze diese kreativen Spielräume, um neue technische Perspektiven zu gewinnen.",
     "modal.sakurai_quote":
       "\"I don't think I've ever made something that I'm totally satisfied with.\n" +
       "That feeling of doubt, or wanting to do more, is my engine to move\n" +
