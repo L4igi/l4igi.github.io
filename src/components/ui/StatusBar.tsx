@@ -282,46 +282,69 @@ export const StatusBar = ({
         className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
         style={{ color: theme.colors.text }}
       >
-        {/* Profile / Home Button - Left */}
-        <div className="min-w-[140px] h-full flex items-center">
-          {showProfile && (
-            <motion.button
-              onClick={handleProfileClick}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm group overflow-hidden"
-              style={{
-                backgroundColor: theme.isDark
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(255,255,255,0.5)",
-                borderColor: theme.isDark
-                  ? "rgba(255,255,255,0.1)"
-                  : "rgba(0,0,0,0.05)",
-              }}
-            >
-              <div className="w-8 h-8 rounded-full overflow-hidden shadow-inner border border-white/10 shrink-0">
-                {!imgError ? (
-                  <img
-                    src="/profile/me.jpg"
-                    alt="LH"
-                    className="w-full h-full object-cover"
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-300 text-black font-black text-[10px]">
-                    LH
-                  </div>
-                )}
-              </div>
-              <span className="font-black group-hover:text-[var(--accent)] transition-colors">
-                Lukas
-              </span>
-            </motion.button>
-          )}
-        </div>
+        {showProfile && (
+          <motion.button
+            onClick={handleProfileClick}
+            layout
+            initial={{
+              opacity: 0,
+              scale: 0,
+              y: 20,
+              rotate: -20,
+            }}
+            animate={{
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              rotate: 0,
+            }}
+            exit={{
+              opacity: 0,
+              scale: 0,
+              y: 20,
+              transition: { duration: 0.2 },
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 8,
+              mass: 0.8,
+            }}
+            whileHover={{
+              scale: 1.1,
+              rotate: 3,
+              transition: { type: "spring", stiffness: 400, damping: 15 },
+            }}
+            whileTap={{ scale: 0.9 }}
+            className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm group overflow-hidden origin-center"
+            style={{
+              backgroundColor: theme.isDark
+                ? "rgba(255,255,255,0.05)"
+                : "rgba(255,255,255,0.5)",
+              borderColor: theme.isDark
+                ? "rgba(255,255,255,0.1)"
+                : "rgba(0,0,0,0.05)",
+            }}
+          >
+            <div className="w-8 h-8 rounded-full overflow-hidden shadow-inner border border-white/10 shrink-0">
+              {!imgError ? (
+                <img
+                  src="/profile/me.jpg"
+                  alt="LH"
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-300 text-black font-black text-[10px]">
+                  LH
+                </div>
+              )}
+            </div>
+            <span className="font-black group-hover:text-[var(--accent)] transition-colors">
+              Lukas
+            </span>
+          </motion.button>
+        )}
 
         {/* Center Spacer */}
         <div className="flex-1"></div>
@@ -331,15 +354,23 @@ export const StatusBar = ({
           <motion.button
             onClick={handleTrigger}
             animate={controls}
+            layout
+            // --- PHYSICS ONLY HOVER ---
             whileHover={{
               scale: 1.1,
-              backgroundColor: "#facc15",
-              color: "#000000",
-              borderColor: "#fef08a",
+              rotate: -3, // Symmetrical tilt
+              // No background change here anymore, just physics
+              transition: { type: "spring", stiffness: 400, damping: 10 },
             }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{
+              scale: 0.9,
+              rotate: 0,
+              transition: { duration: 0.1 },
+            }}
             disabled={isTimeTraveling}
-            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
+            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group origin-center ${
+              isTimeTraveling ? "cursor-default" : "cursor-pointer"
+            }`}
             style={{
               backgroundColor: isTimeTraveling
                 ? theme.colors.accent
@@ -349,6 +380,7 @@ export const StatusBar = ({
               borderColor: theme.isDark
                 ? "rgba(255,255,255,0.1)"
                 : "rgba(0,0,0,0.05)",
+              // Text color is base text normally, or contrast when active
               color: isTimeTraveling
                 ? theme.colors.contrastAccent
                 : theme.colors.text,
@@ -357,7 +389,8 @@ export const StatusBar = ({
                 : "none",
             }}
           >
-            <div className="relative w-4 h-4">
+            {/* Icon Container - Adds hover color transition */}
+            <div className="relative w-4 h-4 group-hover:text-[#facc15] transition-colors duration-200">
               <AnimatePresence mode="wait">
                 {isTimeTraveling ? (
                   <motion.div
@@ -375,7 +408,7 @@ export const StatusBar = ({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute inset-0 opacity-60"
+                    className="absolute inset-0 opacity-60 group-hover:opacity-100"
                   >
                     <Clock size={14} />
                   </motion.div>
@@ -383,8 +416,9 @@ export const StatusBar = ({
               </AnimatePresence>
             </div>
 
+            {/* Text Container - Adds hover color transition */}
             <div
-              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center group-hover:text-black transition-colors"
+              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center transition-colors duration-200 group-hover:text-[#facc15]"
               style={{
                 transform: `translate(${glitchOffset}px, ${-glitchOffset}px)`,
                 textShadow: isTimeTraveling

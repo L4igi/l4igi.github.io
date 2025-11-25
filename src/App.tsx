@@ -152,13 +152,6 @@ const AppContent = () => {
   if (isBooting)
     return <BootSplash onComplete={() => setIsBooting(false)} theme={theme} />;
 
-  const cornerButtonStyle = {
-    backgroundColor: theme.colors.cardBg,
-    borderColor: theme.colors.secondary,
-    color: theme.colors.text,
-    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-  };
-
   const controlVariants: Variants = {
     visible: {
       y: 0,
@@ -374,20 +367,25 @@ const AppContent = () => {
               >
                 <motion.button
                   ref={settingsButtonRef}
-                  whileTap={{ scale: 0.9 }}
+                  layout
                   whileHover={{
-                    scale: 1.1,
-                    backgroundColor: theme.colors.accent,
-                    color: theme.colors.secondary,
+                    scale: 1.15,
+                    transition: { type: "spring", stiffness: 400, damping: 10 },
                   }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setShowSystemSettings(!showSystemSettings)}
-                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center group cursor-pointer shadow-lg"
-                  style={cornerButtonStyle}
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center group cursor-pointer shadow-lg origin-center"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.secondary,
+                    color: theme.colors.text,
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+                  }}
                   title="System Settings"
                 >
                   <Settings
                     size={24}
-                    className="group-hover:rotate-90 transition-transform duration-500"
+                    className="group-hover:rotate-90 group-hover:text-[var(--accent)] transition-all duration-500 ease-out"
                   />
                 </motion.button>
               </motion.div>
@@ -401,24 +399,33 @@ const AppContent = () => {
                 animate={showControls ? "visible" : "hidden"}
               >
                 <motion.button
-                  whileTap={{ scale: 0.9 }}
+                  layout
                   whileHover={{
-                    scale: 1.1,
-                    backgroundColor: theme.colors.accent,
-                    color: theme.colors.secondary,
+                    scale: 1.15,
+                    rotate: -15,
+                    transition: { type: "spring", stiffness: 400, damping: 10 },
                   }}
+                  whileTap={{ scale: 0.9, rotate: 0 }}
                   onClick={() =>
                     setViewMode((v) => (v === "GRID" ? "LIST" : "GRID"))
                   }
-                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center cursor-pointer shadow-lg"
-                  style={cornerButtonStyle}
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center group cursor-pointer shadow-lg origin-center"
+                  style={{
+                    backgroundColor: theme.colors.cardBg,
+                    borderColor: theme.colors.secondary,
+                    color: theme.colors.text,
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+                  }}
                   title="Toggle View"
                 >
-                  {viewMode === "GRID" ? (
-                    <LayoutGrid size={24} />
-                  ) : (
-                    <ListIcon size={24} />
-                  )}
+                  {/* Icon color transition */}
+                  <div className="group-hover:text-[var(--accent)] transition-colors duration-200">
+                    {viewMode === "GRID" ? (
+                      <LayoutGrid size={24} />
+                    ) : (
+                      <ListIcon size={24} />
+                    )}
+                  </div>
                 </motion.button>
               </motion.div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Terminal, ChevronRight } from "lucide-react";
 import type { Theme } from "../../types";
@@ -22,21 +22,6 @@ export const HeroCard = ({
   const [imgError, setImgError] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-    x.set((mouseX / width - 0.5) * 200);
-    y.set((mouseY / height - 0.5) * 200);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   useEffect(() => {
     const timer = setTimeout(() => setIsReady(true), 500);
     return () => clearTimeout(timer);
@@ -45,8 +30,6 @@ export const HeroCard = ({
   return (
     <motion.div
       className="w-full h-full flex items-center justify-center perspective-container p-2 sm:p-6 will-change-transform"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, scale: 0.9, y: 50, rotateX: 10 }}
       animate={
         isReady
@@ -70,7 +53,6 @@ export const HeroCard = ({
           rotateX,
           rotateY,
         }}
-        whileHover={{ scale: 1.01 }}
       >
         <div className="flex flex-row h-full min-h-[160px] sm:min-h-[240px]">
           {/* LEFT: Accent Bar & Avatar */}

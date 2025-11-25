@@ -145,15 +145,15 @@ export const SystemSettings = ({
           </motion.button>
         </div>
 
-        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+        <div className="p-6 space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar">
           {/* 1. GENERAL */}
           <motion.div variants={itemVariants} className="space-y-3">
             <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 block ml-1">
               General
             </label>
             <div className="flex gap-2">
-              <motion.button // Changed to motion.button
-                whileHover={{ scale: 1.02 }} // Subtle scale for rectangular buttons
+              <motion.button
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onToggleDarkMode}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm cursor-pointer hover:border-[var(--accent)]"
@@ -166,7 +166,7 @@ export const SystemSettings = ({
                 {currentTheme.isDark ? <Sun size={16} /> : <Moon size={16} />}
                 <span>{currentTheme.isDark ? "Light" : "Dark"}</span>
               </motion.button>
-              <motion.button // Changed to motion.button
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setLanguage(language === "en" ? "de" : "en")}
