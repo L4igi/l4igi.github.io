@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Terminal, ChevronRight } from "lucide-react";
+import { useLanguage } from "../../context/LanguageContext.tsx";
 import type { Theme } from "../../types";
-import { useLanguage } from "../../context/LanguageContext";
 
 export const HeroCard = ({
   onOpenTrainer,
@@ -44,7 +44,7 @@ export const HeroCard = ({
 
   return (
     <motion.div
-      className="w-full h-full flex items-center justify-center perspective-container p-4 sm:p-6 will-change-transform"
+      className="w-full h-full flex items-center justify-center perspective-container p-2 sm:p-6 will-change-transform"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       initial={{ opacity: 0, scale: 0.9, y: 50, rotateX: 10 }}
@@ -64,7 +64,7 @@ export const HeroCard = ({
     >
       <motion.div
         ref={cardRef}
-        className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-default ring-1 ring-black/5"
+        className="relative w-full max-w-[90vw] sm:max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden transform-style-3d group cursor-default ring-1 ring-white/10"
         style={{
           backgroundColor: theme.colors.cardBg,
           rotateX,
@@ -72,25 +72,24 @@ export const HeroCard = ({
         }}
         whileHover={{ scale: 1.01 }}
       >
-        <div className="flex flex-col sm:flex-row h-full min-h-[180px] sm:min-h-[240px]">
+        <div className="flex flex-col sm:flex-row h-full min-h-[220px] sm:min-h-[240px]">
           {/* LEFT: Accent Bar & Avatar */}
           <div
-            className="w-full sm:w-48 relative shrink-0 flex items-center justify-center sm:justify-end p-6 sm:p-0"
+            className="w-full sm:w-48 relative shrink-0 flex flex-col items-center justify-start sm:justify-end pt-8 pb-12 sm:py-0 z-20"
             style={{ backgroundColor: theme.colors.accent }}
           >
             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
             {/* Avatar Container */}
-            <div className="relative sm:absolute sm:right-[-50px] z-50">
+            <div className="absolute bottom-[-36px] left-1/2 -translate-x-1/2 sm:static sm:translate-x-0 sm:right-[-50px] sm:absolute z-50">
               <motion.div
                 layoutId="shared-avatar"
-                className="w-24 h-24 sm:w-40 sm:h-40 rounded-full flex items-center justify-center shadow-xl border-[4px] sm:border-[6px] overflow-hidden relative bg-white dark:bg-gray-800"
+                className="w-24 h-24 sm:w-40 sm:h-40 rounded-full flex items-center justify-center shadow-[0_8px_20px_-4px_rgba(0,0,0,0.4)] border-[4px] sm:border-[6px] overflow-hidden relative bg-white dark:bg-gray-800"
                 style={{
                   borderColor: theme.colors.cardBg,
                   color: theme.colors.text,
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                // --- NINTENDO POP ANIMATION ON HOVER ---
                 whileHover={{
                   scale: 1.1,
                   rotate: 5,
@@ -110,7 +109,7 @@ export const HeroCard = ({
                     decoding="async"
                   />
                 ) : (
-                  <span className="text-3xl sm:text-5xl font-black">LH</span>
+                  <span className="text-2xl sm:text-5xl font-black">LH</span>
                 )}
               </motion.div>
             </div>
@@ -118,19 +117,19 @@ export const HeroCard = ({
 
           {/* RIGHT: Content */}
           <motion.div
-            className="flex-1 p-6 sm:p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left"
+            className="flex-1 p-5 pt-12 sm:p-8 sm:pl-20 flex flex-col justify-center text-center sm:text-left relative z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
             <h1
-              className="text-3xl sm:text-5xl font-black leading-none tracking-tighter mb-3"
+              className="text-2xl sm:text-5xl font-black leading-none tracking-tighter mb-2 sm:mb-3"
               style={{ color: theme.colors.text }}
             >
               Lukas Höwarth
             </h1>
 
-            <div className="inline-flex items-center justify-center sm:justify-start gap-2 mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center sm:justify-start gap-2 mb-5 sm:mb-8">
               <motion.span
                 layoutId="shared-badge"
                 className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wide flex items-center gap-2 opacity-80"
@@ -148,21 +147,26 @@ export const HeroCard = ({
               onClick={onOpenTrainer}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95, y: 4 }}
-              className="group relative pl-6 pr-2 py-3 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-4 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none mx-auto sm:mx-0 cursor-pointer"
+              // Enhanced Button: Thicker border-b-4 and shadow for tactile feel (Game Button)
+              className="group relative pl-5 pr-2 py-2.5 sm:pl-6 sm:pr-2 sm:py-3 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 sm:gap-4 shadow-xl border-b-[3px] sm:border-b-4 transition-all active:border-b-0 active:translate-y-[3px] active:shadow-none mx-auto sm:mx-0 cursor-pointer"
               style={{
                 backgroundColor: theme.colors.accent,
                 color: theme.colors.contrastAccent,
                 borderColor: "rgba(0,0,0,0.2)",
               }}
             >
-              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full pointer-events-none"></div>
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-full pointer-events-none"></div>
 
               <span className="relative z-10 drop-shadow-sm">
                 {t("hero.open")}
               </span>
 
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
-                <ChevronRight size={18} strokeWidth={3} />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
+                <ChevronRight
+                  size={16}
+                  strokeWidth={3}
+                  className="sm:w-[18px] sm:h-[18px]"
+                />
               </div>
             </motion.button>
           </motion.div>
