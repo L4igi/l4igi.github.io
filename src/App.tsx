@@ -262,21 +262,13 @@ const AppContent = () => {
             <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="wait">
                 {displayedProject ? (
-                  <motion.div
-                    key="preview"
-                    className="w-full h-full absolute inset-0"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ProjectPreview
-                      project={displayedProject}
-                      onStart={() => launchProject(displayedProject)}
-                      isFavorite={favorites.includes(displayedProject.id)}
-                      theme={theme}
-                    />
-                  </motion.div>
+                  <ProjectPreview
+                    key={displayedProject.id}
+                    project={displayedProject}
+                    onStart={() => launchProject(displayedProject)}
+                    isFavorite={favorites.includes(displayedProject.id)}
+                    theme={theme}
+                  />
                 ) : (
                   <HeroCard
                     key="hero"

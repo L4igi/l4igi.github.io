@@ -1,8 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { Star, ChevronRight, Calendar, Tag } from "lucide-react"; // Use standard icons
+import { Star, ChevronRight, Calendar, Tag } from "lucide-react";
 import type { Project, Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
+import type { Variants } from "motion";
+
+const desktopSwapVariants: Variants = {
+  initial: {
+    x: 120,
+    opacity: 0,
+    scale: 0.85,
+    rotate: 5,
+  },
+  animate: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { type: "spring", stiffness: 350, damping: 25, mass: 1 },
+  },
+  exit: {
+    x: -120, // Slide to left
+    opacity: 0,
+    scale: 0.85,
+    rotate: -5,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
+const mobileSwapVariants: Variants = {
+  initial: {
+    x: 0,
+    opacity: 0,
+    scale: 0.9,
+    rotate: 0,
+  },
+  animate: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { type: "spring", stiffness: 400, damping: 28 },
+  },
+  exit: {
+    x: 0,
+    opacity: 0,
+    scale: 1.05,
+    rotate: 0,
+    transition: { duration: 0.15, ease: "easeOut" },
+  },
+};
 
 export const ProjectPreview = ({
   project,
@@ -16,7 +63,6 @@ export const ProjectPreview = ({
   theme: Theme;
 }) => {
   const { language, t } = useLanguage();
-
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
@@ -42,6 +88,7 @@ export const ProjectPreview = ({
   };
 
   const handleMouseLeave = () => {
+    if (isTouch) return;
     x.set(0);
     y.set(0);
   };
@@ -50,16 +97,16 @@ export const ProjectPreview = ({
 
   return (
     <motion.div
-      className="w-full h-full flex items-center justify-center perspective-container p-4"
+      className="absolute inset-0 w-full h-full flex items-center justify-center perspective-container p-4"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, x: 100 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -100 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      variants={isTouch ? mobileSwapVariants : desktopSwapVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
     >
       <motion.div
-        className="relative w-full max-w-lg max-h-[90%] min-h-[300px] aspect-[16/9] rounded-[32px] shadow-2xl border-[6px] flex overflow-hidden transform-style-3d will-change-transform"
+        className="relative w-full max-w-lg max-h-[90%] min-h-[300px] aspect-[16/9] rounded-[32px] sm:shadow-2xl shadow-lg border-[6px] flex overflow-hidden transform-style-3d will-change-transform"
         style={{
           backgroundColor: theme.colors.cardBg,
           borderColor: theme.colors.cardBg,
@@ -97,6 +144,7 @@ export const ProjectPreview = ({
           ></div>
 
           <div className="relative z-10">
+            {/* Badges */}
             <div className="flex items-center gap-2 mb-3">
               <span
                 className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm"
@@ -145,6 +193,7 @@ export const ProjectPreview = ({
               ))}
             </div>
 
+            {/* NINTENDO STYLE BUTTON */}
             <motion.button
               onClick={onStart}
               whileHover={{ scale: 1.05 }}
