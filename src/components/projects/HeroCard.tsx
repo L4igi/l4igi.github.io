@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { ArrowRight, Terminal } from "lucide-react";
+import { Terminal, ChevronRight } from "lucide-react";
 import type { Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
 
@@ -64,13 +64,12 @@ export const HeroCard = ({
     >
       <motion.div
         ref={cardRef}
-        className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-pointer ring-1 ring-black/5"
+        className="relative w-full max-w-[600px] rounded-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden transform-style-3d group cursor-default ring-1 ring-black/5"
         style={{
           backgroundColor: theme.colors.cardBg,
           rotateX,
           rotateY,
         }}
-        onClick={onOpenTrainer}
         whileHover={{ scale: 1.01 }}
       >
         <div className="flex flex-col sm:flex-row h-full min-h-[180px] sm:min-h-[240px]">
@@ -91,6 +90,12 @@ export const HeroCard = ({
                   color: theme.colors.text,
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                // --- NINTENDO POP ANIMATION ON HOVER ---
+                whileHover={{
+                  scale: 1.1,
+                  rotate: 5,
+                  transition: { type: "spring", stiffness: 400, damping: 10 },
+                }}
               >
                 {!imgError ? (
                   <img
@@ -140,19 +145,25 @@ export const HeroCard = ({
             </div>
 
             <motion.button
+              onClick={onOpenTrainer}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-wider flex items-center justify-center gap-3 group/btn shadow-lg transition-all"
+              whileTap={{ scale: 0.95, y: 4 }}
+              className="group relative pl-6 pr-2 py-3 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-4 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none mx-auto sm:mx-0 cursor-pointer"
               style={{
                 backgroundColor: theme.colors.accent,
                 color: theme.colors.contrastAccent,
+                borderColor: "rgba(0,0,0,0.2)",
               }}
             >
-              {t("hero.open")}
-              <ArrowRight
-                size={14}
-                className="sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform"
-              />
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full pointer-events-none"></div>
+
+              <span className="relative z-10 drop-shadow-sm">
+                {t("hero.open")}
+              </span>
+
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
+                <ChevronRight size={18} strokeWidth={3} />
+              </div>
             </motion.button>
           </motion.div>
         </div>
