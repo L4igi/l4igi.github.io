@@ -23,6 +23,7 @@ import { AboutModal } from "./components/about/AboutModal.tsx";
 import { GameScreen } from "./components/game/GameScreen.tsx";
 import { LegalModal } from "./components/modals/LegalModal.tsx";
 import type { Variants } from "motion";
+import { GBCFilter } from "./components/ui/GBCFilter.tsx";
 
 const AppContent = () => {
   const { theme, updateTheme, toggleDarkMode } = useThemeSystem();
@@ -33,7 +34,7 @@ const AppContent = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [isLegalOpen, setIsLegalOpen] = useState(false);
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -48,6 +49,7 @@ const AppContent = () => {
 
   const [showControls, setShowControls] = useState(true);
   const scrollTimeout = useRef<number | null>(null);
+  const isOpeningModal = useRef(false);
 
   const handleScroll = () => {
     if (showControls) setShowControls(false);
@@ -119,7 +121,11 @@ const AppContent = () => {
 
   const launchProject = (p: Project) => {
     if (p.placeholder) return;
+    isOpeningModal.current = true;
     setActiveProject(p);
+    setTimeout(() => {
+      isOpeningModal.current = false;
+    }, 500);
   };
 
   const toggleFavorite = (id: string) => {
@@ -131,14 +137,6 @@ const AppContent = () => {
   const handleHover = (p: Project) => {
     if (p.id === hoveredId) return;
     setHoveredId(p.id);
-  };
-
-  const goHome = () => {
-    if (activeProject) setActiveProject(null);
-    else {
-      setSelectedId(null);
-      setHoveredId(null);
-    }
   };
 
   if (isBooting)
@@ -188,6 +186,7 @@ const AppContent = () => {
         }
       >
         <Scanlines active={theme.scanlines} />
+        <GBCFilter active={theme.gbcFilter} />
 
         <AnimatePresence>
           {isAboutOpen && (
@@ -197,7 +196,10 @@ const AppContent = () => {
           {activeProject && (
             <GameScreen
               project={activeProject}
-              onClose={() => setActiveProject(null)}
+              onClose={() => {
+                setActiveProject(null);
+                setHoveredId(null);
+              }}
               isFavorite={favorites.includes(activeProject.id)}
               toggleFavorite={() => toggleFavorite(activeProject.id)}
               theme={theme}
@@ -236,13 +238,7 @@ const AppContent = () => {
           >
             <ThemeBackground theme={theme} paused={backgroundPaused} />
 
-            <StatusBar
-              time={currentTime}
-              theme={theme}
-              onOpenProfile={() => setIsAboutOpen(true)}
-              onGoHome={goHome}
-              showProfile={!!displayedProject}
-            />
+            <StatusBar time={currentTime} theme={theme} />
 
             <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="wait">
@@ -306,7 +302,11 @@ const AppContent = () => {
                           launchProject(project);
                         }}
                         onHover={() => handleHover(project)}
-                        onLeave={() => {}}
+                        onLeave={() => {
+                          if (!isOpeningModal.current) {
+                            setHoveredId(null);
+                          }
+                        }}
                         isSelected={selectedId === project.id}
                         isPressed={selectedId === project.id && isPressed}
                         isFavorite={favorites.includes(project.id)}
@@ -330,6 +330,11 @@ const AppContent = () => {
                         project={project}
                         onClick={() => launchProject(project)}
                         onHover={() => setHoveredId(project.id)}
+                        onLeave={() => {
+                          if (!isOpeningModal.current) {
+                            setHoveredId(null);
+                          }
+                        }}
                         isSelected={
                           selectedId === project.id || hoveredId === project.id
                         }

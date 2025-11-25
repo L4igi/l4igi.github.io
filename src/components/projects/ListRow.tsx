@@ -8,6 +8,7 @@ interface ListRowProps {
   project: Project;
   onClick: () => void;
   onHover: () => void;
+  onLeave: () => void;
   isSelected: boolean;
   isFavorite: boolean;
   theme: Theme;
@@ -17,6 +18,7 @@ export const ListRow = ({
   project,
   onClick,
   onHover,
+  onLeave,
   isSelected,
   isFavorite,
   theme,
@@ -55,6 +57,7 @@ export const ListRow = ({
     setIsHovered(false);
     x.set(0);
     y.set(0);
+    onLeave();
   };
 
   const handleInteraction = () => {

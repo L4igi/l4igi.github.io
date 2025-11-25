@@ -31,6 +31,7 @@ export interface Theme {
   pattern: Pattern;
   isDark: boolean;
   scanlines: boolean;
+  gbcFilter: boolean;
 }
 
 export interface Project {

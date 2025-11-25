@@ -50,7 +50,7 @@ const ExplosionParticles = ({
   );
 };
 
-// --- DISTORTION FILTER (Touch Fuzzy, Get Dizzy) ---
+// --- DISTORTION FILTER ---
 const DistortionFilter = () => (
   <svg
     style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
@@ -63,7 +63,6 @@ const DistortionFilter = () => (
           numOctaves="2"
           result="warp"
         >
-          {/* Animate the turbulence for a wavy effect */}
           <animate
             attributeName="baseFrequency"
             values="0.01 0.02;0.02 0.05;0.01 0.02"
@@ -74,7 +73,7 @@ const DistortionFilter = () => (
         <feDisplacementMap
           xChannelSelector="R"
           yChannelSelector="G"
-          scale="30"
+          scale="40"
           in="SourceGraphic"
           in2="warp"
         />
@@ -86,19 +85,9 @@ const DistortionFilter = () => (
 interface StatusBarProps {
   time: string;
   theme: Theme;
-  onOpenProfile: () => void;
-  onGoHome: () => void;
-  showProfile: boolean;
 }
 
-export const StatusBar = ({
-  time,
-  theme,
-  onOpenProfile,
-  onGoHome,
-  showProfile,
-}: StatusBarProps) => {
-  const [imgError, setImgError] = useState(false);
+export const StatusBar = ({ time, theme }: StatusBarProps) => {
   const [hours, minutes] = time.split(":");
 
   // STATE
@@ -114,6 +103,7 @@ export const StatusBar = ({
   const activeInterval = useRef<number | null>(null);
   const activeTimeout = useRef<number | null>(null);
   const isMounted = useRef(false);
+  const triggerId = useRef(0);
 
   const controls = useAnimation();
 
@@ -127,6 +117,8 @@ export const StatusBar = ({
   // --- FORCE STOP / CLEANUP ---
   const forceStop = useCallback(
     (shouldAnimate = true) => {
+      triggerId.current++;
+
       // 1. Cleanup Timers
       if (activeInterval.current) {
         clearInterval(activeInterval.current);
@@ -137,17 +129,19 @@ export const StatusBar = ({
         activeTimeout.current = null;
       }
 
-      // 2. Reset DOM styles (Crucial for removing the filter)
+      // 2. Instant Reset
+      document.body.style.transition = "none";
       document.body.style.filter = "";
-      document.body.style.transition = "";
 
-      // 3. Reset State (only if mounted)
+      // 3. Reset State
       if (isMounted.current) {
         setIsTimeTraveling(false);
         setGlitchOffset(0);
         setDisplayTime(time);
-        // Keep particles briefly
-        setTimeout(() => isMounted.current && setClickCoords(null), 1000);
+
+        setTimeout(() => {
+          if (isMounted.current) setClickCoords(null);
+        }, 1000);
 
         if (shouldAnimate) {
           controls.start({
@@ -162,30 +156,26 @@ export const StatusBar = ({
     [controls, time],
   );
 
-  // Sync time when idle
+  // Sync time
   useEffect(() => {
     if (!isTimeTraveling && isMounted.current) setDisplayTime(time);
   }, [time, isTimeTraveling]);
 
-  // Cleanup on unmount
+  // Cleanup
   useEffect(() => {
     return () => forceStop(false);
   }, [forceStop]);
 
-  // Stop on navigation
-  useEffect(() => {
-    if (isTimeTraveling) forceStop(true);
-  }, [showProfile, forceStop]);
-
-  // Apply "Touch Fuzzy, Get Dizzy" Filter
+  // --- APPLY FILTER ---
   useEffect(() => {
     if (isTimeTraveling) {
-      // Slow transition into the effect
-      document.body.style.transition = "filter 1.5s ease-in-out";
+      // Slow onset
+      document.body.style.transition = "filter 2.5s ease-in-out";
       document.body.style.filter =
-        "url(#dizzy-filter) hue-rotate(180deg) contrast(1.2)";
+        "url(#dizzy-filter) hue-rotate(180deg) saturate(3) contrast(1.1)";
     } else {
-      // Immediate removal to avoid stuck state
+      // Instant off
+      document.body.style.transition = "none";
       document.body.style.filter = "";
     }
   }, [isTimeTraveling]);
@@ -193,7 +183,11 @@ export const StatusBar = ({
   const handleTrigger = async (e: React.MouseEvent) => {
     if (isTimeTraveling) return;
 
-    // FIX: Calculate coordinates IMMEDIATELY before any async/await
+    // 1. Lock
+    setIsTimeTraveling(true);
+    const currentSession = ++triggerId.current;
+
+    // 2. Coords
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const coords = {
       x: rect.left + rect.width / 2,
@@ -201,30 +195,31 @@ export const StatusBar = ({
     };
 
     try {
-      // 1. Charge Up
+      // 3. Charge Up
       await controls.start({
         scale: 0.8,
-        rotate: -5,
-        y: 2,
-        transition: { duration: 0.15, ease: "easeInOut" },
+        rotate: -15,
+        y: 5,
+        transition: { duration: 0.2, ease: "backIn" },
       });
 
-      if (!isMounted.current) return;
+      // 4. Session Check
+      if (!isMounted.current || triggerId.current !== currentSession) {
+        return;
+      }
 
-      // 2. Activate Effect
-      setIsTimeTraveling(true);
+      // 5. Visuals
       setClickCoords(coords);
 
-      // 3. Bounce Animation
+      // 6. Explode
       controls.start({
         scale: [0.8, 1.3, 1],
-        rotate: [0, -10, 10, -5, 5, 0],
-        transition: { duration: 0.5, ease: "backOut" },
+        rotate: [0, 10, -10, 5, -5, 0],
+        transition: { duration: 0.6, ease: "backOut" },
       });
 
-      // 4. Glitch Loop
+      // 7. Glitch
       if (activeInterval.current) clearInterval(activeInterval.current);
-
       activeInterval.current = window.setInterval(() => {
         if (!isMounted.current) return;
         const rH = Math.floor(Math.random() * 23)
@@ -237,21 +232,17 @@ export const StatusBar = ({
         setGlitchOffset((Math.random() - 0.5) * 8);
       }, 50);
 
-      // 5. Schedule End
+      // 8. Auto Stop (2.5s strict)
       if (activeTimeout.current) clearTimeout(activeTimeout.current);
       activeTimeout.current = window.setTimeout(() => {
-        if (isMounted.current) forceStop(true);
-      }, 3000); // 3 seconds of dizziness
+        if (isMounted.current && triggerId.current === currentSession) {
+          forceStop(true);
+        }
+      }, 2500);
     } catch (error) {
       console.error("Easter egg failed", error);
       forceStop(true);
     }
-  };
-
-  const handleProfileClick = () => {
-    forceStop(false);
-    if (showProfile) onGoHome();
-    else onOpenProfile();
   };
 
   return (
@@ -270,125 +261,85 @@ export const StatusBar = ({
         )}
 
       <div
-        className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
+        className="flex justify-center items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
         style={{ color: theme.colors.text }}
       >
-        {/* Profile / Home Button */}
-        <div className="min-w-[140px] h-full flex items-center">
-          {showProfile && (
-            <motion.button
-              onClick={handleProfileClick}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm group overflow-hidden"
-              style={{
-                backgroundColor: theme.isDark
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(255,255,255,0.5)",
-                borderColor: theme.isDark
-                  ? "rgba(255,255,255,0.1)"
-                  : "rgba(0,0,0,0.05)",
-              }}
-            >
-              <div className="w-8 h-8 rounded-full overflow-hidden shadow-inner border border-white/10 shrink-0">
-                {!imgError ? (
-                  <img
-                    src="/profile/me.jpg"
-                    alt="LH"
-                    className="w-full h-full object-cover"
-                    onError={() => setImgError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-300 text-black font-black text-[10px]">
-                    LH
-                  </div>
-                )}
-              </div>
-              <span className="font-black group-hover:text-[var(--accent)] transition-colors">
-                Lukas
-              </span>
-            </motion.button>
-          )}
-        </div>
+        {/* Time / Easter Egg Button - Centered */}
+        <motion.button
+          onClick={handleTrigger}
+          animate={controls}
+          whileHover={{
+            scale: 1.1,
+            backgroundColor: "#facc15",
+            color: "#000000",
+            borderColor: "#fef08a",
+          }}
+          whileTap={{ scale: 0.95 }}
+          disabled={isTimeTraveling}
+          className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
+          style={{
+            backgroundColor: isTimeTraveling
+              ? theme.colors.accent
+              : theme.isDark
+                ? "rgba(255,255,255,0.05)"
+                : "rgba(255,255,255,0.5)",
+            borderColor: theme.isDark
+              ? "rgba(255,255,255,0.1)"
+              : "rgba(0,0,0,0.05)",
+            color: isTimeTraveling
+              ? theme.colors.contrastAccent
+              : theme.colors.text,
+            boxShadow: isTimeTraveling
+              ? `0 0 30px ${theme.colors.accent}`
+              : "none",
+          }}
+        >
+          <div className="relative w-4 h-4">
+            <AnimatePresence mode="wait">
+              {isTimeTraveling ? (
+                <motion.div
+                  key="zap"
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1.2, rotate: 0 }}
+                  exit={{ scale: 0 }}
+                  className="absolute inset-0"
+                >
+                  <Zap size={16} fill="currentColor" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="clock"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="absolute inset-0 opacity-60"
+                >
+                  <Clock size={14} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-        {/* Time / Easter Egg Button */}
-        <div className="flex items-center justify-end min-w-[100px]">
-          <motion.button
-            onClick={handleTrigger}
-            animate={controls}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            disabled={isTimeTraveling}
-            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
+          <div
+            className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center group-hover:text-black transition-colors"
             style={{
-              backgroundColor: isTimeTraveling
-                ? theme.colors.accent
-                : theme.isDark
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(255,255,255,0.5)",
-              borderColor: theme.isDark
-                ? "rgba(255,255,255,0.1)"
-                : "rgba(0,0,0,0.05)",
-              color: isTimeTraveling
-                ? theme.colors.contrastAccent
-                : theme.colors.text,
-              boxShadow: isTimeTraveling
-                ? `0 0 30px ${theme.colors.accent}`
+              transform: `translate(${glitchOffset}px, ${-glitchOffset}px)`,
+              textShadow: isTimeTraveling
+                ? `${glitchOffset * 3}px 0 0 rgba(255,0,0,0.5), -${glitchOffset * 3}px 0 0 rgba(0,255,255,0.5)`
                 : "none",
             }}
           >
-            <div className="relative w-4 h-4">
-              <AnimatePresence mode="wait">
-                {isTimeTraveling ? (
-                  <motion.div
-                    key="zap"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1.2, rotate: 0 }}
-                    exit={{ scale: 0 }}
-                    className="absolute inset-0"
-                  >
-                    <Zap size={16} fill="currentColor" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="clock"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute inset-0 opacity-60"
-                  >
-                    <Clock size={14} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div
-              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center group-hover:text-[var(--accent)] transition-colors"
-              style={{
-                transform: `translate(${glitchOffset}px, ${-glitchOffset}px)`,
-                textShadow: isTimeTraveling
-                  ? `${glitchOffset * 3}px 0 0 rgba(255,0,0,0.5), -${glitchOffset * 3}px 0 0 rgba(0,255,255,0.5)`
-                  : "none",
-              }}
-            >
-              {isTimeTraveling ? (
-                <span className="tracking-tighter font-black">
-                  {displayTime}
-                </span>
-              ) : (
-                <>
-                  <span>{hours}</span>
-                  <span className="animate-pulse mx-[1px]">:</span>
-                  <span>{minutes}</span>
-                </>
-              )}
-            </div>
-          </motion.button>
-        </div>
+            {isTimeTraveling ? (
+              <span className="tracking-tighter font-black">{displayTime}</span>
+            ) : (
+              <>
+                <span>{hours}</span>
+                <span className="animate-pulse mx-[1px]">:</span>
+                <span>{minutes}</span>
+              </>
+            )}
+          </div>
+        </motion.button>
       </div>
     </>
   );

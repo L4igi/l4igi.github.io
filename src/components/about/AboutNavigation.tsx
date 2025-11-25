@@ -166,13 +166,6 @@ export const AboutNavigation = ({
           <div className="space-y-2">{renderTabs()}</div>
 
           <div className="mt-auto pt-6">
-            <h4
-              className="text-xs font-black uppercase tracking-widest opacity-50 mb-3 px-2"
-              style={{ color: theme.colors.text }}
-            >
-              Connect
-            </h4>
-
             <motion.a
               href={cvUrl}
               download
@@ -187,6 +180,12 @@ export const AboutNavigation = ({
             >
               <Download size={16} /> <span>{cvLabel}</span>
             </motion.a>
+            <h4
+              className="text-xs font-black uppercase tracking-widest opacity-50 mb-3 px-2"
+              style={{ color: theme.colors.text }}
+            >
+              Connect
+            </h4>
 
             <div className="flex gap-2">
               <a

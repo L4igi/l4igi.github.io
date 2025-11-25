@@ -4,13 +4,13 @@ import {
   Briefcase,
   MapPin,
   Languages,
-  Utensils,
   Medal,
   Quote,
   Download,
   Github,
   Linkedin,
   Mail,
+  Coffee,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Theme, SkillLevel } from "../../types";
@@ -93,13 +93,13 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
             label: t("modal.hobbies"),
             val: t("modal.hobbies_list"),
             sub: t("modal.hobbies_learning"),
-            icon: <Utensils size={20} />,
+            icon: <Coffee size={20} />,
           },
         ].map((stat, i) => (
           <motion.div
             variants={itemVariants}
             key={i}
-            className="p-4 rounded-2xl border shadow-sm flex items-start gap-4 group"
+            className="p-4 rounded-2xl border shadow-sm flex items-start gap-4 group hover:shadow-md hover:scale-[1.01] transition-all"
             style={{
               backgroundColor: theme.colors.primary,
               borderColor: theme.colors.secondary,
@@ -142,7 +142,7 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
         {/* Badge Section */}
         <motion.div
           variants={itemVariants}
-          className="sm:col-span-2 p-4 rounded-2xl border shadow-sm flex items-center gap-4"
+          className="sm:col-span-2 p-4 rounded-2xl border shadow-sm flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all"
           style={{
             backgroundColor: theme.colors.primary,
             borderColor: theme.colors.secondary,
@@ -335,7 +335,7 @@ export const TabSkills = ({ theme }: { theme: Theme }) => {
           <button
             key={cat.id}
             onClick={() => setActiveSkillLevel(cat.id)}
-            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all relative shrink-0 ${activeSkillLevel === cat.id ? "text-white" : "opacity-60"}`}
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all relative shrink-0 cursor-pointer ${activeSkillLevel === cat.id ? "text-white" : "opacity-60 hover:opacity-100 hover:scale-105"}`}
             style={{
               color:
                 activeSkillLevel === cat.id
@@ -381,7 +381,7 @@ export const TabSkills = ({ theme }: { theme: Theme }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={skill.name}
-                  className="p-5 rounded-2xl shadow-sm border"
+                  className="p-5 rounded-2xl shadow-sm border hover:shadow-md hover:scale-[1.01] transition-all"
                   style={{
                     backgroundColor: theme.colors.primary,
                     borderColor: theme.colors.secondary,

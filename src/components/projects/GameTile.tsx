@@ -60,6 +60,7 @@ export const GameTile = ({
   };
 
   const handleMouseLeave = () => {
+    if (isTouch) return;
     x.set(0);
     y.set(0);
     onLeave();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { Star, ChevronRight, Calendar, Tag } from "lucide-react";
+import { Star, Calendar, Tag } from "lucide-react";
 import type { Project, Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Variants } from "motion";
@@ -53,7 +53,6 @@ const mobileSwapVariants: Variants = {
 
 export const ProjectPreview = ({
   project,
-  onStart,
   isFavorite,
   theme,
 }: {
@@ -62,7 +61,7 @@ export const ProjectPreview = ({
   isFavorite: boolean;
   theme: Theme;
 }) => {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
@@ -192,27 +191,6 @@ export const ProjectPreview = ({
                 />
               ))}
             </div>
-
-            {/* NINTENDO STYLE BUTTON */}
-            <motion.button
-              onClick={onStart}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }} // Standardized
-              className="group/btn relative pl-5 pr-2 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none cursor-pointer"
-              style={{
-                backgroundColor: theme.colors.accent,
-                color: theme.colors.contrastAccent,
-                borderColor: "rgba(0,0,0,0.2)",
-              }}
-            >
-              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-full pointer-events-none"></div>
-              <span className="relative z-10 drop-shadow-sm">
-                {t("btn.details")}
-              </span>
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover/btn:bg-white group-hover/btn:text-black transition-colors">
-                <ChevronRight size={18} strokeWidth={3} />
-              </div>
-            </motion.button>
           </div>
         </div>
       </motion.div>

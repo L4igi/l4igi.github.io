@@ -44,8 +44,12 @@ export const PASTEL_PALETTE = [
   { name: "Lavender", value: "#d8b4fe" },
   { name: "Peach", value: "#fdba74" },
   { name: "Slate", value: "#94a3b8" },
+  { name: "Coral", value: "#fca5a5" },
+  { name: "Aqua", value: "#67e8f9" },
+  { name: "Lemon", value: "#fef08a" },
+  { name: "Periwinkle", value: "#c7d2fe" },
+  { name: "Sage", value: "#d9f99d" },
 ];
-
 export const CONSOLE_VARIANTS: Record<
   ConsoleColor,
   { name: string; base: string; edge: string }

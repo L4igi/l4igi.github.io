@@ -9,6 +9,7 @@ import {
   Languages,
   Info,
   Settings,
+  Gamepad2,
 } from "lucide-react";
 import type { Theme, ConsoleColor } from "../../types";
 import { createThemeColors } from "../../utils/themeHelpers";
@@ -56,15 +57,6 @@ export const SystemSettings = ({
       hex,
       currentTheme.isDark,
       CONSOLE_VARIANTS[currentConsoleKey],
-    );
-    onApply({ ...currentTheme, colors: newColors });
-  };
-
-  const handleConsoleChange = (c: ConsoleColor) => {
-    const newColors = createThemeColors(
-      currentTheme.colors.accent,
-      currentTheme.isDark,
-      CONSOLE_VARIANTS[c],
     );
     onApply({ ...currentTheme, colors: newColors });
   };
@@ -208,7 +200,7 @@ export const SystemSettings = ({
                   onClick={() => handleColorChange(c.value)}
                   whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.9 }}
-                  className="w-8 h-8 rounded-full relative shadow-sm border-2 border-transparent"
+                  className="w-8 h-8 rounded-full relative shadow-sm border-2 border-transparent cursor-pointer"
                   style={{ backgroundColor: c.value }}
                 >
                   {currentTheme.colors.accent === c.value && (
@@ -264,48 +256,20 @@ export const SystemSettings = ({
 
           {/* 4. DEVICE */}
           <motion.div variants={itemVariants} className="space-y-3">
-            <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 block ml-1">
-              Device Style
+            <label className="text-[10px] font-bold uppercase tracking-wider opacity-50 block ml-1 flex items-center gap-1">
+              <Monitor size={10} /> Retro Filters
             </label>
-            <div className="flex justify-between items-stretch gap-3">
-              <div
-                className="flex-1 flex justify-between p-1.5 rounded-xl border"
-                style={{
-                  backgroundColor: currentTheme.colors.secondary,
-                  borderColor: "transparent",
-                }}
-              >
-                {(Object.keys(CONSOLE_VARIANTS) as ConsoleColor[]).map((c) => (
-                  <motion.button
-                    key={c}
-                    onClick={() => handleConsoleChange(c)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-8 h-8 rounded-lg border shadow-sm relative flex items-center justify-center"
-                    style={{
-                      backgroundColor: CONSOLE_VARIANTS[c].base,
-                      borderColor: CONSOLE_VARIANTS[c].edge,
-                    }}
-                  >
-                    {currentTheme.colors.console ===
-                      CONSOLE_VARIANTS[c].base && (
-                      <motion.div
-                        layoutId="activeConsoleCheck"
-                        className="w-2 h-2 bg-white rounded-full shadow-md"
-                      />
-                    )}
-                  </motion.button>
-                ))}
-              </div>
+            <div className="flex gap-2">
               <motion.button
                 {...interactProps}
                 onClick={() =>
                   onApply({
                     ...currentTheme,
                     scanlines: !currentTheme.scanlines,
+                    gbcFilter: false, // Turn off GBC when enabling CRT
                   })
                 }
-                className="flex items-center gap-2 px-4 rounded-xl text-xs font-bold transition-all border shadow-sm"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm cursor-pointer hover:border-[var(--accent)]"
                 style={{
                   backgroundColor: currentTheme.scanlines
                     ? currentTheme.colors.accent
@@ -319,15 +283,36 @@ export const SystemSettings = ({
                 }}
               >
                 <Monitor size={16} />
-                <span className="uppercase text-[10px] font-black">CRT</span>
+                <span>CRT</span>
+              </motion.button>
+
+              <motion.button
+                {...interactProps}
+                onClick={() =>
+                  onApply({
+                    ...currentTheme,
+                    gbcFilter: !currentTheme.gbcFilter,
+                    scanlines: false, // Turn off CRT when enabling GBC
+                  })
+                }
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm cursor-pointer hover:border-[var(--accent)]"
+                style={{
+                  backgroundColor: currentTheme.gbcFilter
+                    ? currentTheme.colors.accent
+                    : currentTheme.colors.secondary,
+                  color: currentTheme.gbcFilter
+                    ? currentTheme.colors.contrastAccent
+                    : currentTheme.colors.text,
+                  borderColor: currentTheme.gbcFilter
+                    ? currentTheme.colors.accent
+                    : "transparent",
+                }}
+              >
+                <Gamepad2 size={16} />
+                <span>GBC</span>
               </motion.button>
             </div>
           </motion.div>
-
-          <div
-            className="w-full h-px opacity-10"
-            style={{ backgroundColor: currentTheme.colors.text }}
-          ></div>
 
           {/* 5. LEGAL */}
           <motion.button
@@ -335,10 +320,10 @@ export const SystemSettings = ({
             whileHover={{ scale: 1.02, opacity: 0.8 }}
             whileTap={{ scale: 0.98 }}
             onClick={onOpenLegal}
-            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors"
+            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors cursor-pointer"
             style={{
-              backgroundColor: currentTheme.colors.secondary,
-              color: currentTheme.colors.text,
+              backgroundColor: currentTheme.colors.accent,
+              color: "#000000",
             }}
           >
             <Info size={16} />
