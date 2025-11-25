@@ -77,8 +77,10 @@ export const AboutNavigation = ({
           <motion.button
             key={tab.id}
             variants={itemVariants}
+            whileHover={{ scale: 1.02, x: 5 }} // Added motion
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab(tab.id as AboutTab)}
-            className={`relative rounded-xl font-bold text-xs flex items-center gap-2 transition-colors w-full p-3 gap-4 text-sm overflow-hidden ${
+            className={`relative rounded-xl font-bold text-xs flex items-center gap-2 transition-colors w-full p-3 gap-4 text-sm overflow-hidden cursor-pointer ${
               isActive
                 ? "text-white border-transparent"
                 : "border-transparent hover:bg-black/5"
@@ -102,10 +104,11 @@ export const AboutNavigation = ({
       } else {
         // Mobile Render
         return (
-          <button
+          <motion.button // Changed to motion
             key={tab.id}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setActiveTab(tab.id as AboutTab)}
-            className={`relative rounded-xl font-bold text-xs flex items-center gap-2 transition-colors px-2 py-2 justify-center border ${
+            className={`relative rounded-xl font-bold text-xs flex items-center gap-2 transition-colors px-2 py-2 justify-center border cursor-pointer ${
               isActive
                 ? "text-white border-transparent"
                 : "border-transparent hover:bg-black/5"
@@ -123,7 +126,7 @@ export const AboutNavigation = ({
             <span className="relative z-10 flex items-center gap-2">
               {tab.icon}
             </span>
-          </button>
+          </motion.button>
         );
       }
     });
@@ -173,7 +176,7 @@ export const AboutNavigation = ({
             <motion.a
               href={cvUrl}
               download
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.02, filter: "brightness(1.1)" }} // Added brightness
               whileTap={{ scale: 0.98 }}
               className="mb-3 w-full p-3 rounded-xl border flex items-center justify-center gap-2 transition-colors font-bold text-sm shadow-sm"
               style={{

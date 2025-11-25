@@ -34,15 +34,16 @@ export const FilterBar = ({
           borderColor: theme.colors.secondary,
         }}
       >
-        {/* Force single row layout */}
         <div className="flex flex-row items-center p-1 sm:p-1.5">
-          {/* CATEGORIES (Scrollable) */}
+          {/* CATEGORIES */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto justify-start">
             {categories.map((cat) => (
-              <button
+              <motion.button // Changed to motion.button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black tracking-wide transition-colors z-10 shrink-0`}
+                whileHover={{ scale: 1.05 }} // Add hover scale
+                whileTap={{ scale: 0.95 }} // Add tap scale
+                className={`relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black tracking-wide transition-colors z-10 shrink-0 cursor-pointer`} // Added cursor-pointer
                 style={{
                   color:
                     activeCategory === cat
@@ -65,26 +66,24 @@ export const FilterBar = ({
                     : cat === "PERSONAL"
                       ? t("cat.personal")
                       : t("cat.uni")}
-              </button>
+              </motion.button>
             ))}
           </div>
 
-          {/* DESKTOP ONLY: Socials Section */}
+          {/* SOCIALS */}
           <div className="hidden sm:flex items-center pl-2">
-            {/* Divider */}
             <div
               className="w-px h-4 mx-2 opacity-20 shrink-0"
               style={{ backgroundColor: theme.colors.text }}
             ></div>
 
-            {/* Social Icons */}
             <div className="flex gap-1 shrink-0">
               {socialItems.map(({ Icon, url }, i) => (
                 <motion.a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileHover={{ scale: 1.15, color: theme.colors.accent }} // Added accent color on hover
                   whileTap={{ scale: 0.9 }}
                   key={i}
                   className="p-1.5 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center"

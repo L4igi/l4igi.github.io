@@ -41,7 +41,7 @@ export const SystemSettings = ({
     if (anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
       setPosition({
-        bottom: window.innerHeight - rect.top + 16, // 16px gap above button
+        bottom: window.innerHeight - rect.top + 16,
         left: rect.left,
       });
     }
@@ -103,6 +103,12 @@ export const SystemSettings = ({
     visible: { opacity: 1, x: 0 },
   };
 
+  // Standard interaction props for consistency
+  const interactProps = {
+    whileHover: { scale: 1.05 },
+    whileTap: { scale: 0.95 },
+  };
+
   return createPortal(
     <>
       <motion.div
@@ -120,10 +126,8 @@ export const SystemSettings = ({
         exit="exit"
         className="fixed z-[9999] w-80 max-w-[85vw] rounded-[32px] shadow-2xl border-2 overflow-hidden will-change-transform"
         style={{
-          // DYNAMIC POSITIONING based on button
           bottom: position.bottom,
           left: position.left,
-
           backgroundColor: currentTheme.isDark ? "#0f172a" : "#ffffff",
           borderColor: currentTheme.colors.primary,
           color: currentTheme.colors.text,
@@ -139,6 +143,7 @@ export const SystemSettings = ({
             <Settings size={14} /> System Settings
           </div>
           <motion.button
+            whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
             onClick={onClose}
             className="p-1.5 rounded-full hover:opacity-70 transition-opacity"
@@ -155,9 +160,11 @@ export const SystemSettings = ({
               General
             </label>
             <div className="flex gap-2">
-              <button
+              <motion.button // Changed to motion.button
+                whileHover={{ scale: 1.02 }} // Subtle scale for rectangular buttons
+                whileTap={{ scale: 0.98 }}
                 onClick={onToggleDarkMode}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm active:scale-95"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm cursor-pointer hover:border-[var(--accent)]"
                 style={{
                   backgroundColor: currentTheme.colors.secondary,
                   color: currentTheme.colors.text,
@@ -166,10 +173,12 @@ export const SystemSettings = ({
               >
                 {currentTheme.isDark ? <Sun size={16} /> : <Moon size={16} />}
                 <span>{currentTheme.isDark ? "Light" : "Dark"}</span>
-              </button>
-              <button
+              </motion.button>
+              <motion.button // Changed to motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setLanguage(language === "en" ? "de" : "en")}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm active:scale-95"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border shadow-sm cursor-pointer hover:border-[var(--accent)]"
                 style={{
                   backgroundColor: currentTheme.colors.secondary,
                   color: currentTheme.colors.text,
@@ -178,7 +187,7 @@ export const SystemSettings = ({
               >
                 <Languages size={16} />
                 <span>{language === "en" ? "Deutsch" : "English"}</span>
-              </button>
+              </motion.button>
             </div>
           </motion.div>
 
@@ -194,10 +203,12 @@ export const SystemSettings = ({
             </label>
             <div className="flex flex-wrap gap-3">
               {PASTEL_PALETTE.map((c) => (
-                <button
+                <motion.button
                   key={c.value}
                   onClick={() => handleColorChange(c.value)}
-                  className="w-8 h-8 rounded-full relative shadow-sm border-2 border-transparent transition-transform active:scale-90 hover:scale-110"
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="w-8 h-8 rounded-full relative shadow-sm border-2 border-transparent"
                   style={{ backgroundColor: c.value }}
                 >
                   {currentTheme.colors.accent === c.value && (
@@ -212,7 +223,7 @@ export const SystemSettings = ({
                       }}
                     />
                   )}
-                </button>
+                </motion.button>
               ))}
             </div>
           </motion.div>
@@ -224,10 +235,12 @@ export const SystemSettings = ({
             </label>
             <div className="grid grid-cols-3 gap-2">
               {PATTERNS.map((p) => (
-                <button
+                <motion.button
                   key={p.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => onApply({ ...currentTheme, pattern: p.id })}
-                  className="h-10 rounded-xl flex items-center justify-center transition-all border shadow-sm active:scale-95"
+                  className="h-10 rounded-xl flex items-center justify-center transition-all border shadow-sm cursor-pointer"
                   style={{
                     backgroundColor:
                       currentTheme.pattern === p.id
@@ -244,7 +257,7 @@ export const SystemSettings = ({
                   }}
                 >
                   {p.icon}
-                </button>
+                </motion.button>
               ))}
             </div>
           </motion.div>
@@ -263,10 +276,12 @@ export const SystemSettings = ({
                 }}
               >
                 {(Object.keys(CONSOLE_VARIANTS) as ConsoleColor[]).map((c) => (
-                  <button
+                  <motion.button
                     key={c}
                     onClick={() => handleConsoleChange(c)}
-                    className="w-8 h-8 rounded-lg border shadow-sm relative flex items-center justify-center transition-transform active:scale-90 hover:scale-105"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-8 h-8 rounded-lg border shadow-sm relative flex items-center justify-center"
                     style={{
                       backgroundColor: CONSOLE_VARIANTS[c].base,
                       borderColor: CONSOLE_VARIANTS[c].edge,
@@ -279,17 +294,18 @@ export const SystemSettings = ({
                         className="w-2 h-2 bg-white rounded-full shadow-md"
                       />
                     )}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
-              <button
+              <motion.button
+                {...interactProps}
                 onClick={() =>
                   onApply({
                     ...currentTheme,
                     scanlines: !currentTheme.scanlines,
                   })
                 }
-                className="flex items-center gap-2 px-4 rounded-xl text-xs font-bold transition-all border shadow-sm active:scale-95"
+                className="flex items-center gap-2 px-4 rounded-xl text-xs font-bold transition-all border shadow-sm"
                 style={{
                   backgroundColor: currentTheme.scanlines
                     ? currentTheme.colors.accent
@@ -304,7 +320,7 @@ export const SystemSettings = ({
               >
                 <Monitor size={16} />
                 <span className="uppercase text-[10px] font-black">CRT</span>
-              </button>
+              </motion.button>
             </div>
           </motion.div>
 
@@ -316,8 +332,10 @@ export const SystemSettings = ({
           {/* 5. LEGAL */}
           <motion.button
             variants={itemVariants}
+            whileHover={{ scale: 1.02, opacity: 0.8 }}
+            whileTap={{ scale: 0.98 }}
             onClick={onOpenLegal}
-            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors hover:opacity-80 active:scale-95"
+            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors"
             style={{
               backgroundColor: currentTheme.colors.secondary,
               color: currentTheme.colors.text,

@@ -148,10 +148,13 @@ export const GameTile = ({
             <span
               className={`
                   block text-[10px] sm:text-xs font-black text-center truncate uppercase tracking-tight leading-none 
-                  transition-opacity duration-300
+                  transition-colors duration-300
                   ${isActive ? "opacity-100" : "opacity-70"}
+                  group-hover:text-[var(--accent)] 
               `}
-              style={{ color: theme.colors.text }}
+              style={{
+                color: isActive ? theme.colors.accent : theme.colors.text,
+              }} // Highlight if active
             >
               {project.title}
             </span>

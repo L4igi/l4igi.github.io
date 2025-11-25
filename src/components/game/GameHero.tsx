@@ -68,18 +68,20 @@ export const GameHero = ({
               <motion.button
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
+                whileHover={{ scale: 1.1 }} // Added hover
                 whileTap={{ scale: 0.9 }}
                 onClick={onToggleFavorite}
-                className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorite ? "bg-yellow-400 border-yellow-300 text-white shadow-[0_0_15px_rgba(250,204,21,0.5)]" : "bg-black/20 border-white/20 text-white hover:bg-white hover:text-black"}`}
+                className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 cursor-pointer ${isFavorite ? "bg-yellow-400 border-yellow-300 text-white shadow-[0_0_15px_rgba(250,204,21,0.5)]" : "bg-black/20 border-white/20 text-white hover:bg-white hover:text-black"}`}
                 title={t("game.add_fav")}
               >
                 <Star size={24} fill={isFavorite ? "currentColor" : "none"} />
               </motion.button>
             )}
             <motion.button
+              whileHover={{ scale: 1.1, rotate: 90 }} // Added hover
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="bg-black/20 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all duration-200 backdrop-blur-md border border-white/20"
+              className="bg-black/20 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all duration-200 backdrop-blur-md border border-white/20 cursor-pointer"
             >
               <X size={24} />
             </motion.button>

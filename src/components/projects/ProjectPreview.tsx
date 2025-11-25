@@ -197,8 +197,8 @@ export const ProjectPreview = ({
             <motion.button
               onClick={onStart}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95, y: 4 }}
-              className="group relative pl-5 pr-2 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none"
+              whileTap={{ scale: 0.95 }} // Standardized
+              className="group/btn relative pl-5 pr-2 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none cursor-pointer"
               style={{
                 backgroundColor: theme.colors.accent,
                 color: theme.colors.contrastAccent,
@@ -209,7 +209,7 @@ export const ProjectPreview = ({
               <span className="relative z-10 drop-shadow-sm">
                 {t("btn.details")}
               </span>
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover/btn:bg-white group-hover/btn:text-black transition-colors">
                 <ChevronRight size={18} strokeWidth={3} />
               </div>
             </motion.button>

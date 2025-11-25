@@ -82,13 +82,15 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
               {t("legal.title")}
             </h2>
           </div>
-          <button
+          <motion.button // motion
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2 rounded-full hover:opacity-70 transition-opacity bg-black/5 dark:bg-white/10"
+            className="p-2 rounded-full transition-opacity bg-black/5 dark:bg-white/10 cursor-pointer"
             style={{ color: theme.colors.text }}
           >
             <X size={20} />
-          </button>
+          </motion.button>
         </div>
 
         {/* --- CONTENT BODY (Deferred) --- */}
@@ -104,7 +106,9 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
               className="flex p-2 gap-2 shrink-0"
               style={{ backgroundColor: theme.colors.primary }}
             >
-              <button
+              <motion.button // motion
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab("IMPRINT")}
                 className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "IMPRINT" ? "shadow-md" : "opacity-60 hover:opacity-100"}`}
                 style={{
@@ -119,8 +123,10 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
                 }}
               >
                 {t("legal.imprint")}
-              </button>
-              <button
+              </motion.button>
+              <motion.button // motion
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab("PRIVACY")}
                 className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "PRIVACY" ? "shadow-md" : "opacity-60 hover:opacity-100"}`}
                 style={{
@@ -135,7 +141,7 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
                 }}
               >
                 {t("legal.privacy")}
-              </button>
+              </motion.button>
             </div>
 
             {/* TEXT AREA */}

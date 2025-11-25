@@ -141,7 +141,9 @@ export const ListRow = ({
           {/* 4. Text Content */}
           <div className="text-left flex-1 min-w-0 py-1 relative z-10">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-black text-sm sm:text-base truncate leading-none tracking-tight">
+              <span className="font-black text-sm sm:text-base truncate leading-none tracking-tight transition-colors group-hover:text-[var(--accent)]">
+                {" "}
+                {/* Added hover text color */}
                 {project.title}
               </span>
 

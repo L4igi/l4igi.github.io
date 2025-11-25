@@ -123,7 +123,7 @@ export const HeroCard = ({
             exit={{ opacity: 0, transition: { duration: 0.1 } }}
           >
             <h1
-              className="text-xl sm:text-5xl font-black leading-none tracking-tighter mb-2 sm:mb-3"
+              className="text-xl sm:text-5xl font-black leading-none tracking-tighter mb-2 sm:mb-3 transition-colors group-hover:text-[var(--accent)]" // Added hover effect
               style={{ color: theme.colors.text }}
             >
               Lukas Höwarth
@@ -146,8 +146,8 @@ export const HeroCard = ({
             <motion.button
               onClick={onOpenTrainer}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95, y: 4 }}
-              className="group relative pl-4 pr-2 py-2 sm:pl-6 sm:pr-2 sm:py-3 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-wider flex items-center gap-2 sm:gap-4 shadow-xl border-b-[3px] sm:border-b-4 transition-all active:border-b-0 active:translate-y-[3px] active:shadow-none mr-auto cursor-pointer"
+              whileTap={{ scale: 0.95 }} // Removed y:4, standardizing on scale
+              className="group/btn relative pl-4 pr-2 py-2 sm:pl-6 sm:pr-2 sm:py-3 rounded-full font-black text-[10px] sm:text-sm uppercase tracking-wider flex items-center gap-2 sm:gap-4 shadow-xl border-b-[3px] sm:border-b-4 transition-all active:border-b-0 active:translate-y-[3px] active:shadow-none mr-auto cursor-pointer"
               style={{
                 backgroundColor: theme.colors.accent,
                 color: theme.colors.contrastAccent,
@@ -160,7 +160,7 @@ export const HeroCard = ({
                 {t("hero.open")}
               </span>
 
-              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover:bg-white group-hover:text-black transition-colors">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover/btn:bg-white group-hover/btn:text-black transition-colors">
                 <ChevronRight
                   size={14}
                   strokeWidth={3}

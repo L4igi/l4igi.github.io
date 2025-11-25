@@ -1,3 +1,4 @@
+import { useEffect } from "react"; // Added useEffect
 import { motion } from "framer-motion";
 import { X, Sparkles } from "lucide-react";
 import type { Theme } from "../../types";
@@ -15,6 +16,19 @@ export const AboutHero = ({
   isImageLoaded,
   setIsImageLoaded,
 }: AboutHeroProps) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
     <>
       <div
@@ -39,12 +53,14 @@ export const AboutHero = ({
               <Sparkles size={14} /> Fullstack Engineer
             </motion.p>
           </div>
-          <button
+          <motion.button // motion
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2.5 rounded-full transition-all duration-200 backdrop-blur-md border shadow-sm hover:scale-110 bg-white/20 border-white/30 text-white"
+            className="p-2.5 rounded-full transition-all duration-200 backdrop-blur-md border shadow-sm bg-white/20 border-white/30 text-white cursor-pointer"
           >
             <X size={24} />
-          </button>
+          </motion.button>
         </div>
       </div>
 

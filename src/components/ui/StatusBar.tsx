@@ -4,67 +4,7 @@ import { Clock, Zap } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { Theme } from "../../types";
 
-let audioCtx: AudioContext | null = null;
-let oscillators: AudioScheduledSourceNode[] = [];
-
-const stopAllSounds = () => {
-  oscillators.forEach((osc) => {
-    try {
-      osc.stop();
-      osc.disconnect();
-    } catch (e) {
-      /* ignore */
-    }
-  });
-  oscillators = [];
-
-  if (audioCtx && audioCtx.state !== "closed") {
-    audioCtx.close().catch(() => {});
-    audioCtx = null;
-  }
-};
-
-const playTimeWarpSound = () => {
-  if (typeof window === "undefined") return;
-  const AudioContext =
-    window.AudioContext || (window as any).webkitAudioContext;
-  if (!AudioContext) return;
-
-  stopAllSounds();
-
-  audioCtx = new AudioContext();
-  const ctx = audioCtx;
-  const now = ctx.currentTime;
-
-  const masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0.15, now);
-  masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
-  masterGain.connect(ctx.destination);
-
-  const osc1 = ctx.createOscillator();
-  osc1.type = "square";
-  osc1.frequency.setValueAtTime(220, now);
-  osc1.frequency.linearRampToValueAtTime(440, now + 0.5);
-  osc1.frequency.linearRampToValueAtTime(220, now + 1.0);
-  osc1.frequency.linearRampToValueAtTime(440, now + 1.5);
-  osc1.connect(masterGain);
-
-  const osc2 = ctx.createOscillator();
-  osc2.type = "sawtooth";
-  osc2.frequency.setValueAtTime(55, now);
-  osc2.frequency.linearRampToValueAtTime(110, now + 1.5);
-  osc2.connect(masterGain);
-
-  oscillators.push(osc1, osc2);
-
-  osc1.start(now);
-  osc2.start(now);
-
-  osc1.stop(now + 2);
-  osc2.stop(now + 2);
-};
-
-// --- 2. PARTICLE SYSTEM ---
+// --- PARTICLES ---
 const ExplosionParticles = ({
   x,
   y,
@@ -74,13 +14,11 @@ const ExplosionParticles = ({
   y: number;
   color: string;
 }) => {
-  const particles = Array.from({ length: 20 }).map((_, i) => ({
+  const particles = Array.from({ length: 16 }).map((_, i) => ({
     id: i,
-    angle: (Math.random() * 360 * Math.PI) / 180,
-    velocity: Math.random() * 100 + 50,
-    size: Math.random() * 6 + 3,
-    color: Math.random() > 0.5 ? color : "#ffffff",
-    rotation: Math.random() * 360,
+    angle: (i * 22.5 * Math.PI) / 180,
+    velocity: Math.random() * 150 + 50,
+    size: Math.random() * 6 + 2,
   }));
 
   return (
@@ -91,20 +29,20 @@ const ExplosionParticles = ({
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          initial={{ x: 0, y: 0, scale: 0, rotate: p.rotation }}
+          initial={{ x: 0, y: 0, scale: 0 }}
           animate={{
             x: Math.cos(p.angle) * p.velocity,
-            y: Math.sin(p.angle) * p.velocity + 300,
+            y: Math.sin(p.angle) * p.velocity,
             scale: [0, 1.5, 0],
-            rotate: p.rotation + 720,
             opacity: [1, 1, 0],
           }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute rounded-sm shadow-sm"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="absolute rounded-full shadow-[0_0_10px_currentColor]"
           style={{
             width: p.size,
             height: p.size,
-            backgroundColor: p.color,
+            backgroundColor: color,
+            color: color,
           }}
         />
       ))}
@@ -112,31 +50,7 @@ const ExplosionParticles = ({
   );
 };
 
-// --- 3. SHOCKWAVE RING ---
-const Shockwave = ({
-  x,
-  y,
-  color,
-}: {
-  x: number;
-  y: number;
-  color: string;
-}) => (
-  <div
-    className="fixed pointer-events-none z-[9998]"
-    style={{ left: x, top: y }}
-  >
-    <motion.div
-      initial={{ scale: 0, opacity: 0.8, borderWidth: 50 }}
-      animate={{ scale: 8, opacity: 0, borderWidth: 0 }}
-      transition={{ duration: 1.0, ease: "circOut" }}
-      className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-solid"
-      style={{ width: 50, height: 50, borderColor: color }}
-    />
-  </div>
-);
-
-// --- 4. GLOBAL DISTORTION FILTER (The "Dizzy" Effect) ---
+// --- DISTORTION FILTER (Touch Fuzzy, Get Dizzy) ---
 const DistortionFilter = () => (
   <svg
     style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
@@ -149,14 +63,14 @@ const DistortionFilter = () => (
           numOctaves="2"
           result="warp"
         >
+          {/* Animate the turbulence for a wavy effect */}
           <animate
             attributeName="baseFrequency"
-            values="0.01 0.02;0.02 0.04;0.01 0.02"
+            values="0.01 0.02;0.02 0.05;0.01 0.02"
             dur="3s"
             repeatCount="indefinite"
           />
         </feTurbulence>
-        {/* Scale controls intensity. 20 is noticeable but legible. */}
         <feDisplacementMap
           xChannelSelector="R"
           yChannelSelector="G"
@@ -187,131 +101,155 @@ export const StatusBar = ({
   const [imgError, setImgError] = useState(false);
   const [hours, minutes] = time.split(":");
 
+  // STATE
   const [isTimeTraveling, setIsTimeTraveling] = useState(false);
   const [displayTime, setDisplayTime] = useState(time);
   const [glitchOffset, setGlitchOffset] = useState(0);
-
-  const intervalRef = useRef<number | null>(null);
-  const timeoutRef = useRef<number | null>(null);
-  const controls = useAnimation();
   const [clickCoords, setClickCoords] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
-  const cleanup = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+  // REFS
+  const activeInterval = useRef<number | null>(null);
+  const activeTimeout = useRef<number | null>(null);
+  const isMounted = useRef(false);
 
-    stopAllSounds();
-
-    document.body.style.filter = "";
-    document.body.style.transition = "";
-
-    setIsTimeTraveling(false);
-    setClickCoords(null);
-    setGlitchOffset(0);
-    setDisplayTime(time);
-  }, [time]);
+  const controls = useAnimation();
 
   useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
+  // --- FORCE STOP / CLEANUP ---
+  const forceStop = useCallback(
+    (shouldAnimate = true) => {
+      // 1. Cleanup Timers
+      if (activeInterval.current) {
+        clearInterval(activeInterval.current);
+        activeInterval.current = null;
+      }
+      if (activeTimeout.current) {
+        clearTimeout(activeTimeout.current);
+        activeTimeout.current = null;
+      }
+
+      // 2. Reset DOM styles (Crucial for removing the filter)
+      document.body.style.filter = "";
+      document.body.style.transition = "";
+
+      // 3. Reset State (only if mounted)
+      if (isMounted.current) {
+        setIsTimeTraveling(false);
+        setGlitchOffset(0);
+        setDisplayTime(time);
+        // Keep particles briefly
+        setTimeout(() => isMounted.current && setClickCoords(null), 1000);
+
+        if (shouldAnimate) {
+          controls.start({
+            scale: 1,
+            rotate: 0,
+            y: 0,
+            transition: { type: "spring", stiffness: 400, damping: 20 },
+          });
+        }
+      }
+    },
+    [controls, time],
+  );
+
+  // Sync time when idle
   useEffect(() => {
-    if (!isTimeTraveling) setDisplayTime(time);
+    if (!isTimeTraveling && isMounted.current) setDisplayTime(time);
   }, [time, isTimeTraveling]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => forceStop(false);
+  }, [forceStop]);
+
+  // Stop on navigation
+  useEffect(() => {
+    if (isTimeTraveling) forceStop(true);
+  }, [showProfile, forceStop]);
+
+  // Apply "Touch Fuzzy, Get Dizzy" Filter
   useEffect(() => {
     if (isTimeTraveling) {
-      document.body.style.transition = "filter 2s ease";
+      // Slow transition into the effect
+      document.body.style.transition = "filter 1.5s ease-in-out";
       document.body.style.filter =
         "url(#dizzy-filter) hue-rotate(180deg) contrast(1.2)";
     } else {
-      document.body.style.transition = "filter 0.5s ease-out";
-      document.body.style.filter = "none";
+      // Immediate removal to avoid stuck state
+      document.body.style.filter = "";
     }
   }, [isTimeTraveling]);
 
-  const triggerEasterEgg = async (e: React.MouseEvent) => {
+  const handleTrigger = async (e: React.MouseEvent) => {
     if (isTimeTraveling) return;
 
-    setIsTimeTraveling(true);
-
+    // FIX: Calculate coordinates IMMEDIATELY before any async/await
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const coords = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     };
 
-    await controls.start({
-      scale: 0.8,
-      rotate: -15,
-      y: 5,
-      transition: { duration: 0.2, ease: "backIn" },
-    });
+    try {
+      // 1. Charge Up
+      await controls.start({
+        scale: 0.8,
+        rotate: -5,
+        y: 2,
+        transition: { duration: 0.15, ease: "easeInOut" },
+      });
 
-    setClickCoords(coords);
-    playTimeWarpSound();
+      if (!isMounted.current) return;
 
-    await controls.start({
-      scale: 1.3,
-      rotate: [0, -10, 10, -10, 10, 0],
-      transition: { duration: 0.6, ease: "circOut" },
-    });
+      // 2. Activate Effect
+      setIsTimeTraveling(true);
+      setClickCoords(coords);
 
-    let counter = 0;
-    if (intervalRef.current) clearInterval(intervalRef.current);
+      // 3. Bounce Animation
+      controls.start({
+        scale: [0.8, 1.3, 1],
+        rotate: [0, -10, 10, -5, 5, 0],
+        transition: { duration: 0.5, ease: "backOut" },
+      });
 
-    intervalRef.current = window.setInterval(() => {
-      const rH = Math.floor(Math.random() * 23)
-        .toString()
-        .padStart(2, "0");
-      const rM = Math.floor(Math.random() * 59)
-        .toString()
-        .padStart(2, "0");
-      setDisplayTime(`${rH}:${rM}`);
-      setGlitchOffset(Math.random() * 6 - 3); // Stronger glitch
-      counter++;
+      // 4. Glitch Loop
+      if (activeInterval.current) clearInterval(activeInterval.current);
 
-      if (counter > 60) stopTimeTravel();
-    }, 40);
+      activeInterval.current = window.setInterval(() => {
+        if (!isMounted.current) return;
+        const rH = Math.floor(Math.random() * 23)
+          .toString()
+          .padStart(2, "0");
+        const rM = Math.floor(Math.random() * 59)
+          .toString()
+          .padStart(2, "0");
+        setDisplayTime(`${rH}:${rM}`);
+        setGlitchOffset((Math.random() - 0.5) * 8);
+      }, 50);
 
-    timeoutRef.current = window.setTimeout(stopTimeTravel, 2500);
-  };
-
-  const stopTimeTravel = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      // 5. Schedule End
+      if (activeTimeout.current) clearTimeout(activeTimeout.current);
+      activeTimeout.current = window.setTimeout(() => {
+        if (isMounted.current) forceStop(true);
+      }, 3000); // 3 seconds of dizziness
+    } catch (error) {
+      console.error("Easter egg failed", error);
+      forceStop(true);
     }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-
-    setIsTimeTraveling(false);
-    setDisplayTime(time);
-    setGlitchOffset(0);
-
-    setTimeout(() => setClickCoords(null), 1000);
-
-    controls.start({
-      scale: 1,
-      rotate: 0,
-      y: 0,
-      transition: { type: "spring", stiffness: 500, damping: 15 },
-    });
   };
 
   const handleProfileClick = () => {
-    cleanup();
+    forceStop(false);
     if (showProfile) onGoHome();
     else onOpenProfile();
   };
@@ -321,19 +259,13 @@ export const StatusBar = ({
       <DistortionFilter />
 
       {clickCoords &&
+        isTimeTraveling &&
         createPortal(
-          <>
-            <ExplosionParticles
-              x={clickCoords.x}
-              y={clickCoords.y}
-              color={theme.colors.accent}
-            />
-            <Shockwave
-              x={clickCoords.x}
-              y={clickCoords.y}
-              color={theme.colors.accent}
-            />
-          </>,
+          <ExplosionParticles
+            x={clickCoords.x}
+            y={clickCoords.y}
+            color={theme.colors.accent}
+          />,
           document.body,
         )}
 
@@ -341,72 +273,62 @@ export const StatusBar = ({
         className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-16 shrink-0 font-bold text-xs tracking-widest uppercase"
         style={{ color: theme.colors.text }}
       >
+        {/* Profile / Home Button */}
         <div className="min-w-[140px] h-full flex items-center">
           {showProfile && (
             <motion.button
               onClick={handleProfileClick}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm group overflow-hidden relative active:scale-95 transition-transform"
+              exit={{ opacity: 0, x: -20 }}
+              className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full cursor-pointer border shadow-sm group overflow-hidden"
               style={{
                 backgroundColor: theme.isDark
-                  ? "rgba(255,255,255,0.03)"
-                  : "rgba(255,255,255,0.4)",
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(255,255,255,0.5)",
                 borderColor: theme.isDark
                   ? "rgba(255,255,255,0.1)"
                   : "rgba(0,0,0,0.05)",
               }}
-              title={showProfile ? "Return to Home" : "Open Profile"}
             >
-              <motion.div
-                layout
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-inner relative overflow-hidden shrink-0"
-                style={{ backgroundColor: theme.colors.accent }}
-              >
+              <div className="w-8 h-8 rounded-full overflow-hidden shadow-inner border border-white/10 shrink-0">
                 {!imgError ? (
-                  <motion.img
-                    layout
+                  <img
                     src="/profile/me.jpg"
-                    alt="Lukas"
+                    alt="LH"
                     className="w-full h-full object-cover"
                     onError={() => setImgError(true)}
                   />
                 ) : (
-                  <span className="font-black text-[10px] z-10">LH</span>
+                  <div className="w-full h-full flex items-center justify-center bg-gray-300 text-black font-black text-[10px]">
+                    LH
+                  </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none"></div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="flex flex-col items-start justify-center leading-none whitespace-nowrap"
-              >
-                <span className="opacity-100 font-black text-xs group-hover:text-[var(--accent)] transition-colors duration-300">
-                  Lukas
-                </span>
-              </motion.div>
+              </div>
+              <span className="font-black group-hover:text-[var(--accent)] transition-colors">
+                Lukas
+              </span>
             </motion.button>
           )}
         </div>
 
+        {/* Time / Easter Egg Button */}
         <div className="flex items-center justify-end min-w-[100px]">
           <motion.button
-            onClick={triggerEasterEgg}
+            onClick={handleTrigger}
             animate={controls}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             disabled={isTimeTraveling}
-            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
+            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
             style={{
               backgroundColor: isTimeTraveling
                 ? theme.colors.accent
                 : theme.isDark
-                  ? "rgba(255,255,255,0.03)"
-                  : "rgba(255,255,255,0.4)",
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(255,255,255,0.5)",
               borderColor: theme.isDark
                 ? "rgba(255,255,255,0.1)"
                 : "rgba(0,0,0,0.05)",
@@ -414,7 +336,7 @@ export const StatusBar = ({
                 ? theme.colors.contrastAccent
                 : theme.colors.text,
               boxShadow: isTimeTraveling
-                ? `3px 0 0 rgba(255,0,0,0.6), -3px 0 0 rgba(0,255,255,0.6)`
+                ? `0 0 30px ${theme.colors.accent}`
                 : "none",
             }}
           >
@@ -445,10 +367,11 @@ export const StatusBar = ({
             </div>
 
             <div
-              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center"
+              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center group-hover:text-[var(--accent)] transition-colors"
               style={{
+                transform: `translate(${glitchOffset}px, ${-glitchOffset}px)`,
                 textShadow: isTimeTraveling
-                  ? `${glitchOffset}px 0 0 rgba(255,0,0,0.8), -${glitchOffset}px 0 0 rgba(0,255,255,0.8)`
+                  ? `${glitchOffset * 3}px 0 0 rgba(255,0,0,0.5), -${glitchOffset * 3}px 0 0 rgba(0,255,255,0.5)`
                   : "none",
               }}
             >
@@ -459,13 +382,7 @@ export const StatusBar = ({
               ) : (
                 <>
                   <span>{hours}</span>
-                  <motion.span
-                    animate={{ opacity: [1, 0.2, 1] }}
-                    transition={{ repeat: Infinity, duration: 1 }}
-                    className="mx-[1px]"
-                  >
-                    :
-                  </motion.span>
+                  <span className="animate-pulse mx-[1px]">:</span>
                   <span>{minutes}</span>
                 </>
               )}

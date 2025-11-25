@@ -354,9 +354,13 @@ const AppContent = () => {
                 <motion.button
                   ref={settingsButtonRef}
                   whileTap={{ scale: 0.9 }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{
+                    scale: 1.1,
+                    backgroundColor: theme.colors.accent,
+                    color: theme.colors.secondary,
+                  }}
                   onClick={() => setShowSystemSettings(!showSystemSettings)}
-                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center group"
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center group cursor-pointer shadow-lg"
                   style={cornerButtonStyle}
                   title="System Settings"
                 >
@@ -377,11 +381,15 @@ const AppContent = () => {
               >
                 <motion.button
                   whileTap={{ scale: 0.9 }}
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{
+                    scale: 1.1,
+                    backgroundColor: theme.colors.accent,
+                    color: theme.colors.secondary,
+                  }}
                   onClick={() =>
                     setViewMode((v) => (v === "GRID" ? "LIST" : "GRID"))
                   }
-                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-all flex items-center justify-center"
+                  className="p-4 rounded-full backdrop-blur-xl border-2 transition-colors flex items-center justify-center cursor-pointer shadow-lg"
                   style={cornerButtonStyle}
                   title="Toggle View"
                 >
