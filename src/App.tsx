@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Home, LayoutGrid, List as ListIcon, Settings } from "lucide-react";
+import { LayoutGrid, List as ListIcon, Settings } from "lucide-react";
 
 import "./styles/global.css";
 import type { Category, ViewMode, Project } from "./types";
@@ -160,21 +160,6 @@ const AppContent = () => {
     },
     hidden: {
       y: 60,
-      scale: 0.5,
-      opacity: 0,
-      transition: { duration: 0.2, ease: "easeIn" },
-    },
-  };
-
-  const topControlVariants: Variants = {
-    visible: {
-      y: 0,
-      scale: 1,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 300, damping: 20 },
-    },
-    hidden: {
-      y: -60,
       scale: 0.5,
       opacity: 0,
       transition: { duration: 0.2, ease: "easeIn" },
@@ -407,32 +392,6 @@ const AppContent = () => {
                   )}
                 </motion.button>
               </motion.div>
-            </div>
-
-            {/* Top Right: HOME BUTTON (Desktop Only) */}
-            <div className="absolute top-6 right-6 z-40 pointer-events-none hidden md:block">
-              <AnimatePresence>
-                {displayedProject && (
-                  <motion.div
-                    variants={topControlVariants}
-                    initial="hidden"
-                    animate={showControls ? "visible" : "hidden"}
-                    exit="hidden"
-                    className="pointer-events-auto"
-                  >
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      whileHover={{ scale: 1.05 }}
-                      onClick={goHome}
-                      className="p-3 rounded-full backdrop-blur-xl border-2 transition-all shadow-lg flex items-center justify-center"
-                      style={cornerButtonStyle}
-                      title="Return to Home"
-                    >
-                      <Home size={20} />
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
           </div>
         </div>
