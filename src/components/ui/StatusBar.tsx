@@ -1,64 +1,70 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { Clock, Zap } from "lucide-react";
 import { createPortal } from "react-dom";
 import type { Theme } from "../../types";
 
-// --- 1. RETRO SOUND SYNTHESIZER (Upgraded + Noise) ---
+let audioCtx: AudioContext | null = null;
+let oscillators: AudioScheduledSourceNode[] = [];
+
+const stopAllSounds = () => {
+  oscillators.forEach((osc) => {
+    try {
+      osc.stop();
+      osc.disconnect();
+    } catch (e) {
+      /* ignore */
+    }
+  });
+  oscillators = [];
+
+  if (audioCtx && audioCtx.state !== "closed") {
+    audioCtx.close().catch(() => {});
+    audioCtx = null;
+  }
+};
+
 const playTimeWarpSound = () => {
   if (typeof window === "undefined") return;
   const AudioContext =
     window.AudioContext || (window as any).webkitAudioContext;
   if (!AudioContext) return;
 
-  const ctx = new AudioContext();
+  stopAllSounds();
+
+  audioCtx = new AudioContext();
+  const ctx = audioCtx;
   const now = ctx.currentTime;
 
   const masterGain = ctx.createGain();
-  masterGain.gain.setValueAtTime(0.2, now);
-  masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+  masterGain.gain.setValueAtTime(0.15, now);
+  masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
   masterGain.connect(ctx.destination);
 
-  // Osc 1: The "Whistle"
   const osc1 = ctx.createOscillator();
   osc1.type = "square";
   osc1.frequency.setValueAtTime(220, now);
-  osc1.frequency.linearRampToValueAtTime(880, now + 0.2);
-  osc1.frequency.linearRampToValueAtTime(440, now + 0.4);
-  osc1.frequency.linearRampToValueAtTime(1760, now + 0.6); // High finish
+  osc1.frequency.linearRampToValueAtTime(440, now + 0.5);
+  osc1.frequency.linearRampToValueAtTime(220, now + 1.0);
+  osc1.frequency.linearRampToValueAtTime(440, now + 1.5);
   osc1.connect(masterGain);
 
-  // Osc 2: The "Growl"
   const osc2 = ctx.createOscillator();
   osc2.type = "sawtooth";
   osc2.frequency.setValueAtTime(55, now);
-  osc2.frequency.linearRampToValueAtTime(110, now + 0.8);
+  osc2.frequency.linearRampToValueAtTime(110, now + 1.5);
   osc2.connect(masterGain);
 
-  // Noise Burst (The "Pop")
-  const bufferSize = ctx.sampleRate * 0.1; // 100ms burst
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.1, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-  noise.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
+  oscillators.push(osc1, osc2);
 
   osc1.start(now);
   osc2.start(now);
-  noise.start(now);
 
-  osc1.stop(now + 1.5);
-  osc2.stop(now + 1.5);
+  osc1.stop(now + 2);
+  osc2.stop(now + 2);
 };
 
-// --- 2. PARTICLE SYSTEM (Gravity + Tumble) ---
+// --- 2. PARTICLE SYSTEM ---
 const ExplosionParticles = ({
   x,
   y,
@@ -68,13 +74,12 @@ const ExplosionParticles = ({
   y: number;
   color: string;
 }) => {
-  const particles = Array.from({ length: 30 }).map((_, i) => ({
+  const particles = Array.from({ length: 20 }).map((_, i) => ({
     id: i,
     angle: (Math.random() * 360 * Math.PI) / 180,
-    velocity: Math.random() * 150 + 50,
+    velocity: Math.random() * 100 + 50,
     size: Math.random() * 6 + 3,
-    color:
-      Math.random() > 0.6 ? color : Math.random() > 0.5 ? "#ffffff" : "#000000", // Mix accents
+    color: Math.random() > 0.5 ? color : "#ffffff",
     rotation: Math.random() * 360,
   }));
 
@@ -89,13 +94,12 @@ const ExplosionParticles = ({
           initial={{ x: 0, y: 0, scale: 0, rotate: p.rotation }}
           animate={{
             x: Math.cos(p.angle) * p.velocity,
-            // Physics: Initial upward velocity + Gravity pulling down
             y: Math.sin(p.angle) * p.velocity + 300,
             scale: [0, 1.5, 0],
-            rotate: p.rotation + 720, // Tumble effect
+            rotate: p.rotation + 720,
             opacity: [1, 1, 0],
           }}
-          transition={{ duration: 1.5, ease: [0.2, 0.4, 0.8, 1] }} // Gravity-like ease
+          transition={{ duration: 1.5, ease: "easeOut" }}
           className="absolute rounded-sm shadow-sm"
           style={{
             width: p.size,
@@ -124,12 +128,45 @@ const Shockwave = ({
   >
     <motion.div
       initial={{ scale: 0, opacity: 0.8, borderWidth: 50 }}
-      animate={{ scale: 5, opacity: 0, borderWidth: 0 }}
-      transition={{ duration: 0.6, ease: "circOut" }}
+      animate={{ scale: 8, opacity: 0, borderWidth: 0 }}
+      transition={{ duration: 1.0, ease: "circOut" }}
       className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-solid"
       style={{ width: 50, height: 50, borderColor: color }}
     />
   </div>
+);
+
+// --- 4. GLOBAL DISTORTION FILTER (The "Dizzy" Effect) ---
+const DistortionFilter = () => (
+  <svg
+    style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
+  >
+    <defs>
+      <filter id="dizzy-filter">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.01 0.02"
+          numOctaves="2"
+          result="warp"
+        >
+          <animate
+            attributeName="baseFrequency"
+            values="0.01 0.02;0.02 0.04;0.01 0.02"
+            dur="3s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+        {/* Scale controls intensity. 20 is noticeable but legible. */}
+        <feDisplacementMap
+          xChannelSelector="R"
+          yChannelSelector="G"
+          scale="30"
+          in="SourceGraphic"
+          in2="warp"
+        />
+      </filter>
+    </defs>
+  </svg>
 );
 
 interface StatusBarProps {
@@ -150,30 +187,61 @@ export const StatusBar = ({
   const [imgError, setImgError] = useState(false);
   const [hours, minutes] = time.split(":");
 
-  // --- EASTER EGG STATE ---
   const [isTimeTraveling, setIsTimeTraveling] = useState(false);
   const [displayTime, setDisplayTime] = useState(time);
-  const [glitchOffset, setGlitchOffset] = useState(0); // For RGB split effect
+  const [glitchOffset, setGlitchOffset] = useState(0);
 
   const intervalRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const controls = useAnimation();
   const [clickCoords, setClickCoords] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
+  const cleanup = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    stopAllSounds();
+
+    document.body.style.filter = "";
+    document.body.style.transition = "";
+
+    setIsTimeTraveling(false);
+    setClickCoords(null);
+    setGlitchOffset(0);
+    setDisplayTime(time);
+  }, [time]);
+
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
+    return cleanup;
+  }, [cleanup]);
 
   useEffect(() => {
     if (!isTimeTraveling) setDisplayTime(time);
   }, [time, isTimeTraveling]);
 
+  useEffect(() => {
+    if (isTimeTraveling) {
+      document.body.style.transition = "filter 2s ease";
+      document.body.style.filter =
+        "url(#dizzy-filter) hue-rotate(180deg) contrast(1.2)";
+    } else {
+      document.body.style.transition = "filter 0.5s ease-out";
+      document.body.style.filter = "none";
+    }
+  }, [isTimeTraveling]);
+
   const triggerEasterEgg = async (e: React.MouseEvent) => {
     if (isTimeTraveling) return;
+
     setIsTimeTraveling(true);
 
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -182,26 +250,22 @@ export const StatusBar = ({
       y: rect.top + rect.height / 2,
     };
 
-    // 1. Wind Up
     await controls.start({
       scale: 0.8,
-      rotate: -10,
+      rotate: -15,
       y: 5,
       transition: { duration: 0.2, ease: "backIn" },
     });
 
-    // 2. POP!
     setClickCoords(coords);
     playTimeWarpSound();
 
-    // Shake & Glitch
-    controls.start({
-      scale: 1.2,
-      rotate: [0, -5, 5, -5, 5, 0],
-      transition: { duration: 0.5, ease: "circOut" },
+    await controls.start({
+      scale: 1.3,
+      rotate: [0, -10, 10, -10, 10, 0],
+      transition: { duration: 0.6, ease: "circOut" },
     });
 
-    // 3. Scramble & Glitch Loop
     let counter = 0;
     if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -213,19 +277,23 @@ export const StatusBar = ({
         .toString()
         .padStart(2, "0");
       setDisplayTime(`${rH}:${rM}`);
-      setGlitchOffset(Math.random() * 4 - 2); // Jitter text shadow
+      setGlitchOffset(Math.random() * 6 - 3); // Stronger glitch
       counter++;
 
       if (counter > 60) stopTimeTravel();
     }, 40);
 
-    setTimeout(stopTimeTravel, 2500);
+    timeoutRef.current = window.setTimeout(stopTimeTravel, 2500);
   };
 
   const stopTimeTravel = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
 
     setIsTimeTraveling(false);
@@ -234,7 +302,6 @@ export const StatusBar = ({
 
     setTimeout(() => setClickCoords(null), 1000);
 
-    // 4. Landing
     controls.start({
       scale: 1,
       rotate: 0,
@@ -244,42 +311,15 @@ export const StatusBar = ({
   };
 
   const handleProfileClick = () => {
+    cleanup();
     if (showProfile) onGoHome();
     else onOpenProfile();
   };
 
   return (
     <>
-      {/* --- FULL SCREEN VIGNETTE FLASH --- */}
-      {isTimeTraveling &&
-        createPortal(
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-[99999] pointer-events-none overflow-hidden"
-            style={{
-              // Heavy blur + Vignette + Color Shift
-              background:
-                "radial-gradient(circle, transparent 30%, rgba(0,0,0,0.4) 90%)",
-              backdropFilter: "blur(8px) hue-rotate(90deg) contrast(1.2)",
-            }}
-          >
-            {/* Chromatic Wobble Overlay */}
-            <motion.div
-              animate={{
-                x: [0, -5, 5, 0],
-                y: [0, 5, -5, 0],
-              }}
-              transition={{ duration: 0.2, repeat: Infinity }}
-              className="w-full h-full bg-gradient-to-t from-purple-500/20 to-transparent mix-blend-overlay"
-            />
-          </motion.div>,
-          document.body,
-        )}
+      <DistortionFilter />
 
-      {/* PARTICLES & SHOCKWAVE */}
       {clickCoords &&
         createPortal(
           <>
@@ -359,7 +399,8 @@ export const StatusBar = ({
             animate={controls}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible"
+            disabled={isTimeTraveling}
+            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible ${isTimeTraveling ? "cursor-default" : "cursor-pointer"}`}
             style={{
               backgroundColor: isTimeTraveling
                 ? theme.colors.accent
@@ -372,10 +413,8 @@ export const StatusBar = ({
               color: isTimeTraveling
                 ? theme.colors.contrastAccent
                 : theme.colors.text,
-              cursor: "pointer",
-              // RGB Glitch Shadow
               boxShadow: isTimeTraveling
-                ? `2px 0 0 rgba(255,0,0,0.5), -2px 0 0 rgba(0,255,255,0.5)`
+                ? `3px 0 0 rgba(255,0,0,0.6), -3px 0 0 rgba(0,255,255,0.6)`
                 : "none",
             }}
           >
@@ -408,9 +447,8 @@ export const StatusBar = ({
             <div
               className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center"
               style={{
-                // Text Glitch Effect
                 textShadow: isTimeTraveling
-                  ? `${glitchOffset}px 0 0 rgba(255,0,0,0.7), -${glitchOffset}px 0 0 rgba(0,255,255,0.7)`
+                  ? `${glitchOffset}px 0 0 rgba(255,0,0,0.8), -${glitchOffset}px 0 0 rgba(0,255,255,0.8)`
                   : "none",
               }}
             >
