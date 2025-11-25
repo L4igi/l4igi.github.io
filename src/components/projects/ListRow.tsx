@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Star } from "lucide-react";
 import type { Project, Theme } from "../../types";
@@ -68,6 +68,11 @@ export const ListRow = ({
     }
   };
 
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
+
   return (
     <motion.div
       className="relative z-10 w-full perspective-container px-4 sm:px-0"
@@ -87,7 +92,7 @@ export const ListRow = ({
         whileTap={{ scale: 0.98, y: 4 }}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
         style={{ rotateX, rotateY }}
-        className="w-full relative group outline-none transform-style-3d"
+        className={`w-full relative group outline-none transform-style-3d ${!isTouch ? "cursor-pointer" : ""}`}
       >
         {/* TACTILE CONTAINER */}
         <div

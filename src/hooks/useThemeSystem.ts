@@ -14,6 +14,7 @@ const DEFAULT_THEME: Theme = {
   pattern: "dots",
   isDark: IS_DARK_DEFAULT,
   scanlines: false,
+  gbcFilter: false,
   colors: createThemeColors(
     PASTEL_PALETTE[3].value,
     IS_DARK_DEFAULT,

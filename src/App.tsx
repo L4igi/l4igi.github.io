@@ -34,8 +34,9 @@ const AppContent = () => {
   const [isBooting, setIsBooting] = useState(true);
   const [isLegalOpen, setIsLegalOpen] = useState(false);
 
-  const [selectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [hasEverHovered, setHasEverHovered] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
 
@@ -136,7 +137,16 @@ const AppContent = () => {
 
   const handleHover = (p: Project) => {
     if (p.id === hoveredId) return;
+    setHasEverHovered(true);
     setHoveredId(p.id);
+  };
+
+  const goHome = () => {
+    if (activeProject) setActiveProject(null);
+    else {
+      setSelectedId(null);
+      setHoveredId(null);
+    }
   };
 
   if (isBooting)
@@ -238,7 +248,13 @@ const AppContent = () => {
           >
             <ThemeBackground theme={theme} paused={backgroundPaused} />
 
-            <StatusBar time={currentTime} theme={theme} />
+            <StatusBar
+              time={currentTime}
+              theme={theme}
+              onOpenProfile={() => setIsAboutOpen(true)}
+              onGoHome={goHome}
+              showProfile={hasEverHovered}
+            />
 
             <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="wait">
@@ -250,13 +266,13 @@ const AppContent = () => {
                     isFavorite={favorites.includes(displayedProject.id)}
                     theme={theme}
                   />
-                ) : (
+                ) : !hasEverHovered ? (
                   <HeroCard
                     key="hero"
                     onOpenTrainer={() => setIsAboutOpen(true)}
                     theme={theme}
                   />
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
           </div>

@@ -98,7 +98,7 @@ export const GameTile = ({
           rotateX: isTouch ? 0 : rotateX,
           rotateY: isTouch ? 0 : rotateY,
         }}
-        className="w-full h-full relative group transform-style-3d"
+        className={`w-full h-full relative group transform-style-3d ${!isTouch ? "cursor-pointer" : ""}`}
       >
         {/* TACTILE CONTAINER */}
         <div
