@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutGrid, List as ListIcon, Settings } from "lucide-react";
 
@@ -24,6 +30,7 @@ import { GameScreen } from "./components/game/GameScreen.tsx";
 import { LegalModal } from "./components/modals/LegalModal.tsx";
 import type { Variants } from "motion";
 import { GBCFilter } from "./components/ui/GBCFilter.tsx";
+import { ToyBox } from "./components/ui/ToyBox.tsx";
 
 const AppContent = () => {
   const { theme, updateTheme, toggleDarkMode } = useThemeSystem();
@@ -72,11 +79,53 @@ const AppContent = () => {
     }
   }, [isAboutOpen, activeProject, showSystemSettings, isLegalOpen]);
 
+  // Updated filtering logic to handle LIKED category
   const filteredProjects = useMemo(() => {
+    if (activeCategory === "LIKED") {
+      return PROJECTS.filter((p) => favorites.includes(p.id));
+    }
     return activeCategory === "ALL"
       ? PROJECTS
       : PROJECTS.filter((p) => p.category === activeCategory);
-  }, [activeCategory]);
+  }, [activeCategory, favorites]);
+
+  // Navigation Logic
+  const handleNextProject = useCallback(() => {
+    if (!activeProject || filteredProjects.length === 0) return;
+    const currentIndex = filteredProjects.findIndex(
+      (p) => p.id === activeProject.id,
+    );
+    if (currentIndex === -1) return;
+
+    const nextIndex = (currentIndex + 1) % filteredProjects.length;
+    const nextProject = filteredProjects[nextIndex];
+
+    // Update the active modal project
+    setActiveProject(nextProject);
+    // Update the background preview to match
+    setHoveredId(nextProject.id);
+    // Update the grid selection state so it tracks behind the modal
+    setSelectedId(nextProject.id);
+  }, [activeProject, filteredProjects]);
+
+  const handlePrevProject = useCallback(() => {
+    if (!activeProject || filteredProjects.length === 0) return;
+    const currentIndex = filteredProjects.findIndex(
+      (p) => p.id === activeProject.id,
+    );
+    if (currentIndex === -1) return;
+
+    const prevIndex =
+      (currentIndex - 1 + filteredProjects.length) % filteredProjects.length;
+    const prevProject = filteredProjects[prevIndex];
+
+    // Update the active modal project
+    setActiveProject(prevProject);
+    // Update the background preview to match
+    setHoveredId(prevProject.id);
+    // Update the grid selection state so it tracks behind the modal
+    setSelectedId(prevProject.id);
+  }, [activeProject, filteredProjects]);
 
   const displayedProject = useMemo(() => {
     return hoveredId
@@ -124,6 +173,7 @@ const AppContent = () => {
     if (p.placeholder) return;
     isOpeningModal.current = true;
     setActiveProject(p);
+    setSelectedId(p.id);
     setTimeout(() => {
       isOpeningModal.current = false;
     }, 500);
@@ -202,10 +252,13 @@ const AppContent = () => {
               onClose={() => {
                 setActiveProject(null);
                 setHoveredId(null);
+                setSelectedId(null); // <--- ADDED THIS to clear selection on close
               }}
               isFavorite={favorites.includes(activeProject.id)}
               toggleFavorite={() => toggleFavorite(activeProject.id)}
               theme={theme}
+              onNext={handleNextProject}
+              onPrev={handlePrevProject}
             />
           )}
           {showSystemSettings && (
@@ -265,7 +318,9 @@ const AppContent = () => {
                     onOpenTrainer={() => setIsAboutOpen(true)}
                     theme={theme}
                   />
-                ) : null}
+                ) : (
+                  <ToyBox key="toybox" theme={theme} />
+                )}
               </AnimatePresence>
             </div>
           </div>

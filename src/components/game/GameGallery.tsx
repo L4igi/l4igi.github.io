@@ -35,62 +35,64 @@ export const GameGallery = ({
   if (!screenshots || screenshots.length === 0) return null;
 
   return (
-    <motion.div variants={itemVariants} className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <ImageIcon size={18} style={{ color: theme.colors.text }} />
-        <span
-          className="text-sm font-black uppercase tracking-widest"
-          style={{ color: theme.colors.text }}
-        >
-          {t("game.gallery")}
-        </span>
-      </div>
-
-      <div
-        ref={scrollRef}
-        {...dragEvents}
-        className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing transform-gpu"
-      >
-        {screenshots.map((item, i) => (
-          <motion.button
-            key={i}
-            variants={itemVariants}
-            whileHover={{ scale: 1.05, y: -5 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              if (!hasMoved.current) onImageClick(i);
-            }}
-            className="w-56 h-32 sm:w-64 sm:h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5"
-            style={{ borderColor: theme.colors.primary }}
+    <div onPointerDown={(e) => e.stopPropagation()} className="relative z-10">
+      <motion.div variants={itemVariants} className="mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <ImageIcon size={18} style={{ color: theme.colors.text }} />
+          <span
+            className="text-sm font-black uppercase tracking-widest"
+            style={{ color: theme.colors.text }}
           >
-            {isVideo(item) ? (
-              <VideoThumbnail src={item} />
-            ) : isImagePath(item) ? (
-              <div className="w-full h-full relative pointer-events-none">
-                <div className="absolute inset-0">
+            {t("game.gallery")}
+          </span>
+        </div>
+
+        <div
+          ref={scrollRef}
+          {...dragEvents}
+          className="-mx-4 px-4 py-4 flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing transform-gpu"
+        >
+          {screenshots.map((item, i) => (
+            <motion.button
+              key={i}
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (!hasMoved.current) onImageClick(i);
+              }}
+              className="w-56 h-32 sm:w-64 sm:h-40 shrink-0 rounded-xl shadow-md flex items-center justify-center relative group border-4 overflow-hidden bg-black/5"
+              style={{ borderColor: theme.colors.primary }}
+            >
+              {isVideo(item) ? (
+                <VideoThumbnail src={item} />
+              ) : isImagePath(item) ? (
+                <div className="w-full h-full relative pointer-events-none">
+                  <div className="absolute inset-0">
+                    <img
+                      src={item}
+                      className="w-full h-full object-cover blur-md opacity-60 scale-125"
+                      alt=""
+                      decoding="async"
+                    />
+                  </div>
                   <img
                     src={item}
-                    className="w-full h-full object-cover blur-md opacity-60 scale-125"
-                    alt=""
+                    alt={`Thumb ${i}`}
+                    className="relative z-10 w-full h-full object-contain p-1"
                     decoding="async"
                   />
                 </div>
-                <img
-                  src={item}
-                  alt={`Thumb ${i}`}
-                  className="relative z-10 w-full h-full object-contain p-1"
-                  decoding="async"
-                />
+              ) : (
+                <div className={`w-full h-full ${item}`}></div>
+              )}
+              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none flex items-center gap-1">
+                {isVideo(item) ? "VIDEO" : `IMG_0${i + 1}`}
               </div>
-            ) : (
-              <div className={`w-full h-full ${item}`}></div>
-            )}
-            <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-none flex items-center gap-1">
-              {isVideo(item) ? "VIDEO" : `IMG_0${i + 1}`}
-            </div>
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    </div>
   );
 };

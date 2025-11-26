@@ -1,8 +1,8 @@
 import React from "react";
 
-export type Language = "en" | "de"; // NEW
+export type Language = "en" | "de";
 
-export type Category = "ALL" | "WORK" | "PERSONAL" | "UNI";
+export type Category = "ALL" | "WORK" | "PERSONAL" | "UNI" | "LIKED";
 export type ViewMode = "GRID" | "LIST";
 export type Pattern =
   | "dots"

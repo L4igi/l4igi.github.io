@@ -48,6 +48,10 @@ const TRANSLATIONS = {
     "game.features": "Key Features",
     "footer.theme": "THEME",
     "footer.legal": "LEGAL",
+    "topScreen.title1": "Select",
+    "topScreen.title2": "Project",
+    "topScreen.hint": "Move Cursor",
+    "topScreen.hintMobile": "Touch to Look",
     // LEGAL TEXTS
     "legal.title": "Legal & Privacy",
     "legal.imprint": "Imprint",
@@ -137,6 +141,10 @@ const TRANSLATIONS = {
     "game.features": "Features",
     "footer.theme": "THEME",
     "footer.legal": "RECHTLICHES",
+    "topScreen.title1": "Projekt",
+    "topScreen.title2": "auswählen",
+    "topScreen.hint": "Maus bewegen",
+    "topScreen.hintMobile": "Wische zum Schauen",
     // LEGAL TEXTS
     "legal.title": "Rechtliches & Datenschutz",
     "legal.imprint": "Impressum",

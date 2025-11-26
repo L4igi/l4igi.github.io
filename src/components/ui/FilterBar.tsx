@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mail, Github, Linkedin } from "lucide-react";
+import { Mail, Github, Linkedin, Star } from "lucide-react"; // Added Star
 import type { Category, Theme } from "../../types";
 import { useLanguage } from "../../context/LanguageContext";
 import { SOCIAL_LINKS } from "../../data/content.tsx";
@@ -17,7 +17,7 @@ export const FilterBar = ({
 }: FilterBarProps) => {
   const { t } = useLanguage();
 
-  const categories: Category[] = ["ALL", "WORK", "PERSONAL", "UNI"];
+  const categories: Category[] = ["ALL", "WORK", "PERSONAL", "UNI", "LIKED"];
   const socialItems = [
     { Icon: Mail, url: SOCIAL_LINKS.email },
     { Icon: Github, url: SOCIAL_LINKS.github },
@@ -38,12 +38,12 @@ export const FilterBar = ({
           {/* CATEGORIES */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto justify-start">
             {categories.map((cat) => (
-              <motion.button // Changed to motion.button
+              <motion.button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                whileHover={{ scale: 1.05 }} // Add hover scale
-                whileTap={{ scale: 0.95 }} // Add tap scale
-                className={`relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black tracking-wide transition-colors z-10 shrink-0 cursor-pointer`} // Added cursor-pointer
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-[11px] font-black tracking-wide transition-colors z-10 shrink-0 cursor-pointer flex items-center justify-center gap-1.5`}
                 style={{
                   color:
                     activeCategory === cat
@@ -59,13 +59,26 @@ export const FilterBar = ({
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
-                {cat === "ALL"
-                  ? t("cat.all")
-                  : cat === "WORK"
-                    ? t("cat.work")
-                    : cat === "PERSONAL"
-                      ? t("cat.personal")
-                      : t("cat.uni")}
+                {cat === "LIKED" ? (
+                  <>
+                    <Star
+                      size={10}
+                      fill={
+                        activeCategory === "LIKED" ? "currentColor" : "none"
+                      }
+                      className="mb-[1px]"
+                    />
+                    <span>LIKED</span>
+                  </>
+                ) : cat === "ALL" ? (
+                  t("cat.all")
+                ) : cat === "WORK" ? (
+                  t("cat.work")
+                ) : cat === "PERSONAL" ? (
+                  t("cat.personal")
+                ) : (
+                  t("cat.uni")
+                )}
               </motion.button>
             ))}
           </div>
@@ -83,7 +96,7 @@ export const FilterBar = ({
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.15, color: theme.colors.accent }} // Added accent color on hover
+                  whileHover={{ scale: 1.15, color: theme.colors.accent }}
                   whileTap={{ scale: 0.9 }}
                   key={i}
                   className="p-1.5 rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center"
