@@ -20,7 +20,7 @@ const desktopSwapVariants: Variants = {
     transition: { type: "spring", stiffness: 350, damping: 25, mass: 1 },
   },
   exit: {
-    x: -120, // Slide to left
+    x: -120,
     opacity: 0,
     scale: 0.85,
     rotate: -5,
@@ -64,9 +64,18 @@ export const ProjectPreview = ({
 }) => {
   const { language, t } = useLanguage();
   const [isTouch, setIsTouch] = useState(false);
+  const [isShortScreen, setIsShortScreen] = useState(false);
 
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+
+    const checkHeight = () => {
+      setIsShortScreen(window.innerHeight < 800);
+    };
+
+    checkHeight();
+    window.addEventListener("resize", checkHeight);
+    return () => window.removeEventListener("resize", checkHeight);
   }, []);
 
   const x = useMotionValue(0);
@@ -106,7 +115,7 @@ export const ProjectPreview = ({
       exit="exit"
     >
       <motion.div
-        className="relative w-full max-w-lg max-h-[90%] min-h-[300px] aspect-[16/9] rounded-[32px] sm:shadow-2xl shadow-lg border-[6px] flex overflow-hidden transform-style-3d will-change-transform"
+        className={`relative w-full max-w-lg max-h-[90%] ${isShortScreen ? "min-h-[200px]" : "min-h-[300px]"} aspect-[16/9] rounded-[32px] sm:shadow-2xl shadow-lg ${isShortScreen ? "border-[4px]" : "border-[6px]"} flex overflow-hidden transform-style-3d will-change-transform`}
         style={{
           backgroundColor: theme.colors.cardBg,
           borderColor: theme.colors.cardBg,
@@ -122,22 +131,29 @@ export const ProjectPreview = ({
           <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-black/10"></div>
 
           <motion.div
-            className="drop-shadow-2xl scale-110 text-white translate-z-20"
-            style={{ transform: "scale(1.1)" }}
-            whileHover={isTouch ? undefined : { scale: 1.2, rotate: 5 }}
+            className={`drop-shadow-2xl text-white translate-z-20 ${isShortScreen ? "scale-90" : "scale-110"}`}
+            whileHover={
+              isTouch
+                ? undefined
+                : { scale: isShortScreen ? 1.0 : 1.2, rotate: 5 }
+            }
           >
             {project.icon}
           </motion.div>
 
           {isFavorite && (
-            <div className="absolute top-4 left-4 text-yellow-300 drop-shadow-md translate-z-30">
-              <Star fill="currentColor" size={28} />
+            <div
+              className={`absolute ${isShortScreen ? "top-2 left-2" : "top-4 left-4"} text-yellow-300 drop-shadow-md translate-z-30`}
+            >
+              <Star fill="currentColor" size={isShortScreen ? 20 : 28} />
             </div>
           )}
         </div>
 
         {/* Right: Info */}
-        <div className="w-2/3 p-6 flex flex-col justify-between relative overflow-hidden">
+        <div
+          className={`w-2/3 ${isShortScreen ? "p-3" : "p-6"} flex flex-col justify-between relative overflow-hidden`}
+        >
           <div
             className="hidden sm:block absolute -right-20 -top-20 w-64 h-64 opacity-10 rounded-full blur-3xl"
             style={{ backgroundColor: theme.colors.accent }}
@@ -145,48 +161,52 @@ export const ProjectPreview = ({
 
           <div className="relative z-10">
             {/* Badges */}
-            <div className="flex items-center gap-2 mb-3">
+            <div
+              className={`flex items-center gap-2 ${isShortScreen ? "mb-1.5" : "mb-3"}`}
+            >
               <span
-                className="flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border shadow-sm"
+                className={`flex items-center gap-1 ${isShortScreen ? "text-[9px]" : "text-[10px]"} font-black ${isShortScreen ? "px-2 py-0.5" : "px-2.5 py-1"} rounded-full uppercase tracking-wider border shadow-sm`}
                 style={{
                   backgroundColor: theme.colors.primary,
                   color: theme.colors.textLight,
                   borderColor: theme.colors.secondary,
                 }}
               >
-                <Tag size={10} className="opacity-60" />
+                <Tag size={isShortScreen ? 8 : 10} className="opacity-60" />
                 {project.category}
               </span>
 
               <span
-                className="flex items-center gap-1 text-[10px] font-bold opacity-50"
+                className={`flex items-center gap-1 ${isShortScreen ? "text-[9px]" : "text-[10px]"} font-bold opacity-50`}
                 style={{ color: theme.colors.text }}
               >
-                <Calendar size={10} />
+                <Calendar size={isShortScreen ? 8 : 10} />
                 {project.year}
               </span>
             </div>
 
             <h1
-              className="text-2xl font-black leading-none mb-2 tracking-tight"
+              className={`${isShortScreen ? "text-lg" : "text-2xl"} font-black leading-none ${isShortScreen ? "mb-1" : "mb-2"} tracking-tight`}
               style={{ color: theme.colors.text }}
             >
               {project.title}
             </h1>
             <p
-              className="text-xs sm:text-sm line-clamp-3 leading-relaxed font-medium opacity-70"
+              className={`${isShortScreen ? "text-[10px] line-clamp-2" : "text-xs sm:text-sm line-clamp-3"} leading-relaxed font-medium opacity-70`}
               style={{ color: theme.colors.text }}
             >
               {project.description[language]}
             </p>
           </div>
 
-          <div className="flex justify-between items-end relative z-10 mt-2">
+          <div
+            className={`flex justify-between items-end relative z-10 ${isShortScreen ? "mt-1" : "mt-2"}`}
+          >
             <div className="flex gap-1">
               {project.tech.slice(0, 3).map((t) => (
                 <div
                   key={t}
-                  className="w-2 h-2 rounded-full"
+                  className={`${isShortScreen ? "w-1.5 h-1.5" : "w-2 h-2"} rounded-full`}
                   style={{ backgroundColor: theme.colors.secondary }}
                   title={t}
                 />
@@ -198,7 +218,7 @@ export const ProjectPreview = ({
                 onClick={onStart}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group/btn relative pl-5 pr-2 py-2 rounded-full font-black text-xs sm:text-sm uppercase tracking-wider flex items-center gap-3 shadow-lg border-b-4 transition-all active:border-b-0 active:shadow-none cursor-pointer"
+                className={`group/btn relative ${isShortScreen ? "pl-3 pr-1.5 py-1.5" : "pl-5 pr-2 py-2"} rounded-full font-black ${isShortScreen ? "text-[10px]" : "text-xs sm:text-sm"} uppercase tracking-wider flex items-center ${isShortScreen ? "gap-2" : "gap-3"} shadow-lg ${isShortScreen ? "border-b-[3px]" : "border-b-4"} transition-all active:border-b-0 active:shadow-none cursor-pointer`}
                 style={{
                   backgroundColor: theme.colors.accent,
                   color: theme.colors.contrastAccent,
@@ -209,8 +229,13 @@ export const ProjectPreview = ({
                 <span className="relative z-10 drop-shadow-sm">
                   {t("btn.details")}
                 </span>
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover/btn:bg-white group-hover/btn:text-black transition-colors">
-                  <ChevronRight size={18} strokeWidth={3} />
+                <div
+                  className={`${isShortScreen ? "w-6 h-6" : "w-8 h-8"} rounded-full bg-white/20 flex items-center justify-center relative z-10 group-hover/btn:bg-white group-hover/btn:text-black transition-colors`}
+                >
+                  <ChevronRight
+                    size={isShortScreen ? 14 : 18}
+                    strokeWidth={3}
+                  />
                 </div>
               </motion.button>
             )}
