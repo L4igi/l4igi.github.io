@@ -199,14 +199,42 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>("en");
+  const getInitialLanguage = (): Language => {
+    const savedLang = localStorage.getItem("app-language");
+    if (savedLang === "en" || savedLang === "de") {
+      return savedLang as Language;
+    }
+
+    if (typeof navigator !== "undefined") {
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith("de")) {
+        return "de";
+      }
+    }
+
+    return "en";
+  };
+
+  const [storedLanguage, setStoredLanguage] =
+    useState<Language>(getInitialLanguage);
+
+  const setLanguage = (lang: Language) => {
+    setStoredLanguage(lang);
+    localStorage.setItem("app-language", lang);
+  };
 
   const t = (key: keyof (typeof TRANSLATIONS)["en"]) => {
-    return TRANSLATIONS[language][key] || key;
+    return TRANSLATIONS[storedLanguage][key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider
+      value={{
+        language: storedLanguage, // Map storedLanguage to the context 'language'
+        setLanguage,
+        t,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );

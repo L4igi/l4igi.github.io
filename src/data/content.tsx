@@ -283,8 +283,8 @@ export const PROJECTS: Project[] = [
       de: "Zentraler mobiler Informations-Hub für den Kraftwerksbetrieb inklusive dynamischem Content-Management-System.",
     },
     details: {
-      en: "**The Mission:** Create a secure and reliable communication channel for power plant operations.\n\n**The Build:** Developed a native iOS application featuring secure VPN-based Single Sign-On (SSO). We also built a custom Svelte-based CMS that empowered operational staff to manage rosters, surveys, and push notifications independently without requiring developer intervention.",
-      de: "**Die Mission:** Schaffung eines sicheren und zuverlässigen Kommunikationskanals für den Kraftwerksbetrieb.\n\n**Die Umsetzung:** Entwicklung einer nativen iOS-App mit sicherem VPN-basiertem Single Sign-On (SSO). Zusätzlich bauten wir ein maßgeschneidertes Svelte-CMS. Dies befähigte das operative Personal, Dienstpläne, Umfragen und Push-Nachrichten eigenständig zu verwalten, ohne auf Entwickler angewiesen zu sein.",
+      en: "**The Mission:** Create a secure and reliable communication channel for power plant operations.\n\n**The Build:** Developed a native iOS application featuring secure VPN-based Single Sign-On (SSO). We also built a custom Svelte-based CMS that empowered operational staff to manage rosters, surveys, and push notifications independently without requiring developer intervention.\n\n**The Foundation:** As my first professional project after university, this served as my boot camp for high-quality software engineering. Working alongside three experienced seniors, I was immersed in agile best practices through dedicated mentorship and pair programming. Seeing my contributions valued from day one shaped the collaborative leadership philosophy I apply today.",
+      de: "**Die Mission:** Schaffung eines sicheren und zuverlässigen Kommunikationskanals für den Kraftwerksbetrieb.\n\n**Die Umsetzung:** Entwicklung einer nativen iOS-App mit sicherem VPN-basiertem Single Sign-On (SSO). Zusätzlich bauten wir ein maßgeschneidertes Svelte-CMS. Dies befähigte das operative Personal, Dienstpläne, Umfragen und Push-Nachrichten eigenständig zu verwalten, ohne auf Entwickler angewiesen zu sein.\n\n**Das Fundament:** Als erstes professionelles Projekt nach der Universität war dies eine prägende Schule für High-Quality Engineering. In einem Team mit drei erfahrenen Seniors profitierte ich von intensivem Mentoring, Pair Programming und einer fundierten Einführung in agile Methoden. Die Erfahrung, dass meine Meinung dabei von Tag eins an zählte, formte mein Verständnis von moderner Führung und Zusammenarbeit – ein Standard, den ich heute selbst lebe.",
     },
     tech: ["Swift", "iOS Native", "Spring Boot", "Svelte", "SSO/VPN"],
     color: "bg-sky-500",
@@ -303,7 +303,6 @@ export const PROJECTS: Project[] = [
       de: ["Native iOS", "Echtzeit-Daten", "Custom CMS", "Single Sign-On"],
     },
   },
-
   {
     id: "rechenmauer",
     title: "EdTech: Rechenmauer",

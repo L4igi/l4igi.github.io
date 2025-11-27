@@ -35,7 +35,13 @@ export const GameGallery = ({
   if (!screenshots || screenshots.length === 0) return null;
 
   return (
-    <div onPointerDown={(e) => e.stopPropagation()} className="relative z-10">
+    <div
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      className="relative z-10"
+    >
       <motion.div variants={itemVariants} className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <ImageIcon size={18} style={{ color: theme.colors.text }} />

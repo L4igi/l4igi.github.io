@@ -45,6 +45,29 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
     { icon: <Mail size={20} />, label: "Email", url: SOCIAL_LINKS.email },
   ];
 
+  const statsData = [
+    {
+      label: t("modal.class"),
+      values: [t("hero.role")],
+      icon: <Briefcase size={20} />,
+    },
+    {
+      label: t("modal.region"),
+      values: [t("modal.loc_name")],
+      icon: <MapPin size={20} />,
+    },
+    {
+      label: t("modal.langs"),
+      values: [t("modal.lang_native"), t("modal.lang_fluent")],
+      icon: <Languages size={20} />,
+    },
+    {
+      label: t("modal.hobbies"),
+      values: [t("modal.hobbies_list"), t("modal.hobbies_learning")],
+      icon: <Coffee size={20} />,
+    },
+  ];
+
   return (
     <div className="space-y-8 sm:pt-4">
       {/* Top Quote */}
@@ -72,30 +95,7 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {[
-          {
-            label: t("modal.class"),
-            val: t("hero.role"),
-            icon: <Briefcase size={20} />,
-          },
-          {
-            label: t("modal.region"),
-            val: t("modal.loc_name"),
-            icon: <MapPin size={20} />,
-          },
-          {
-            label: t("modal.langs"),
-            val: t("modal.lang_native"),
-            sub: t("modal.lang_fluent"),
-            icon: <Languages size={20} />,
-          },
-          {
-            label: t("modal.hobbies"),
-            val: t("modal.hobbies_list"),
-            sub: t("modal.hobbies_learning"),
-            icon: <Coffee size={20} />,
-          },
-        ].map((stat, i) => (
+        {statsData.map((stat, i) => (
           <motion.div
             variants={itemVariants}
             key={i}
@@ -121,20 +121,19 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
               >
                 {stat.label}
               </div>
-              <div
-                className="font-bold text-sm sm:text-base leading-tight"
-                style={{ color: theme.colors.text }}
-              >
-                {stat.val}
+
+              {/* Iterating through values to ensure equal priority styling */}
+              <div className="flex flex-col gap-0.5">
+                {stat.values.map((val, idx) => (
+                  <div
+                    key={idx}
+                    className="font-bold text-sm sm:text-base leading-tight"
+                    style={{ color: theme.colors.text }}
+                  >
+                    {val}
+                  </div>
+                ))}
               </div>
-              {stat.sub && (
-                <div
-                  className="text-xs font-medium opacity-60 mt-0.5"
-                  style={{ color: theme.colors.text }}
-                >
-                  {stat.sub}
-                </div>
-              )}
             </div>
           </motion.div>
         ))}
@@ -193,8 +192,8 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
             whileTap={{ scale: 0.98 }}
             className="w-full p-3 rounded-xl border flex items-center justify-center gap-2 font-bold text-sm mb-3 shadow-sm transition-colors"
             style={{
-              backgroundColor: theme.colors.accent, // Accent BG
-              color: theme.colors.contrastAccent, // Contrast Text
+              backgroundColor: theme.colors.accent,
+              color: theme.colors.contrastAccent,
               borderColor: theme.colors.secondary,
             }}
           >
@@ -218,8 +217,8 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
                 whileTap={{ scale: 0.95 }}
                 className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                 style={{
-                  backgroundColor: theme.colors.primary, // Primary BG
-                  color: theme.colors.text, // Normal Text
+                  backgroundColor: theme.colors.primary,
+                  color: theme.colors.text,
                   borderColor: theme.colors.secondary,
                 }}
               >
