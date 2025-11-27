@@ -124,7 +124,7 @@ export const LegalModal = ({ onClose, theme }: LegalModalProps) => {
               >
                 {t("legal.imprint")}
               </motion.button>
-              <motion.button // motion
+              <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveTab("PRIVACY")}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Project, Theme } from "../../types";
@@ -30,7 +30,7 @@ const MODAL_VARIANTS: Variants = {
     transition: { type: "spring", stiffness: 300, damping: 30 },
   },
   expanded: {
-    height: "85vh",
+    height: "auto",
     transition: { type: "spring", stiffness: 300, damping: 30 },
   },
   collapsed: {
@@ -64,23 +64,47 @@ export const GameScreen = ({
 }: GameScreenProps) => {
   const { state, actions } = useGameScreen(project, onClose, onNext, onPrev);
 
-  const handleDragEnd = (
-    _event: any,
-    info: { offset: { x: number }; velocity: { x: number } },
-  ) => {
-    if (state.lightboxIndex !== null) return;
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const touchEnd = useRef<{ x: number; y: number } | null>(null);
+  const minSwipeDistance = 50;
 
-    const swipeThreshold = 50;
-    if (info.offset.x > swipeThreshold) {
-      onPrev();
-    } else if (info.offset.x < -swipeThreshold) {
-      onNext();
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEnd.current = null;
+    touchStart.current = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    };
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEnd.current = {
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    };
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+
+    const xDistance = touchStart.current.x - touchEnd.current.x;
+    const yDistance = touchStart.current.y - touchEnd.current.y;
+    const isLeftSwipe = xDistance > minSwipeDistance;
+    const isRightSwipe = xDistance < -minSwipeDistance;
+
+    if (Math.abs(xDistance) > Math.abs(yDistance)) {
+      if (isLeftSwipe) {
+        onNext();
+      }
+      if (isRightSwipe) {
+        onPrev();
+      }
     }
   };
 
   return (
     <div
       className={`fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/90 sm:bg-black/70 sm:backdrop-blur-md transition-opacity duration-300 ${state.isClosing ? "opacity-0" : "opacity-100"}`}
+      onClick={actions.close}
     >
       <AnimatePresence>
         {state.lightboxIndex !== null && (
@@ -93,7 +117,6 @@ export const GameScreen = ({
         )}
       </AnimatePresence>
 
-      {/* DESKTOP NAVIGATION CHEVRONS */}
       <div className="hidden md:flex absolute inset-y-0 left-2 lg:left-8 items-center z-[210] pointer-events-none">
         <motion.button
           onClick={(e) => {
@@ -134,7 +157,6 @@ export const GameScreen = ({
         </motion.button>
       </div>
 
-      {/* CARD */}
       <AnimatePresence mode="wait">
         <motion.div
           key={project.id}
@@ -143,14 +165,11 @@ export const GameScreen = ({
           animate={["animate", state.isReady ? "expanded" : "collapsed"]}
           exit="exit"
           onAnimationComplete={() => actions.setIsReady(true)}
-          // MOBILE SWIPE PROPS
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          dragDirectionLock={true}
-          onDragEnd={handleDragEnd}
-          // touch-pan-y allows vertical scrolling while letting horizontal drags bubble to Framer
-          className="w-full max-w-5xl rounded-[36px] overflow-hidden border-[8px] flex flex-col relative will-change-transform cursor-grab active:cursor-grabbing touch-pan-y"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className="w-full max-w-5xl rounded-[36px] overflow-hidden border-[8px] flex flex-col relative will-change-transform cursor-auto max-h-[85vh] sm:max-h-[90vh]"
           style={{
             backgroundColor: theme.colors.cardBg,
             borderColor: theme.colors.primary,
@@ -159,14 +178,16 @@ export const GameScreen = ({
               : "none",
           }}
         >
-          <GameHero
-            project={project}
-            theme={theme}
-            isFavorite={isFavorite}
-            isReady={state.isReady}
-            onClose={actions.close}
-            onToggleFavorite={toggleFavorite}
-          />
+          <div className="shrink-0">
+            <GameHero
+              project={project}
+              theme={theme}
+              isFavorite={isFavorite}
+              isReady={state.isReady}
+              onClose={actions.close}
+              onToggleFavorite={toggleFavorite}
+            />
+          </div>
 
           {state.isReady && (
             <motion.div
@@ -187,7 +208,7 @@ export const GameScreen = ({
           )}
 
           <div
-            className="flex-1 overflow-y-auto custom-scrollbar relative touch-pan-y"
+            className="overflow-y-auto custom-scrollbar relative"
             style={{ backgroundColor: theme.colors.cardBg }}
           >
             {state.isReady && (

@@ -115,17 +115,18 @@ export const ToyBox = ({ theme }: { theme: Theme }) => {
 
   // --- GENERATE STARS ---
   const stars = useMemo(() => {
-    const count = isMobile ? 16 : 40;
-    const spreadX = isMobile ? 280 : 900;
-    const spreadY = isMobile ? 400 : 600;
-    const spreadZ = 500;
+    // UPDATED SETTINGS FOR MOBILE DENSITY
+    const count = isMobile ? 32 : 50; // Increased mobile count from 16 to 32
+    const spreadX = isMobile ? 600 : 1000; // Increased width from 280 to 600
+    const spreadY = isMobile ? 550 : 600;
+    const spreadZ = isMobile ? 600 : 500; // Deepened Z-axis for better parallax
 
     return Array.from({ length: count }).map((_, i) => ({
       id: i,
       x: (Math.random() - 0.5) * spreadX,
       y: (Math.random() - 0.5) * spreadY,
       z: (Math.random() - 0.5) * spreadZ - 100,
-      size: Math.random() * (isMobile ? 12 : 10) + 6,
+      size: Math.random() * (isMobile ? 14 : 10) + 6, // Slightly larger on mobile
       color:
         Math.random() > 0.6
           ? theme.colors.accent
@@ -250,17 +251,6 @@ export const ToyBox = ({ theme }: { theme: Theme }) => {
               {t("topScreen.title2")}
             </h1>
           </motion.div>
-        </motion.div>
-
-        {/* INSTRUCTION HINT */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: theme.isDark ? 0.6 : 0.9 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-8 text-[9px] font-bold tracking-[0.2em] uppercase pointer-events-none select-none"
-          style={{ color: theme.colors.accent }}
-        >
-          {isMobile ? t("topScreen.hintMobile") : t("topScreen.hint")}
         </motion.div>
       </motion.div>
     </>

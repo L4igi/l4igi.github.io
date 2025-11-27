@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Star } from "lucide-react";
 import type { Project, Theme } from "../../types";
@@ -12,6 +12,112 @@ const itemVariants: Variants = {
     scale: 1,
     transition: { type: "spring", stiffness: 300, damping: 24 },
   },
+};
+
+const ScrollingTitle = ({
+  text,
+  isActive,
+  theme,
+}: {
+  text: string;
+  isActive: boolean;
+  theme: Theme;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const ghostRef = useRef<HTMLSpanElement>(null);
+
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [contentWidth, setContentWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const ghost = ghostRef.current;
+
+    if (!container || !ghost) return;
+
+    const measure = () => {
+      const containerRect = container.getBoundingClientRect();
+
+      const style = window.getComputedStyle(container);
+      const paddingLeft = parseFloat(style.paddingLeft) || 0;
+      const paddingRight = parseFloat(style.paddingRight) || 0;
+
+      const availableWidth = containerRect.width - paddingLeft - paddingRight;
+
+      const textWidth = ghost.getBoundingClientRect().width;
+
+      setIsOverflowing(textWidth > availableWidth + 0.5);
+      setContentWidth(textWidth);
+    };
+
+    measure();
+    document.fonts.ready.then(measure);
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [text, isActive]);
+
+  const GAP = 24;
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full h-full relative overflow-hidden flex items-center justify-center px-2"
+    >
+      <span
+        ref={ghostRef}
+        className="absolute invisible whitespace-nowrap text-[10px] sm:text-xs font-black uppercase tracking-tight pointer-events-none"
+        aria-hidden="true"
+      >
+        {text}
+      </span>
+
+      {isActive && isOverflowing ? (
+        <div
+          className="absolute inset-0 flex items-center overflow-hidden w-full"
+          style={{
+            maskImage:
+              "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+          }}
+        >
+          <motion.div
+            className="flex whitespace-nowrap will-change-transform pl-1"
+            initial={{ x: 0 }}
+            animate={{ x: [0, -(contentWidth + GAP)] }}
+            transition={{
+              repeat: Infinity,
+              ease: "linear",
+              duration: Math.max(contentWidth / 25, 3),
+              delay: 0.2,
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="text-[10px] sm:text-xs font-black uppercase tracking-tight leading-none shrink-0"
+                style={{ color: theme.colors.accent, marginRight: GAP }}
+              >
+                {text}
+              </span>
+            ))}
+          </motion.div>
+        </div>
+      ) : (
+        <span
+          className="block w-full text-[10px] sm:text-xs font-black truncate uppercase tracking-tight leading-none text-center transition-colors duration-300"
+          style={{
+            color: isActive ? theme.colors.accent : theme.colors.text,
+          }}
+        >
+          {text}
+        </span>
+      )}
+    </div>
+  );
 };
 
 interface GameTileProps {
@@ -100,7 +206,6 @@ export const GameTile = ({
         }}
         className={`w-full h-full relative group transform-style-3d ${!isTouch ? "cursor-pointer" : ""}`}
       >
-        {/* TACTILE CONTAINER */}
         <div
           className={`
             w-full h-full rounded-[24px] shadow-lg flex flex-col relative overflow-hidden
@@ -121,7 +226,6 @@ export const GameTile = ({
             className={`absolute inset-2 rounded-[18px] ${project.color} opacity-5 group-hover:opacity-15 transition-opacity pointer-events-none`}
           ></div>
 
-          {/* ICON SECTION */}
           <div className="flex-1 w-full flex items-center justify-center relative z-10">
             <motion.div
               animate={
@@ -136,9 +240,8 @@ export const GameTile = ({
             </motion.div>
           </div>
 
-          {/* LABEL SECTION */}
           <div
-            className="shrink-0 w-full backdrop-blur-md py-2 px-2 border-t z-20 relative"
+            className="shrink-0 w-full h-8 backdrop-blur-md border-t z-20 relative flex items-center justify-center"
             style={{
               backgroundColor: theme.isDark
                 ? "rgba(0,0,0,0.2)"
@@ -146,19 +249,11 @@ export const GameTile = ({
               borderColor: theme.colors.secondary,
             }}
           >
-            <span
-              className={`
-                  block text-[10px] sm:text-xs font-black text-center truncate uppercase tracking-tight leading-none 
-                  transition-colors duration-300
-                  ${isActive ? "opacity-100" : "opacity-70"}
-                  group-hover:text-[var(--accent)] 
-              `}
-              style={{
-                color: isActive ? theme.colors.accent : theme.colors.text,
-              }} // Highlight if active
-            >
-              {project.title}
-            </span>
+            <ScrollingTitle
+              text={project.title}
+              isActive={isActive}
+              theme={theme}
+            />
           </div>
 
           {isFavorite && (

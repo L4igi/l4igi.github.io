@@ -99,7 +99,7 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
           <motion.div
             variants={itemVariants}
             key={i}
-            className="p-4 rounded-2xl border shadow-sm flex items-start gap-4 group hover:shadow-md hover:scale-[1.01] transition-all"
+            className="p-4 rounded-2xl border shadow-sm flex items-start gap-4 group hover:shadow-md hover:scale-[1.01]"
             style={{
               backgroundColor: theme.colors.primary,
               borderColor: theme.colors.secondary,
@@ -142,7 +142,7 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
         {/* Badge Section */}
         <motion.div
           variants={itemVariants}
-          className="sm:col-span-2 p-4 rounded-2xl border shadow-sm flex items-center gap-4 hover:shadow-md hover:scale-[1.01] transition-all"
+          className="sm:col-span-2 p-4 rounded-2xl border shadow-sm flex items-center gap-4 hover:shadow-md hover:scale-[1.01]"
           style={{
             backgroundColor: theme.colors.primary,
             borderColor: theme.colors.secondary,
@@ -184,36 +184,48 @@ export const TabIdentity = ({ theme }: { theme: Theme }) => {
           >
             Connect
           </h4>
-          <a
+
+          {/* UPDATED DOWNLOAD BUTTON (Matches Desktop Style) */}
+          <motion.a
             href={cvUrl}
             download
-            className="w-full p-3 rounded-xl border flex items-center justify-center gap-2 font-bold text-sm mb-3 shadow-sm active:scale-95 transition-transform"
+            whileHover={{ scale: 1.02, filter: "brightness(1.1)" }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full p-3 rounded-xl border flex items-center justify-center gap-2 font-bold text-sm mb-3 shadow-sm transition-colors"
             style={{
-              backgroundColor: theme.colors.primary,
+              backgroundColor: theme.colors.accent, // Accent BG
+              color: theme.colors.contrastAccent, // Contrast Text
               borderColor: theme.colors.secondary,
-              color: theme.colors.text,
             }}
           >
             <Download size={16} />
             {cvLabel}
-          </a>
+          </motion.a>
+
+          {/* UPDATED SOCIALS (Matches Desktop Style) */}
           <div className="grid grid-cols-3 gap-3">
             {SOCIALS.map((social, i) => (
-              <a
+              <motion.a
                 key={i}
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform cursor-pointer"
+                whileHover={{
+                  scale: 1.05,
+                  color: theme.colors.accent,
+                  borderColor: theme.colors.accent,
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                 style={{
-                  backgroundColor: theme.colors.accent,
-                  color: theme.colors.contrastAccent,
-                  boxShadow: "0 4px 15px -5px rgba(0,0,0,0.3)",
+                  backgroundColor: theme.colors.primary, // Primary BG
+                  color: theme.colors.text, // Normal Text
+                  borderColor: theme.colors.secondary,
                 }}
               >
                 <div className="opacity-80">{social.icon}</div>
                 <span className="text-xs font-bold">{social.label}</span>
-              </a>
+              </motion.a>
             ))}
           </div>
         </motion.div>

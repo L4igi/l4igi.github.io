@@ -47,7 +47,7 @@ export interface Project {
   category: Category;
   placeholder?: boolean;
   screenshots: string[];
-  features: string[];
+  features: { en: string[]; de: string[] };
 }
 
 export interface ExperienceItem {

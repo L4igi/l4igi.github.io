@@ -46,6 +46,7 @@ const AppContent = () => {
   const [hasEverHovered, setHasEverHovered] = useState(false);
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [isToyboxVisible, setIsToyboxVisible] = useState(false);
 
   const [showSystemSettings, setShowSystemSettings] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -251,8 +252,11 @@ const AppContent = () => {
               project={activeProject}
               onClose={() => {
                 setActiveProject(null);
-                setHoveredId(null);
-                setSelectedId(null); // <--- ADDED THIS to clear selection on close
+                // Delay clearing the preview to allow smooth transition
+                setTimeout(() => {
+                  setHoveredId(null);
+                  setSelectedId(null);
+                }, 300);
               }}
               isFavorite={favorites.includes(activeProject.id)}
               toggleFavorite={() => toggleFavorite(activeProject.id)}
@@ -294,16 +298,35 @@ const AppContent = () => {
           >
             <ThemeBackground theme={theme} paused={backgroundPaused} />
 
-            <StatusBar
-              time={currentTime}
-              theme={theme}
-              onOpenProfile={() => setIsAboutOpen(true)}
-              onGoHome={goHome}
-              showProfile={hasEverHovered}
-            />
-
-            <div className="relative z-10 w-full h-[calc(100%-2rem)] flex items-center justify-center overflow-hidden">
-              <AnimatePresence mode="wait">
+            {/* StatusBar Wrapper */}
+            <div
+              className={`z-50 w-full transition-all duration-300 ${
+                isToyboxVisible
+                  ? "absolute top-0 left-0 right-0 pointer-events-none"
+                  : "relative pointer-events-auto"
+              }`}
+            >
+              <div className="pointer-events-auto">
+                <StatusBar
+                  time={currentTime}
+                  theme={theme}
+                  onOpenProfile={() => setIsAboutOpen(true)}
+                  onGoHome={goHome}
+                  showProfile={hasEverHovered}
+                />
+              </div>
+            </div>
+            <div className="relative z-10 w-full flex-1 flex items-center justify-center overflow-hidden">
+              <AnimatePresence
+                mode="wait"
+                onExitComplete={() => {
+                  if (!displayedProject && hasEverHovered) {
+                    setIsToyboxVisible(true);
+                  } else {
+                    setIsToyboxVisible(false);
+                  }
+                }}
+              >
                 {displayedProject ? (
                   <ProjectPreview
                     key={displayedProject.id}
