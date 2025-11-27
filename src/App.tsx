@@ -35,7 +35,6 @@ import { ToyBox } from "./components/ui/ToyBox.tsx";
 const AppContent = () => {
   const { theme, updateTheme, toggleDarkMode } = useThemeSystem();
 
-  const [currentTime, setCurrentTime] = useState("00:00");
   const [activeCategory, setActiveCategory] = useState<Category>("WORK");
   const [viewMode, setViewMode] = useState<ViewMode>("GRID");
   const [isBooting, setIsBooting] = useState(true);
@@ -137,16 +136,6 @@ const AppContent = () => {
   }, [hoveredId, selectedId]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      const date = new Date();
-      setCurrentTime(
-        `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`,
-      );
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     const darkBg = "#0f172a";
     const lightBg = "#f1f5f9";
     const activeColor = theme.isDark ? darkBg : lightBg;
@@ -190,14 +179,6 @@ const AppContent = () => {
     if (p.id === hoveredId) return;
     setHasEverHovered(true);
     setHoveredId(p.id);
-  };
-
-  const goHome = () => {
-    if (activeProject) setActiveProject(null);
-    else {
-      setSelectedId(null);
-      setHoveredId(null);
-    }
   };
 
   if (isBooting)
@@ -308,10 +289,8 @@ const AppContent = () => {
             >
               <div className="pointer-events-auto">
                 <StatusBar
-                  time={currentTime}
                   theme={theme}
                   onOpenProfile={() => setIsAboutOpen(true)}
-                  onGoHome={goHome}
                   showProfile={hasEverHovered}
                 />
               </div>
