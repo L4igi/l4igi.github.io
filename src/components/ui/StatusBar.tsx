@@ -1,10 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
-import { Clock, Zap } from "lucide-react";
+import {
+  Sun,
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  Moon,
+  CloudLightning,
+  Zap,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import type { Theme } from "../../types";
+import { getComplementaryColor } from "../../utils/themeHelpers.ts";
 
-// --- PARTICLES ---
+type WeatherCondition =
+  | "clear"
+  | "cloudy"
+  | "rain"
+  | "snow"
+  | "storm"
+  | "night";
+
+interface WeatherData {
+  temp: number;
+  condition: WeatherCondition;
+  isDay: boolean;
+}
+
 const ExplosionParticles = ({
   x,
   y,
@@ -82,38 +104,42 @@ const DistortionFilter = () => (
   </svg>
 );
 
+const getConditionFromCode = (code: number): WeatherCondition => {
+  if (code <= 1) return "clear";
+  if (code <= 48) return "cloudy";
+  if (code <= 67) return "rain";
+  if (code <= 77) return "snow";
+  if (code <= 82) return "rain";
+  if (code <= 86) return "snow";
+  if (code <= 99) return "storm";
+  return "clear";
+};
+
 interface StatusBarProps {
-  time: string;
   theme: Theme;
   onOpenProfile: () => void;
-  onGoHome: () => void;
   showProfile: boolean;
 }
 
 export const StatusBar = ({
-  time,
   theme,
   onOpenProfile,
   showProfile,
 }: StatusBarProps) => {
   const [imgError, setImgError] = useState(false);
-  const [hours, minutes] = time.split(":");
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  // STATE
-  const [isTimeTraveling, setIsTimeTraveling] = useState(false);
-  const [displayTime, setDisplayTime] = useState(time);
-  const [glitchOffset, setGlitchOffset] = useState(0);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+
+  const [isCrazy, setIsCrazy] = useState(false);
   const [clickCoords, setClickCoords] = useState<{
     x: number;
     y: number;
   } | null>(null);
-  // REFS
-  const activeInterval = useRef<number | null>(null);
+
   const activeTimeout = useRef<number | null>(null);
   const isMounted = useRef(false);
   const triggerId = useRef(0);
-
   const controls = useAnimation();
 
   useEffect(() => {
@@ -123,30 +149,20 @@ export const StatusBar = ({
     };
   }, []);
 
-  // --- FORCE STOP / CLEANUP ---
   const forceStop = useCallback(
     (shouldAnimate = true) => {
       triggerId.current++;
 
-      // 1. Cleanup Timers
-      if (activeInterval.current) {
-        clearInterval(activeInterval.current);
-        activeInterval.current = null;
-      }
       if (activeTimeout.current) {
         clearTimeout(activeTimeout.current);
         activeTimeout.current = null;
       }
 
-      // 2. Instant Reset
       document.body.style.transition = "none";
       document.body.style.filter = "";
 
-      // 3. Reset State
       if (isMounted.current) {
-        setIsTimeTraveling(false);
-        setGlitchOffset(0);
-        setDisplayTime(time);
+        setIsCrazy(false);
 
         setTimeout(() => {
           if (isMounted.current) setClickCoords(null);
@@ -162,45 +178,64 @@ export const StatusBar = ({
         }
       }
     },
-    [controls, time],
+    [controls],
   );
 
-  // Sync time
-  useEffect(() => {
-    if (!isTimeTraveling && isMounted.current) setDisplayTime(time);
-  }, [time, isTimeTraveling]);
-
-  // Cleanup
   useEffect(() => {
     return () => forceStop(false);
   }, [forceStop]);
 
   useEffect(() => {
-    if (isTimeTraveling) forceStop(true);
+    if (isCrazy) forceStop(true);
   }, [showProfile, forceStop]);
 
-  // --- APPLY FILTER ---
   useEffect(() => {
-    if (isTimeTraveling) {
-      // Slow onset
+    if (isCrazy) {
       document.body.style.transition = "filter 2.5s ease-in-out";
       document.body.style.filter =
         "url(#dizzy-filter) hue-rotate(180deg) saturate(3) contrast(1.1)";
     } else {
-      // Instant off
       document.body.style.transition = "none";
       document.body.style.filter = "";
     }
-  }, [isTimeTraveling]);
+  }, [isCrazy]);
 
-  const handleTrigger = async (e: React.MouseEvent) => {
-    if (isTimeTraveling) return;
+  useEffect(() => {
+    const fetchWeather = async () => {
+      const latitude = 48.2082;
+      const longitude = 16.3738;
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,is_day`,
+        );
+        if (!res.ok) throw new Error("API Error");
+        const data = await res.json();
 
-    // 1. Lock
-    setIsTimeTraveling(true);
+        if (isMounted.current) {
+          setWeather({
+            temp: Math.round(data.current.temperature_2m),
+            condition: getConditionFromCode(data.current.weather_code),
+            isDay: data.current.is_day === 1,
+          });
+        }
+      } catch (error) {
+        console.error("Weather API failed:", error);
+      }
+    };
+    fetchWeather();
+  }, []);
+
+  const handleWeatherClick = async (e: React.MouseEvent) => {
+    if (!weather) return;
+
+    if (isCrazy) {
+      forceStop(true);
+      return;
+    }
+
+    setIsCrazy(true);
     const currentSession = ++triggerId.current;
 
-    // 2. Coords
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const coords = {
       x: rect.left + rect.width / 2,
@@ -208,7 +243,6 @@ export const StatusBar = ({
     };
 
     try {
-      // 3. Charge Up
       await controls.start({
         scale: 0.8,
         rotate: -15,
@@ -216,36 +250,18 @@ export const StatusBar = ({
         transition: { duration: 0.2, ease: "backIn" },
       });
 
-      // 4. Session Check
       if (!isMounted.current || triggerId.current !== currentSession) {
         return;
       }
 
-      // 5. Visuals
       setClickCoords(coords);
 
-      // 6. Explode
       controls.start({
         scale: [0.8, 1.3, 1],
         rotate: [0, 10, -10, 5, -5, 0],
         transition: { duration: 0.6, ease: "backOut" },
       });
 
-      // 7. Glitch
-      if (activeInterval.current) clearInterval(activeInterval.current);
-      activeInterval.current = window.setInterval(() => {
-        if (!isMounted.current) return;
-        const rH = Math.floor(Math.random() * 23)
-          .toString()
-          .padStart(2, "0");
-        const rM = Math.floor(Math.random() * 59)
-          .toString()
-          .padStart(2, "0");
-        setDisplayTime(`${rH}:${rM}`);
-        setGlitchOffset((Math.random() - 0.5) * 8);
-      }, 50);
-
-      // 8. Auto Stop (2.5s strict)
       if (activeTimeout.current) clearTimeout(activeTimeout.current);
       activeTimeout.current = window.setTimeout(() => {
         if (isMounted.current && triggerId.current === currentSession) {
@@ -253,76 +269,128 @@ export const StatusBar = ({
         }
       }, 2500);
     } catch (error) {
-      console.error("Easter egg failed", error);
       forceStop(true);
     }
   };
 
-  const handleProfileClick = () => {
-    forceStop(false);
-    onOpenProfile();
+  const getWeatherStyles = () => {
+    if (!weather) return { bg: "", glow: "", iconColor: "" };
+
+    if (!weather.isDay && weather.condition === "clear") {
+      return {
+        bg: "rgba(30, 41, 59, 0.6)",
+        glow: "rgba(99, 102, 241, 0.4)",
+        iconColor: "#818cf8",
+      };
+    }
+
+    switch (weather.condition) {
+      case "clear":
+        return {
+          bg: "rgba(254, 243, 199, 0.4)",
+          glow: "rgba(251, 191, 36, 0.4)",
+          iconColor: "#f59e0b",
+        };
+      case "rain":
+        return {
+          bg: "rgba(219, 234, 254, 0.4)",
+          glow: "rgba(59, 130, 246, 0.4)",
+          iconColor: "#3b82f6",
+        };
+      case "storm":
+        return {
+          bg: "rgba(226, 232, 240, 0.4)",
+          glow: "rgba(148, 163, 184, 0.4)",
+          iconColor: "#64748b",
+        };
+      case "snow":
+        return {
+          bg: "rgba(236, 254, 255, 0.4)",
+          glow: "rgba(6, 182, 212, 0.4)",
+          iconColor: "#06b6d4",
+        };
+      default:
+        return {
+          bg: "rgba(243, 244, 246, 0.4)",
+          glow: "rgba(156, 163, 175, 0.2)",
+          iconColor: "#9ca3af",
+        };
+    }
   };
 
-  // ... existing code ...
+  const renderIcon = () => {
+    if (!weather) return null;
+    const iconClass = "w-4 h-4 md:w-5 md:h-5 drop-shadow-sm";
+
+    if (isCrazy)
+      return (
+        <Zap
+          className={`w-5 h-5 md:w-6 md:h-6`}
+          fill="currentColor"
+          color={theme.colors.contrastAccent}
+        />
+      );
+
+    if (!weather.isDay && weather.condition === "clear")
+      return <Moon className={iconClass} strokeWidth={2.5} />;
+
+    switch (weather.condition) {
+      case "clear":
+        return <Sun className={iconClass} strokeWidth={2.5} />;
+      case "rain":
+        return <CloudRain className={iconClass} strokeWidth={2.5} />;
+      case "storm":
+        return <CloudLightning className={iconClass} strokeWidth={2.5} />;
+      case "snow":
+        return <CloudSnow className={iconClass} strokeWidth={2.5} />;
+      default:
+        return <Cloud className={iconClass} strokeWidth={2.5} />;
+    }
+  };
+
+  const styles = getWeatherStyles();
+  const particleColor = isCrazy
+    ? getComplementaryColor(theme.colors.accent)
+    : styles.iconColor || theme.colors.accent;
 
   return (
     <>
       <DistortionFilter />
 
       {clickCoords &&
-        isTimeTraveling &&
+        isCrazy &&
         createPortal(
           <ExplosionParticles
             x={clickCoords.x}
             y={clickCoords.y}
-            color={theme.colors.accent}
+            color={particleColor}
           />,
           document.body,
         )}
 
       <div
-        className="flex justify-between items-center px-6 py-4 z-50 relative select-none h-20 shrink-0 font-bold text-xs tracking-widest uppercase"
-        style={{
-          color: theme.colors.text,
-          background: "transparent",
-        }}
+        className="flex justify-between items-center px-4 md:px-6 py-4 z-50 relative select-none h-20 shrink-0"
+        style={{ background: "transparent" }}
       >
         {showProfile && (
           <motion.button
-            onClick={handleProfileClick}
+            onClick={() => {
+              forceStop(false);
+              onOpenProfile();
+            }}
             layout
             initial={
               !hasAnimated
-                ? {
-                    opacity: 0,
-                    scale: 0,
-                    y: 20,
-                    rotate: -20,
-                  }
+                ? { opacity: 0, scale: 0, y: 20, rotate: -20 }
                 : false
             }
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              rotate: 0,
-            }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
             exit={{
               opacity: 0,
               scale: 0,
               y: 20,
               transition: { duration: 0.2 },
             }}
-            transition={
-              !hasAnimated
-                ? {
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 8,
-                    mass: 0.8,
-                  }
-                : undefined
-            }
             onAnimationComplete={() => setHasAnimated(true)}
             whileHover={{
               scale: 1.05,
@@ -351,8 +419,7 @@ export const StatusBar = ({
                 transition: { duration: 0.4 },
               }}
             >
-              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none z-10"></div>
-
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent pointer-events-none z-10" />
               {!imgError ? (
                 <img
                   src="/profile/me.jpg"
@@ -367,7 +434,7 @@ export const StatusBar = ({
               )}
             </motion.div>
             <span
-              className="font-black text-base relative z-10 tracking-wide group-hover:text-[var(--accent)] transition-colors"
+              className="font-black text-base relative z-10 tracking-wide uppercase group-hover:text-[var(--accent)] transition-colors"
               style={{ color: theme.colors.text }}
             >
               Lukas
@@ -375,97 +442,84 @@ export const StatusBar = ({
           </motion.button>
         )}
 
-        {/* Center Spacer */}
-        <div className="flex-1"></div>
+        <div className="flex-1" />
 
-        {/* Time / Easter Egg Button */}
-        <div className="min-w-[140px] flex items-center justify-end">
-          <motion.button
-            onClick={handleTrigger}
-            animate={controls}
-            layout
-            whileHover={{
-              scale: 1.1,
-              rotate: -3,
-              transition: { type: "spring", stiffness: 400, damping: 10 },
-            }}
-            whileTap={{
-              scale: 0.9,
-              rotate: 0,
-              transition: { duration: 0.1 },
-            }}
-            disabled={isTimeTraveling}
-            className={`flex items-center gap-3 px-4 py-2 rounded-full backdrop-blur-md border shadow-sm relative overflow-visible group origin-center ${
-              isTimeTraveling ? "cursor-default" : "cursor-pointer"
-            }`}
-            style={{
-              backgroundColor: isTimeTraveling
-                ? theme.colors.accent
-                : theme.isDark
-                  ? "rgba(255,255,255,0.05)"
-                  : "rgba(255,255,255,0.5)",
-              borderColor: theme.isDark
-                ? "rgba(255,255,255,0.1)"
-                : "rgba(0,0,0,0.05)",
-              color: isTimeTraveling
-                ? theme.colors.contrastAccent
-                : theme.colors.text,
-              boxShadow: isTimeTraveling
-                ? `0 0 30px ${theme.colors.accent}`
-                : "none",
-            }}
-          >
-            {/* Icon Container */}
-            <div className="relative w-4 h-4 group-hover:text-[#facc15] transition-colors duration-200">
-              <AnimatePresence mode="wait">
-                {isTimeTraveling ? (
-                  <motion.div
-                    key="zap"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1.2, rotate: 0 }}
-                    exit={{ scale: 0 }}
-                    className="absolute inset-0"
-                  >
-                    <Zap size={16} fill="currentColor" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="clock"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute inset-0 opacity-60 group-hover:opacity-100"
-                  >
-                    <Clock size={14} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Text Container */}
-            <div
-              className="font-mono text-sm font-bold flex items-center tabular-nums w-[44px] justify-center transition-colors duration-200 group-hover:text-[#facc15]"
-              style={{
-                transform: `translate(${glitchOffset}px, ${-glitchOffset}px)`,
-                textShadow: isTimeTraveling
-                  ? `${glitchOffset * 3}px 0 0 rgba(255,0,0,0.5), -${glitchOffset * 3}px 0 0 rgba(0,255,255,0.5)`
-                  : "none",
-              }}
+        <AnimatePresence>
+          {weather && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, x: 20 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex items-center justify-end"
             >
-              {isTimeTraveling ? (
-                <span className="tracking-tighter font-black">
-                  {displayTime}
+              <motion.button
+                onClick={handleWeatherClick}
+                animate={controls}
+                layout
+                whileHover={{
+                  scale: 1.05,
+                  rotate: isCrazy ? 0 : 2,
+                  transition: { type: "spring", stiffness: 400, damping: 15 },
+                }}
+                whileTap={{ scale: 0.95 }}
+                // Removed 'cursor-default' when crazy. It stays 'cursor-pointer' to imply clickability (failsafe)
+                className="relative flex items-center gap-2 md:gap-3 pr-1 pl-2 md:pr-2 md:pl-4 py-1 md:py-2 h-10 md:h-[60px] rounded-full backdrop-blur-md border-2 shadow-lg overflow-hidden group cursor-pointer"
+                style={{
+                  backgroundColor: isCrazy
+                    ? theme.colors.accent
+                    : theme.isDark
+                      ? "rgba(30,30,30,0.6)"
+                      : "rgba(255,255,255,0.6)",
+                  borderColor: theme.isDark
+                    ? "rgba(255,255,255,0.15)"
+                    : "rgba(0,0,0,0.08)",
+                  boxShadow: isCrazy
+                    ? `0 0 30px ${theme.colors.accent}`
+                    : `0 8px 32px -4px ${styles.glow}`,
+                  color: isCrazy
+                    ? theme.colors.contrastAccent
+                    : theme.colors.text,
+                }}
+              >
+                {!isCrazy && (
+                  <div
+                    className="absolute inset-0 transition-colors duration-500 opacity-20"
+                    style={{ backgroundColor: styles.bg }}
+                  />
+                )}
+
+                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-20" />
+
+                <span className="font-black text-sm md:text-lg tracking-tight tabular-nums relative z-10">
+                  {weather.temp}°
                 </span>
-              ) : (
-                <>
-                  <span>{hours}</span>
-                  <span className="animate-pulse mx-[1px]">:</span>
-                  <span>{minutes}</span>
-                </>
-              )}
-            </div>
-          </motion.button>
-        </div>
+
+                <div
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 shadow-inner relative z-10 bg-white/20"
+                  style={{
+                    borderColor: theme.isDark
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(255,255,255,0.6)",
+                    color: isCrazy
+                      ? theme.colors.contrastAccent
+                      : styles.iconColor,
+                  }}
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={isCrazy ? "crazy" : weather.condition}
+                      initial={{ scale: 0, rotate: 90 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0, rotate: -90 }}
+                    >
+                      {renderIcon()}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   );
