@@ -43,8 +43,7 @@ export const StatusBar = ({
   const [hasAnimated, setHasAnimated] = useState(false);
   const [weather, setWeather] = useState<WeatherData | null>(null);
 
-  // Toggle for the immersive overlay
-  const [showImmersive, setShowImmersive] = useState(true);
+  const [showImmersive, setShowImmersive] = useState(false);
 
   const isMounted = useRef(false);
 
