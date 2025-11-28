@@ -107,6 +107,8 @@ export const PROJECTS: Project[] = [
       "/projects/inno/inno_1.png",
       "/projects/inno/inno_2.png",
       "/projects/inno/inno_3.png",
+      "/projects/inno/inno_4.png",
+      "/projects/inno/inno_5.png",
     ],
     features: {
       en: [
@@ -351,6 +353,8 @@ export const PROJECTS: Project[] = [
       "/projects/fox/fox-1.png",
       "/projects/fox/fox-2.png",
       "/projects/fox/fox-3.png",
+      "/projects/fox/fox-4.png",
+      "/projects/fox/fox-5.png",
     ],
     features: {
       en: ["Atmosphere", "3D Optimization", "Interactive Art", "Accessibility"],
@@ -447,6 +451,7 @@ export const PROJECTS: Project[] = [
       "/projects/rayTracer/ray_tracer_example1.png",
       "/projects/rayTracer/ray_tracer_example2.png",
       "/projects/rayTracer/ray_tracer_example3.png",
+      "/projects/rayTracer/ray_tracer_example4.png",
     ],
     features: {
       en: ["No Libraries", "Phong Shading", "Shadow Calculation", "Math Heavy"],
@@ -474,6 +479,7 @@ export const PROJECTS: Project[] = [
       "/projects/jpegComp/640_rgb.png",
       "/projects/jpegComp/640_yCbCr.png",
       "/projects/jpegComp/640pcomp.png",
+      "/projects/jpegComp/long_comp.png",
     ],
     features: {
       en: ["DCT Transform", "Quantization", "Matrix Math", "Compression"],
