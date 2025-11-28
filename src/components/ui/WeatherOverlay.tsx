@@ -16,9 +16,9 @@ interface WeatherOverlayProps {
   intensity?: number; // 0 to 1
 }
 
-const RAIN_COUNT = 60;
-const SNOW_COUNT = 40;
-const STAR_COUNT = 25;
+const RAIN_COUNT = 40;
+const SNOW_COUNT = 30;
+const STAR_COUNT = 20;
 
 const CLOUD_LAYERS = [
   { top: 5, mobileTop: 5, scale: 0.6, duration: 85, delay: 0, zIndex: 1 }, // High, slow, far
@@ -51,8 +51,10 @@ export const WeatherOverlay = ({
             exit={{ opacity: 0 }}
             className="absolute inset-0"
           >
+            {/* HERO SUN: Distinct, bold shape in top-right */}
             <HeroSun themeIsDark={themeIsDark} />
 
+            {/* LENS FLARES: Floating playful circles */}
             {Array.from({ length: 8 }).map((_, i) => (
               <LensFlare key={i} index={i} themeIsDark={themeIsDark} />
             ))}
@@ -68,12 +70,15 @@ export const WeatherOverlay = ({
             exit={{ opacity: 0 }}
             className="absolute inset-0"
           >
+            {/* HERO MOON */}
             <HeroMoon themeIsDark={themeIsDark} />
 
+            {/* TWINKLE STARS: Distinct 4-point stars */}
             {Array.from({ length: STAR_COUNT }).map((_, i) => (
               <TwinkleStar key={i} themeIsDark={themeIsDark} />
             ))}
 
+            {/* SHOOTING STARS */}
             {Array.from({ length: 2 }).map((_, i) => (
               <ShootingStar
                 key={`shoot-${i}`}
@@ -82,12 +87,14 @@ export const WeatherOverlay = ({
               />
             ))}
 
+            {/* Gradient Background for Depth */}
             <div
               className={`absolute inset-0 bg-gradient-to-b ${themeIsDark ? "from-indigo-950/40" : "from-indigo-900/10"} to-transparent`}
             />
           </motion.div>
         )}
 
+        {/* --- CLOUDY --- */}
         {condition === "cloudy" && (
           <motion.div
             key="clouds"
@@ -96,12 +103,14 @@ export const WeatherOverlay = ({
             exit={{ opacity: 0 }}
             className="absolute inset-0"
           >
+            {/* PUFFY CLOUDS: Organized Parallax Layers */}
             {CLOUD_LAYERS.map((layer, i) => (
               <PuffyCloud key={i} config={layer} themeIsDark={themeIsDark} />
             ))}
           </motion.div>
         )}
 
+        {/* --- RAIN --- */}
         {(condition === "rain" || condition === "storm") && (
           <motion.div
             key="rain"
@@ -124,6 +133,7 @@ export const WeatherOverlay = ({
           </motion.div>
         )}
 
+        {/* --- SNOW --- */}
         {condition === "snow" && (
           <motion.div
             key="snow"
@@ -149,6 +159,7 @@ const HeroSun = ({ themeIsDark }: { themeIsDark: boolean }) => {
   return (
     <motion.div
       className={`absolute top-[-50px] right-[-50px] w-64 h-64 md:w-96 md:h-96 z-10`}
+      style={{ willChange: "transform" }}
       initial={{ scale: 0.8, rotate: -20 }}
       animate={{ scale: 1, rotate: 0 }}
       transition={{ duration: 2, ease: "backOut" }}
@@ -159,6 +170,7 @@ const HeroSun = ({ themeIsDark }: { themeIsDark: boolean }) => {
         animate={{ rotate: 360 }}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       >
+        {/* Core */}
         <circle
           cx="100"
           cy="100"
@@ -166,6 +178,7 @@ const HeroSun = ({ themeIsDark }: { themeIsDark: boolean }) => {
           fill="currentColor"
           className="opacity-90"
         />
+        {/* Rays - Chunky Nintendo Style */}
         {[0, 45, 90, 135, 180, 225, 270, 315].map((degree, i) => (
           <rect
             key={i}
@@ -204,6 +217,7 @@ const LensFlare = ({
         height: size,
         top: `${startY}%`,
         left: `${startX}%`,
+        willChange: "transform, opacity",
       }}
       animate={{
         x: [0, random(-50, 50)],
@@ -225,6 +239,7 @@ const HeroMoon = ({ themeIsDark }: { themeIsDark: boolean }) => {
   return (
     <motion.div
       className="absolute top-10 right-10 z-10"
+      style={{ willChange: "transform" }}
       initial={{ scale: 0.5, opacity: 0, rotate: -30 }}
       animate={{ scale: 1, opacity: 1, rotate: 0 }}
       transition={{ duration: 1.5, type: "spring" }}
@@ -253,7 +268,13 @@ const TwinkleStar = ({ themeIsDark }: { themeIsDark: boolean }) => {
   return (
     <motion.div
       className={`absolute ${themeIsDark ? "text-yellow-50" : "text-slate-800"}`}
-      style={{ left: `${x}%`, top: `${y}%`, width: size, height: size }}
+      style={{
+        left: `${x}%`,
+        top: `${y}%`,
+        width: size,
+        height: size,
+        willChange: "transform, opacity",
+      }}
       animate={{
         scale: [1, 0.5, 1],
         opacity: [0.8, 0.4, 0.8],
@@ -281,7 +302,7 @@ const PuffyCloud = ({
   themeIsDark: boolean;
 }) => {
   const color = themeIsDark ? "text-slate-200" : "text-slate-500";
-  const opacity = themeIsDark ? "opacity-[0.08]" : "opacity-20";
+  const opacity = themeIsDark ? "opacity-[0.08]" : "opacity-20"; // Subtle but visible
 
   const baseWidthVw = 20;
   const widthVw = baseWidthVw * config.scale;
@@ -296,15 +317,16 @@ const PuffyCloud = ({
           width: `${widthVw}vw`,
           height: `${widthVw * 0.6}vw`,
           zIndex: config.zIndex,
+          willChange: "transform",
         } as any
       }
-      initial={{ left: "-40%" }}
+      initial={{ x: "-40vw" }}
       animate={{
-        left: "110%",
+        x: "110vw",
         y: [0, -10, 0],
       }}
       transition={{
-        left: {
+        x: {
           duration: config.duration,
           repeat: Infinity,
           ease: "linear",
@@ -318,11 +340,8 @@ const PuffyCloud = ({
         },
       }}
     >
-      <svg
-        viewBox="0 0 100 60"
-        fill="currentColor"
-        className="w-full h-full drop-shadow-sm"
-      >
+      {/* "Perfect" Rounded Cloud Shape - No Drop Shadow */}
+      <svg viewBox="0 0 100 60" fill="currentColor" className="w-full h-full">
         <path d="M10,45 Q10,25 30,25 Q30,10 50,10 Q70,10 70,25 Q90,25 90,45 L10,45 Z" />
         <circle cx="30" cy="45" r="20" fill="currentColor" />
         <circle cx="50" cy="35" r="25" fill="currentColor" />
@@ -346,7 +365,11 @@ const ShootingStar = ({
   return (
     <motion.div
       className={`absolute h-[3px] w-[80px] rounded-full rotate-[15deg] origin-left ${themeIsDark ? "bg-gradient-to-r from-transparent via-white to-transparent" : "bg-gradient-to-r from-transparent via-slate-800 to-transparent"}`}
-      style={{ top: `${top}%`, left: `${left}%` }}
+      style={{
+        top: `${top}%`,
+        left: `${left}%`,
+        willChange: "transform, opacity",
+      }}
       initial={{ scaleX: 0, opacity: 0, x: 0, y: 0 }}
       animate={{
         scaleX: [0, 1, 0],
@@ -388,11 +411,12 @@ const RainDrop = ({
       className={`absolute w-1 rounded-full ${colorClass}`}
       style={{
         left: `${x}%`,
+        top: -20,
         height: isStorm ? 45 : 25,
+        willChange: "transform",
       }}
-      initial={{ top: -50, opacity: 0 }}
       animate={{
-        top: ["0%", "100%"],
+        y: ["0vh", "110vh"],
         opacity: [0, 1, 1, 0],
       }}
       transition={{
@@ -441,10 +465,15 @@ const SnowFlake = ({ themeIsDark }: { themeIsDark: boolean }) => {
   return (
     <motion.div
       className={`absolute rounded-full ${colorClass}`}
-      style={{ width: size, height: size, left: `${x}%` }}
-      initial={{ top: -20 }}
+      style={{
+        width: size,
+        height: size,
+        left: `${x}%`,
+        top: -20,
+        willChange: "transform",
+      }}
       animate={{
-        top: "100%",
+        y: "110vh",
         x: [0, random(-50, 50)],
       }}
       transition={{
