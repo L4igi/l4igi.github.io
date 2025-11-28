@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
   Cloud,
@@ -7,102 +7,15 @@ import {
   CloudSnow,
   Moon,
   CloudLightning,
-  Zap,
 } from "lucide-react";
-import { createPortal } from "react-dom";
 import type { Theme } from "../../types";
-import { getComplementaryColor } from "../../utils/themeHelpers.ts";
-
-type WeatherCondition =
-  | "clear"
-  | "cloudy"
-  | "rain"
-  | "snow"
-  | "storm"
-  | "night";
+import { type WeatherCondition, WeatherOverlay } from "./WeatherOverlay.tsx";
 
 interface WeatherData {
   temp: number;
   condition: WeatherCondition;
   isDay: boolean;
 }
-
-const ExplosionParticles = ({
-  x,
-  y,
-  color,
-}: {
-  x: number;
-  y: number;
-  color: string;
-}) => {
-  const particles = Array.from({ length: 16 }).map((_, i) => ({
-    id: i,
-    angle: (i * 22.5 * Math.PI) / 180,
-    velocity: Math.random() * 150 + 50,
-    size: Math.random() * 6 + 2,
-  }));
-
-  return (
-    <div
-      className="fixed pointer-events-none z-[9999]"
-      style={{ left: x, top: y }}
-    >
-      {particles.map((p) => (
-        <motion.div
-          key={p.id}
-          initial={{ x: 0, y: 0, scale: 0 }}
-          animate={{
-            x: Math.cos(p.angle) * p.velocity,
-            y: Math.sin(p.angle) * p.velocity,
-            scale: [0, 1.5, 0],
-            opacity: [1, 1, 0],
-          }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="absolute rounded-full shadow-[0_0_10px_currentColor]"
-          style={{
-            width: p.size,
-            height: p.size,
-            backgroundColor: color,
-            color: color,
-          }}
-        />
-      ))}
-    </div>
-  );
-};
-
-// --- DISTORTION FILTER ---
-const DistortionFilter = () => (
-  <svg
-    style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
-  >
-    <defs>
-      <filter id="dizzy-filter">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.01 0.02"
-          numOctaves="2"
-          result="warp"
-        >
-          <animate
-            attributeName="baseFrequency"
-            values="0.01 0.02;0.02 0.05;0.01 0.02"
-            dur="3s"
-            repeatCount="indefinite"
-          />
-        </feTurbulence>
-        <feDisplacementMap
-          xChannelSelector="R"
-          yChannelSelector="G"
-          scale="40"
-          in="SourceGraphic"
-          in2="warp"
-        />
-      </filter>
-    </defs>
-  </svg>
-);
 
 const getConditionFromCode = (code: number): WeatherCondition => {
   if (code <= 1) return "clear";
@@ -128,19 +41,12 @@ export const StatusBar = ({
 }: StatusBarProps) => {
   const [imgError, setImgError] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-
   const [weather, setWeather] = useState<WeatherData | null>(null);
 
-  const [isCrazy, setIsCrazy] = useState(false);
-  const [clickCoords, setClickCoords] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  // Toggle for the immersive overlay
+  const [showImmersive, setShowImmersive] = useState(true);
 
-  const activeTimeout = useRef<number | null>(null);
   const isMounted = useRef(false);
-  const triggerId = useRef(0);
-  const controls = useAnimation();
 
   useEffect(() => {
     isMounted.current = true;
@@ -149,59 +55,9 @@ export const StatusBar = ({
     };
   }, []);
 
-  const forceStop = useCallback(
-    (shouldAnimate = true) => {
-      triggerId.current++;
-
-      if (activeTimeout.current) {
-        clearTimeout(activeTimeout.current);
-        activeTimeout.current = null;
-      }
-
-      document.body.style.transition = "none";
-      document.body.style.filter = "";
-
-      if (isMounted.current) {
-        setIsCrazy(false);
-
-        setTimeout(() => {
-          if (isMounted.current) setClickCoords(null);
-        }, 1000);
-
-        if (shouldAnimate) {
-          controls.start({
-            scale: 1,
-            rotate: 0,
-            y: 0,
-            transition: { type: "spring", stiffness: 400, damping: 20 },
-          });
-        }
-      }
-    },
-    [controls],
-  );
-
-  useEffect(() => {
-    return () => forceStop(false);
-  }, [forceStop]);
-
-  useEffect(() => {
-    if (isCrazy) forceStop(true);
-  }, [showProfile, forceStop]);
-
-  useEffect(() => {
-    if (isCrazy) {
-      document.body.style.transition = "filter 2.5s ease-in-out";
-      document.body.style.filter =
-        "url(#dizzy-filter) hue-rotate(180deg) saturate(3) contrast(1.1)";
-    } else {
-      document.body.style.transition = "none";
-      document.body.style.filter = "";
-    }
-  }, [isCrazy]);
-
   useEffect(() => {
     const fetchWeather = async () => {
+      // Defaulting to Vienna coordinates or user location
       const latitude = 48.2082;
       const longitude = 16.3738;
       try {
@@ -225,52 +81,8 @@ export const StatusBar = ({
     fetchWeather();
   }, []);
 
-  const handleWeatherClick = async (e: React.MouseEvent) => {
-    if (!weather) return;
-
-    if (isCrazy) {
-      forceStop(true);
-      return;
-    }
-
-    setIsCrazy(true);
-    const currentSession = ++triggerId.current;
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const coords = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    };
-
-    try {
-      await controls.start({
-        scale: 0.8,
-        rotate: -15,
-        y: 5,
-        transition: { duration: 0.2, ease: "backIn" },
-      });
-
-      if (!isMounted.current || triggerId.current !== currentSession) {
-        return;
-      }
-
-      setClickCoords(coords);
-
-      controls.start({
-        scale: [0.8, 1.3, 1],
-        rotate: [0, 10, -10, 5, -5, 0],
-        transition: { duration: 0.6, ease: "backOut" },
-      });
-
-      if (activeTimeout.current) clearTimeout(activeTimeout.current);
-      activeTimeout.current = window.setTimeout(() => {
-        if (isMounted.current && triggerId.current === currentSession) {
-          forceStop(true);
-        }
-      }, 2500);
-    } catch (error) {
-      forceStop(true);
-    }
+  const handleWeatherClick = () => {
+    setShowImmersive((prev) => !prev);
   };
 
   const getWeatherStyles = () => {
@@ -322,15 +134,6 @@ export const StatusBar = ({
     if (!weather) return null;
     const iconClass = "w-4 h-4 md:w-5 md:h-5 drop-shadow-sm";
 
-    if (isCrazy)
-      return (
-        <Zap
-          className={`w-5 h-5 md:w-6 md:h-6`}
-          fill="currentColor"
-          color={theme.colors.contrastAccent}
-        />
-      );
-
     if (!weather.isDay && weather.condition === "clear")
       return <Moon className={iconClass} strokeWidth={2.5} />;
 
@@ -349,24 +152,16 @@ export const StatusBar = ({
   };
 
   const styles = getWeatherStyles();
-  const particleColor = isCrazy
-    ? getComplementaryColor(theme.colors.accent)
-    : styles.iconColor || theme.colors.accent;
 
   return (
     <>
-      <DistortionFilter />
-
-      {clickCoords &&
-        isCrazy &&
-        createPortal(
-          <ExplosionParticles
-            x={clickCoords.x}
-            y={clickCoords.y}
-            color={particleColor}
-          />,
-          document.body,
-        )}
+      {weather && showImmersive && (
+        <WeatherOverlay
+          condition={weather.condition}
+          isDay={weather.isDay}
+          themeIsDark={theme.isDark}
+        />
+      )}
 
       <div
         className="flex justify-between items-center px-4 md:px-6 py-4 z-50 relative select-none h-20 shrink-0"
@@ -374,10 +169,7 @@ export const StatusBar = ({
       >
         {showProfile && (
           <motion.button
-            onClick={() => {
-              forceStop(false);
-              onOpenProfile();
-            }}
+            onClick={onOpenProfile}
             layout
             initial={
               !hasAnimated
@@ -454,39 +246,28 @@ export const StatusBar = ({
             >
               <motion.button
                 onClick={handleWeatherClick}
-                animate={controls}
                 layout
                 whileHover={{
                   scale: 1.05,
-                  rotate: isCrazy ? 0 : 2,
                   transition: { type: "spring", stiffness: 400, damping: 15 },
                 }}
                 whileTap={{ scale: 0.95 }}
-                // Removed 'cursor-default' when crazy. It stays 'cursor-pointer' to imply clickability (failsafe)
                 className="relative flex items-center gap-2 md:gap-3 pr-1 pl-2 md:pr-2 md:pl-4 py-1 md:py-2 h-10 md:h-[60px] rounded-full backdrop-blur-md border-2 shadow-lg overflow-hidden group cursor-pointer"
                 style={{
-                  backgroundColor: isCrazy
-                    ? theme.colors.accent
-                    : theme.isDark
-                      ? "rgba(30,30,30,0.6)"
-                      : "rgba(255,255,255,0.6)",
+                  backgroundColor: theme.isDark
+                    ? "rgba(30,30,30,0.6)"
+                    : "rgba(255,255,255,0.6)",
                   borderColor: theme.isDark
                     ? "rgba(255,255,255,0.15)"
                     : "rgba(0,0,0,0.08)",
-                  boxShadow: isCrazy
-                    ? `0 0 30px ${theme.colors.accent}`
-                    : `0 8px 32px -4px ${styles.glow}`,
-                  color: isCrazy
-                    ? theme.colors.contrastAccent
-                    : theme.colors.text,
+                  boxShadow: `0 8px 32px -4px ${styles.glow}`,
+                  color: theme.colors.text,
                 }}
               >
-                {!isCrazy && (
-                  <div
-                    className="absolute inset-0 transition-colors duration-500 opacity-20"
-                    style={{ backgroundColor: styles.bg }}
-                  />
-                )}
+                <div
+                  className="absolute inset-0 transition-colors duration-500 opacity-20"
+                  style={{ backgroundColor: styles.bg }}
+                />
 
                 <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-20" />
 
@@ -500,14 +281,12 @@ export const StatusBar = ({
                     borderColor: theme.isDark
                       ? "rgba(255,255,255,0.2)"
                       : "rgba(255,255,255,0.6)",
-                    color: isCrazy
-                      ? theme.colors.contrastAccent
-                      : styles.iconColor,
+                    color: styles.iconColor,
                   }}
                 >
                   <AnimatePresence mode="wait">
                     <motion.div
-                      key={isCrazy ? "crazy" : weather.condition}
+                      key={weather.condition}
                       initial={{ scale: 0, rotate: 90 }}
                       animate={{ scale: 1, rotate: 0 }}
                       exit={{ scale: 0, rotate: -90 }}
