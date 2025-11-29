@@ -82,8 +82,8 @@ export const PROJECTS: Project[] = [
     role: { en: "Technical Anchor", de: "Technical Anchor" },
     year: "Foundation",
     description: {
-      en: "Enterprise SaaS Platform. Designed the core schema-based multi-tenant architecture and engineered a critical high-volume legacy data migration system.",
-      de: "Enterprise SaaS-Plattform. Konzeption der zentralen Schema-basierten Multi-Tenant-Architektur und Entwicklung eines kritischen Systems zur Migration massiver Altdatenbestände.",
+      en: "Enterprise SaaS Platform. Schema-based multi-tenant architecture and system for high-volume legacy data migration.",
+      de: "Enterprise SaaS-Plattform. Schema-basierten Multi-Tenant-Architektur und Systems zur Migration massiver Altdatenbestände.",
     },
     details: {
       en: "**The Context:** A complex SaaS solution for safety documentation. The project faced frequent team turnover and shifting requirements, requiring a stable technical anchor.\n\n**The Architecture:** We shaped a distributed microservice system (Spring Boot/Kotlin). Each service communicated via RabbitMQ, enabling asynchronous processing and effective load distribution. Schema-based multi-tenancy was still applied where needed to ensure strict data isolation for enterprise clients.\n\n**The Legacy Migration:** Towards the end, we faced a massive hurdle: migrating terabytes of legacy data to the new system. I solo-engineered a dedicated microservice for this.\n• It included safety checkpoints to survive multi-hour processes.\n• Handled edge cases in the old data structure.\n\n**Impact:** Validated via a deep integration test suite on production copies, this service ran zero-defect at launch.\n\n**Team Dynamics:** With developers rotating in and out, I became the knowledge hub, ensuring architectural consistency and onboarding new members effectively.",
@@ -131,8 +131,8 @@ export const PROJECTS: Project[] = [
     role: { en: "Engineer & Mentor", de: "Engineer & Mentor" },
     year: "Evolution",
     description: {
-      en: "Automated HR Vendor Matching. Leveraged a proven modular architecture to digitize manual workflows, focusing on high-quality E2E automation and team mentorship.",
-      de: "Automatisches HR-Vendor-Matching. Nutzung einer bewährten modularen Architektur zur Digitalisierung manueller Workflows, mit Fokus auf hochwertige E2E-Automatisierung und Team-Mentoring.",
+      en: "Automated HR Vendor Matching. Leveraged proven modular architecture to digitize manual workflows",
+      de: "Automatisches HR-Vendor-Matching. Bewährte modularen Architektur zur Digitalisierung manueller Workflows",
     },
     details: {
       en: "**The Context:** Following the success of the Safety Docu SaaS, we tackled this Greenfield project to automate the manual matching of customers to HR software vendors.\n\n**The Strategy (Evolution):** To keep complexity low under a tighter budget, we shifted from microservices to a well-structured Modular Monolith (Kotlin, Spring Boot, Nx, Angular). With the architectural foundation already established, we focused on building clear, extendable features:\n• Used a strong integration testing strategy to ensure all components worked reliably together.\n• Integrated AI-assisted workflows to speed up repetitive development tasks.\n• Added Directus as a CMS to give admins full control over the platform’s content.\n\n**The Mentorship:** My role shifted naturally over the project. I supported the team in technical discussions and encouraged the team to question architectural decisions and explore alternatives. This helped us make more informed decisions together.\n\n**The Result:** A stable, extendable platform delivered within a lean budget, and a team that grew noticeably in confidence and technical maturity.",
@@ -175,7 +175,7 @@ export const PROJECTS: Project[] = [
     role: { en: "Hardware Bridge", de: "Hardware Bridge" },
     year: "Hardware",
     description: {
-      en: "IoT Hardware Sync. Architected a distributed backend enabling real-time Bluetooth synchronization between mobile apps and custom hardware boards.",
+      en: "IoT Hardware Sync. A distributed backend enabling real-time Bluetooth synchronization between mobile apps and custom hardware boards.",
       de: "IoT Hardware Sync. Architektur eines verteilten Backends zur Ermöglichung von Echtzeit-Bluetooth-Synchronisation zwischen Mobile-Apps und Custom-Hardware.",
     },
     details: {

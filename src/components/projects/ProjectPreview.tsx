@@ -152,14 +152,14 @@ export const ProjectPreview = ({
 
         {/* Right: Info */}
         <div
-          className={`w-2/3 ${isShortScreen ? "p-3" : "p-6"} flex flex-col justify-between relative overflow-hidden`}
+          className={`w-2/3 ${isShortScreen ? "p-3" : "p-6"} flex flex-col relative overflow-hidden`}
         >
           <div
             className="hidden sm:block absolute -right-20 -top-20 w-64 h-64 opacity-10 rounded-full blur-3xl"
             style={{ backgroundColor: theme.colors.accent }}
           ></div>
 
-          <div className="relative z-10">
+          <div className="relative z-10 shrink-0">
             {/* Badges */}
             <div
               className={`flex items-center gap-2 ${isShortScreen ? "mb-1.5" : "mb-3"}`}
@@ -191,18 +191,23 @@ export const ProjectPreview = ({
             >
               {project.title}
             </h1>
+          </div>
+
+          {/* Description - Scrollable Area */}
+          <div className="relative z-10 flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
             <p
-              className={`${isShortScreen ? "text-[10px] line-clamp-2" : "text-xs sm:text-sm line-clamp-3"} leading-relaxed font-medium opacity-70`}
+              className={`${isShortScreen ? "text-[10px]" : "text-xs sm:text-sm"} leading-relaxed font-medium opacity-70`}
               style={{ color: theme.colors.text }}
             >
               {project.description[language]}
             </p>
           </div>
 
+          {/* Footer Section (Dots & Button) */}
           <div
-            className={`flex justify-between items-end relative z-10 ${isShortScreen ? "mt-1" : "mt-2"}`}
+            className={`flex justify-between items-end relative z-10 shrink-0 ${isShortScreen ? "mt-1 pt-1" : "mt-2 pt-2"}`}
           >
-            <div className="flex gap-1">
+            <div className="flex gap-1 mb-1">
               {project.tech.slice(0, 3).map((t) => (
                 <div
                   key={t}
